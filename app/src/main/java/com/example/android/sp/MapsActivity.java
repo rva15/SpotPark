@@ -31,6 +31,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public  double longitude;
     double lat;
     double lon;
+    float zoom = 16;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             lon = mLastLocation.getLongitude();
             LatLng place = new LatLng(lat,lon);
             mMap.addMarker(new MarkerOptions().position(place).title("You're here"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(place));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place,zoom));
             Toast.makeText(MapsActivity.this, "latitude:" + lat + " longitude:" + lon, Toast.LENGTH_SHORT).show();
         }
         else{
