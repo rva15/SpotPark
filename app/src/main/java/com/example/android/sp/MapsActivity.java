@@ -82,6 +82,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         else{
             //Handle it
+            //Just checking if git works
         }
     }
 
