@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "283432722166",
+    "firebase_url": "https://spotpark-1385.firebaseio.com",
+    "project_id": "spotpark-1385",
+    "storage_bucket": "spotpark-1385.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283432722166:android:be13adf8713b5efb",
+        "android_client_info": {
+          "package_name": "com.example.android.sp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBVcvHsXeNYexNJFz0MHdi3ApGORwCUTYA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

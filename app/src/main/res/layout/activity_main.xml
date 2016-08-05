@@ -32,52 +32,69 @@
         android:layout_weight="1"
         android:layout_height="0dp">
 
-        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="0dp"
-            android:orientation="horizontal">
-            <RadioButton android:id="@+id/now"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="now"
-                android:onClick="onReportTime"/>
-            <RadioButton android:id="@+id/five"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="5min"
-                android:onClick="onReportTime"/>
-            <RadioButton android:id="@+id/ten"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="10min"
-                android:onClick="onReportTime"/>
-        </RadioGroup>
-
-        <RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:layout_height="0dp"
-            android:orientation="horizontal">
-            <RadioButton android:id="@+id/street"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Street"
-                android:onClick="onReportType"/>
-            <RadioButton android:id="@+id/lot"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Parking Lot"
-                android:onClick="onReportType"/>
-        </RadioGroup>
-
-        <Button
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Checkout"
-            android:onClick="checkOut"/>
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <EditText
+                android:id="@+id/hour"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:text=" : "/>
+            <EditText
+                android:id="@+id/min"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:text=" $"/>
+            <EditText
+                android:id="@+id/dollar"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                />
+            <EditText
+                android:id="@+id/cent"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                />
+
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Checkout"
+                android:onClick="checkOut"/>
+
+        </LinearLayout>
+
+
+
 
 
     </LinearLayout>
 
 </LinearLayout>
+

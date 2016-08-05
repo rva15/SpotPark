@@ -26,6 +26,10 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -50,6 +54,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.android.sp.ExampleDBHelper;
+import com.example.android.sp.CheckOut;
 
 
 
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationRequest mLocationRequest = LocationRequest.create();
     Marker marker;
     ExampleDBHelper dbHelper;
+    EditText hour,min;
+    EditText dollar,cent;
 
 
 
@@ -87,6 +94,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addApi(LocationServices.API)
                 .build();
         dbHelper = new ExampleDBHelper(this);
+
+        Firebase.setAndroidContext(this);
+
 
 
     }
@@ -180,50 +190,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void onReportTime(View view) {
 
-        boolean checked = ((RadioButton) view).isChecked();
-
-        switch(view.getId()) {
-            case R.id.now:
-                if (checked)
-                    Toast.makeText(MainActivity.this, "Checkout now", Toast.LENGTH_SHORT).show();
-                    time = "now";
-                break;
-            case R.id.five:
-                if (checked)
-                    Toast.makeText(MainActivity.this, "Checkout in 5", Toast.LENGTH_SHORT).show();
-                    time = "5 mins";
-                break;
-            case R.id.ten:
-                if (checked)
-                    Toast.makeText(MainActivity.this, "Checkout in 10", Toast.LENGTH_SHORT).show();
-                    time = "now";
-                break;
-        }
-    }
-
-    public void onReportType(View view) {
-
-        boolean checked = ((RadioButton) view).isChecked();
-
-        switch(view.getId()) {
-            case R.id.street:
-                if (checked)
-                    Toast.makeText(MainActivity.this, "Street Parking", Toast.LENGTH_SHORT).show();
-                    type = "Street Parking";
-                break;
-            case R.id.lot:
-                if (checked)
-                    Toast.makeText(MainActivity.this, "Parking Lot", Toast.LENGTH_SHORT).show();
-                    type = "Parking Lot";
-                break;
-        }
-    }
 
     public void checkOut(View view) {
 
+        hour = (EditText) findViewById(R.id.hour);
+        min = (EditText) findViewById(R.id.min);
+        dollar = (EditText) findViewById(R.id.dollar);
+        cent = (EditText) findViewById(R.id.cent);
 
+
+        Firebase ref = new Firebase("https://spotpark-1385.firebaseio.com");
+        Firebase checkoutRef = ref.child("checkouts").child("c1");
+        CheckOut c1 = new CheckOut(latitude,longitude,Integer.parseInt(hour.getText().toString().trim()),
+                Integer.parseInt(min.getText().toString().trim()),
+                Integer.parseInt(dollar.getText().toString().trim()),
+                Integer.parseInt(cent.getText().toString().trim()));
+        checkoutRef.setValue(c1);
         dbHelper.updateKey(0,1);
         Intent intent = new Intent(this, CheckedOut.class);
         String message = time + "  " + type;
