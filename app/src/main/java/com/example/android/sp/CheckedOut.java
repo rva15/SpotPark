@@ -15,6 +15,7 @@ public class CheckedOut extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checked_out);
+
         dbHelper1 = new ExampleDBHelper(this);
         final Cursor cursor = dbHelper1.getNumKeys(0);
         cursor.moveToFirst();
