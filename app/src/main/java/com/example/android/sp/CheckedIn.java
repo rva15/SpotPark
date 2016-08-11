@@ -1,3 +1,5 @@
+// NOT COMMENTING YET SINCE LOTS OF WORK LEFT TO DO
+
 package com.example.android.sp;
 
 import android.content.Intent;
@@ -7,7 +9,7 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class CheckedOut extends AppCompatActivity {
+public class CheckedIn extends AppCompatActivity {
 
     ExampleDBHelper dbHelper1;
 

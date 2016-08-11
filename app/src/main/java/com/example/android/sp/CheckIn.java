@@ -1,3 +1,4 @@
+//This is the class for CheckIn objects
 package com.example.android.sp;
 
 import com.firebase.client.Firebase;
@@ -11,16 +12,16 @@ import com.firebase.client.FirebaseError;
 /**
  * Created by ruturaj on 8/4/16.
  */
-public class CheckOut {
+public class CheckIn {
     double latitude,longitude;
     int hour,min;
     int dollar,cent;
 
 
-    public CheckOut(){}
+    public CheckIn(){}
 
 
-    public CheckOut(double latitudes, double longitudes, int hours, int mins, int dollars, int cents){
+    public CheckIn(double latitudes, double longitudes, int hours, int mins, int dollars, int cents){
 
 
         this.latitude = latitudes;
