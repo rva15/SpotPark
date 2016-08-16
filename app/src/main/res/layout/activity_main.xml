@@ -90,8 +90,8 @@
                     android:layout_weight="3"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:text="Checkout"
-                    android:onClick="checkOut"/>
+                    android:text="CheckIn"
+                    android:onClick="checkIn"/>
 
 
 

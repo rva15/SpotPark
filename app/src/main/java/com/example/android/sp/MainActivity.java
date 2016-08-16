@@ -43,7 +43,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
@@ -54,16 +61,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public  double latitude;
     public  double longitude;
     float zoom = 16;
-    public String time="time";
-    public String type="type";
+    public String checkinTime;
     public final static String EXTRA_MESSAGE = "com.example.android.";
     public final static String fbl = "fbl";
     Location mCurrentLocation;
     LocationRequest mLocationRequest = LocationRequest.create();
     Marker marker;
-    ExampleDBHelper dbHelper;
     EditText hour,min;
     EditText dollar,cent;
+    Calendar calendar;
+    LatLng place;
+    SimpleDateFormat simpleDateFormat;
+    private DatabaseReference database;
+    String UID="";
+
+
 
 
 
@@ -75,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
-
+        UID     = intent1.getStringExtra(FacebookLogin.UID);
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -85,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
-        dbHelper = new ExampleDBHelper(this);                 //database helper for SQLite
+        calendar = Calendar.getInstance();                  //get current time
+        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
 
     }
@@ -112,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void updateUI() {
         latitude = mCurrentLocation.getLatitude();       //get the latitude
         longitude = mCurrentLocation.getLongitude();     //get the longitude
-        LatLng place = new LatLng(latitude, longitude);  //initiate LatLng object
+        place = new LatLng(latitude, longitude);  //initiate LatLng object
         if (marker != null) {
             marker.remove();                             //remove the previous marker on the map
         }
@@ -176,27 +189,39 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     //Called on clicking the checkout button
-    public void checkOut(View view) {
+    public void checkIn(View view) {
 
         //get all values from the textboxes
+
         hour = (EditText) findViewById(R.id.hour);
         min = (EditText) findViewById(R.id.min);
         dollar = (EditText) findViewById(R.id.dollar);
         cent = (EditText) findViewById(R.id.cent);
 
+        //Time checkoutTime = new Time(Integer.parseInt(hour.getText().toString()),Integer.parseInt(min.getText().toString()));
+        int dollars = Integer.parseInt(dollar.getText().toString());
+        int cents  = Integer.parseInt(cent.getText().toString());
 
-        Firebase ref = new Firebase("https://spotpark-1385.firebaseio.com"); //set the Firebase database location
-        Firebase checkoutRef = ref.child("checkouts").child("c1");           //add the children to the database
-        CheckIn c1 = new CheckIn(latitude,longitude,Integer.parseInt(hour.getText().toString().trim()), //create a new CheckOut object
-                Integer.parseInt(min.getText().toString().trim()),
-                Integer.parseInt(dollar.getText().toString().trim()),
-                Integer.parseInt(cent.getText().toString().trim()));
-        checkoutRef.setValue(c1);                                            //pass Checkoutvalues to database
-        dbHelper.updateKey(0,1);                                             //update a key in the internal SQLite database
-        Intent intent = new Intent(this, CheckedIn.class);                  //pass Intent to next activity
-        String message = time + "  " + type;
-        intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
-        startActivity(intent);
+
+        database = FirebaseDatabase.getInstance().getReference();
+        checkinTime = simpleDateFormat.format(calendar.getTime());
+        String key = database.child("CheckIns").push().getKey();
+        CheckIn checkIn = new CheckIn(latitude,longitude,Integer.parseInt(hour.getText().toString()),
+                Integer.parseInt(min.getText().toString()),dollars,cents,UID,true);
+        Map<String, Object> checkInValues = checkIn.toMap();
+        HashMap<String, Object> checkInMap = new HashMap<>();
+        checkInMap.put("latitude", latitude);
+        checkInMap.put("longitude",longitude);
+        checkInMap.put("checkInTime", checkinTime );
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/CheckIns/"+key,checkInMap);
+        childUpdates.put("/CheckInDetails/"+key,checkInValues);
+        database.updateChildren(childUpdates);
+
+        //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
+        //Intent intent = new Intent(this, CheckedIn.class);
+        //startActivity(intent);
 
     }
 

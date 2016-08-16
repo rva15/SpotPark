@@ -4,6 +4,9 @@ package com.example.android.sp;
 
 //all imports
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,6 +27,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.example.android.sp.User;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 
 public class FacebookLogin extends AppCompatActivity
@@ -32,12 +40,15 @@ public class FacebookLogin extends AppCompatActivity
     private CallbackManager callbackManager;
     LoginButton login_button;
     private FirebaseAuth mAuthstart,mAuthfb,mAuthlogin,mAuthsignup;
+    private DatabaseReference mDatabase;
     public EditText username;
     public EditText password;
-    private FirebaseAuth.AuthStateListener mAuthListener,mAuthListener2,mAuthListener3, mAuthListenerfb;
+    private FirebaseAuth.AuthStateListener mAuthListener,newAccountListener;
     private static final String TAG = "Sign in debug ";
-    String logoutFlag = "0";
-
+    public final static String UID="";
+    String logoutFlag = "0", time= "";
+    Calendar calendar;
+    SimpleDateFormat simpleDateFormat;
 
     //onCreate gets called at whenever the screen opens
     @Override
@@ -66,7 +77,7 @@ public class FacebookLogin extends AppCompatActivity
                 if (user != null) {
                     //if someone is already signed in, move on to main activity
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    goAhead();
+                    goAhead(user.getUid());
 
 
                 } else {
@@ -77,7 +88,27 @@ public class FacebookLogin extends AppCompatActivity
 
             }
         };
-        mAuthstart.addAuthStateListener(mAuthListener);    //add the above listener to the firebaseAuth object
+        mAuthstart.addAuthStateListener(mAuthListener);//add the above listener to the firebaseAuth object
+        //Create another listener for signups
+        newAccountListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    //if someone is already signed in, move on to main activity
+                    Log.d(TAG, "onAuthStateChanged:acc created" + user.getUid());
+                    addNewUser(user.getUid(),null,0,null);
+                    goAhead(user.getUid());
+
+
+                } else {
+                    // there is no one signed in
+                    Log.d(TAG, "onAuthStateChanged:no user");
+
+                }
+
+            }
+        };
         setContentView(R.layout.activity_facebook_login);  //setup the content view for the loginActivity
         login_button        = (LoginButton) findViewById(R.id.login_button);  //find facebook's login button
         username = (EditText) findViewById(R.id.username);                    //find username textbox
@@ -110,19 +141,34 @@ public class FacebookLogin extends AppCompatActivity
     }
 
     //go Ahead to Main Activity
-    public void goAhead(){
+    public void goAhead(String ID){
         Intent intent = new Intent(FacebookLogin.this, MainActivity.class); //send Intent
+        intent.putExtra(UID,ID);
         startActivity(intent);
         Log.d(TAG, "onAuthStateChanged:going ahead");
         this.finish();                                                      //destroy login activity
 
     }
 
+    //add a new user to database
+    public void addNewUser(String userID,String userName,int numberOfKeys, String plateNumber){
+        Log.d(TAG, "onAuthStateChanged:addNewUser");
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        String key = mDatabase.child("UserInformation").push().getKey();
+        User user = new User(userName,numberOfKeys,plateNumber);
+        Map<String, Object> newUser = user.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/UserInformation/"+userID, newUser);
+        mDatabase.updateChildren(childUpdates);
+
+    }
+
     //this method is called on fb's successful login
     private void handleFacebookAccessToken(AccessToken token) {
-
+        Log.d(TAG, "onAuthStateChanged:token"+token.getCurrentAccessToken());
         mAuthfb = FirebaseAuth.getInstance();       //get Firebase Instance
-        mAuthfb.addAuthStateListener(mAuthListener);//add previously defined listener
+        mAuthfb.addAuthStateListener(newAccountListener);//add previously defined listener
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken()); //get the access token from fb
         mAuthfb.signInWithCredential(credential)    //sign in to firebase using that credential
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -147,6 +193,7 @@ public class FacebookLogin extends AppCompatActivity
     public void login(View view) {
 
         mAuthlogin = FirebaseAuth.getInstance();       //get Firebase instance
+
         mAuthlogin.addAuthStateListener(mAuthListener);//add listener to it
         mAuthlogin.signInWithEmailAndPassword(username.getText().toString(), password.getText().toString()) //sign in with email
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -170,7 +217,8 @@ public class FacebookLogin extends AppCompatActivity
     // This function is triggered when user presses signup button
     public void signup(View view) {
         mAuthsignup = FirebaseAuth.getInstance();               //get Firebase instance
-        mAuthsignup.addAuthStateListener(mAuthListener);        //add listener
+        //create a listener for signup process
+        mAuthsignup.addAuthStateListener(newAccountListener);        //add listener
         mAuthsignup.createUserWithEmailAndPassword(username.getText().toString(), password.getText().toString()) //create the user
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override

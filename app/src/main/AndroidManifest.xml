@@ -62,8 +62,6 @@
         <activity android:name=".CheckedIn" />
 
 
-        <!-- <activity android:name=".LoginActivity"></activity> -->
-        <!--<activity android:name=".FacebookLogin"></activity>-->
     </application>
 
 </manifest>
