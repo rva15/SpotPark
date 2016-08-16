@@ -39,6 +39,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -46,7 +48,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -64,8 +65,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public String checkinTime;
     public final static String EXTRA_MESSAGE = "com.example.android.";
     public final static String fbl = "fbl";
+    private static final String TAG = "Debugger ";
     Location mCurrentLocation;
-    LocationRequest mLocationRequest = LocationRequest.create();
+    //LocationRequest mLocationRequest = LocationRequest.create();
     Marker marker;
     EditText hour,min;
     EditText dollar,cent;
@@ -74,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     SimpleDateFormat simpleDateFormat;
     private DatabaseReference database;
     String UID="";
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    LocationRequest mLocationRequest;
 
 
 
@@ -89,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent1 = getIntent();           //Receive intent from Login Activity
         UID     = intent1.getStringExtra(FacebookLogin.UID);
 
+
         SupportMapFragment mapFragment =       //Load the fragment with the google map
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -97,6 +104,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         calendar = Calendar.getInstance();                  //get current time
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
 
@@ -115,24 +126,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onStop();
     }
 
-    @Override
-    public void onLocationChanged(Location location) {   //triggered after location change
-        mCurrentLocation = location;                     //stores current location
-        updateUI();                                      //will update UI accordingly
-    }
 
-
-    private void updateUI() {
-        latitude = mCurrentLocation.getLatitude();       //get the latitude
-        longitude = mCurrentLocation.getLongitude();     //get the longitude
-        place = new LatLng(latitude, longitude);  //initiate LatLng object
-        if (marker != null) {
-            marker.remove();                             //remove the previous marker on the map
-        }
-        marker = map.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true)); //add marker at new location
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));                                   //zoom on the location
-
-    }
 
     @Override
     protected void onPause() {
@@ -163,15 +157,37 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     protected void startLocationUpdates() {
+
+
         //you need to check first if you have permissions from user
         if (Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
+                //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         //if yes, request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {   //triggered after location change
+        mCurrentLocation = location;                     //stores current location
+        updateUI();                                      //will update UI accordingly
+    }
+
+    private void updateUI() {
+        Log.d(TAG, "yayy location updated !!!");
+        latitude = mCurrentLocation.getLatitude();       //get the latitude
+        longitude = mCurrentLocation.getLongitude();     //get the longitude
+        place = new LatLng(latitude, longitude);  //initiate LatLng object
+        if (marker != null) {
+            marker.remove();                             //remove the previous marker on the map
+        }
+        marker = map.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true)); //add marker at new location
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));                                   //zoom on the location
+
     }
 
 
