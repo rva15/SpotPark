@@ -36,12 +36,11 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-
         <activity
             android:name=".FacebookLogin"
             android:label="@string/app_name"
             android:noHistory="false"
-            android:windowSoftInputMode="adjustResize" >
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -50,18 +49,21 @@
         </activity>
         <activity
             android:name="com.facebook.FacebookActivity"
-            android:noHistory="false"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
+            android:noHistory="false"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
-        <activity android:name=".MainActivity"
-            android:noHistory="true"/>
+
+        <activity
+            android:name=".MainActivity"
+            android:noHistory="true" />
         <activity android:name=".CheckedIn" />
-
-
+        <activity android:name=".OptionsActivity" />
+        <activity android:name=".SearchActivity"></activity>
     </application>
 
 </manifest>
