@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //LocationRequest mLocationRequest = LocationRequest.create();
     Marker marker;
     EditText hour,min;
+    TimePicker timePicker;
     EditText dollar,cent;
     Calendar calendar;
     LatLng place;
@@ -126,8 +128,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         super.onStop();
     }
-
-
 
     @Override
     protected void onPause() {
@@ -222,21 +222,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void checkIn(View view) {
 
         //get all values from the textboxes
+        timePicker = (TimePicker) findViewById(R.id.timePicker);
 
-        hour = (EditText) findViewById(R.id.hour);
-        min = (EditText) findViewById(R.id.min);
         dollar = (EditText) findViewById(R.id.dollar);
         cent = (EditText) findViewById(R.id.cent);
         LatLng markerposition = marker.getPosition();
         markerlatitude = markerposition.latitude;
         markerlongitude = markerposition.longitude;
 
-
         //Time checkoutTime = new Time(Integer.parseInt(hour.getText().toString()),Integer.parseInt(min.getText().toString()));
         int dollars = toInt(dollar.getText().toString());
         int cents  = toInt(cent.getText().toString());
-        int hours  = toInt(hour.getText().toString());
-        int mins  = toInt(min.getText().toString());
+        int hours = timePicker.getCurrentHour();
+        int mins = timePicker.getCurrentMinute();
 
         if(inputerror){
             Toast.makeText(this,"Please enter Integer values",Toast.LENGTH_LONG).show();

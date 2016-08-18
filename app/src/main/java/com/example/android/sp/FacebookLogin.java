@@ -78,8 +78,6 @@ public class FacebookLogin extends AppCompatActivity
                     //if someone is already signed in, move on to main activity
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     goAhead(user.getUid());
-
-
                 } else {
                     // there is no one signed in
                     Log.d(TAG, "onAuthStateChanged:no user");
@@ -133,7 +131,7 @@ public class FacebookLogin extends AppCompatActivity
             @Override
             public void onError(FacebookException exception)
             {
-
+                Log.d(TAG, "Unable to login");
             }
         });
 
