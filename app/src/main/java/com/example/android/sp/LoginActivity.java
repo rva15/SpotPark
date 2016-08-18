@@ -29,7 +29,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.example.android.sp.User;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -109,7 +109,7 @@ public class LoginActivity extends AppCompatActivity
 
             }
         };
-        setContentView(R.layout.activity_facebook_login);  //setup the content view for the loginActivity
+        setContentView(R.layout.activity_login);  //setup the content view for the loginActivity
         login_button        = (LoginButton) findViewById(R.id.login_button);  //find facebook's login button
         username = (EditText) findViewById(R.id.username);                    //find username textbox
         password = (EditText) findViewById(R.id.password);                    //find password textbox

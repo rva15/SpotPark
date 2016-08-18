@@ -21,5 +21,6 @@
     <string name="could_not_login_signup">"Could not login/sign-up"</string>
     <string name="account_successfully_created">"Account Successfully Created"</string>
     <string name="facebook_app_id">1088141281275611</string>
+    <string name="title_activity_search">SearchActivity</string>
 
 </resources>
