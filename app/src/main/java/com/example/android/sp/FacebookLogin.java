@@ -142,7 +142,7 @@ public class FacebookLogin extends AppCompatActivity
 
     //go Ahead to Main Activity
     public void goAhead(String ID){
-        Intent intent = new Intent(FacebookLogin.this, MainActivity.class); //send Intent
+        Intent intent = new Intent(FacebookLogin.this, OptionsActivity.class); //send Intent
         intent.putExtra(UID,ID);
         startActivity(intent);
         Log.d(TAG, "onAuthStateChanged:going ahead");

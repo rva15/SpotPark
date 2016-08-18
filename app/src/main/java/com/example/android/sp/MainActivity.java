@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //Necessary global variable declarations
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
-    public  double latitude;
-    public  double longitude;
+    public  double curlatitude,markerlatitude;
+    public  double curlongitude,markerlongitude;
     float zoom = 16;
     public String checkinTime;
     public final static String EXTRA_MESSAGE = "com.example.android.";
@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     LocationRequest mLocationRequest;
+    boolean inputerror= false;
 
 
 
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
-        UID     = intent1.getStringExtra(FacebookLogin.UID);
+        UID     = intent1.getStringExtra(OptionsActivity.ID);
 
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
@@ -179,9 +180,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void updateUI() {
         Log.d(TAG, "yayy location updated !!!");
-        latitude = mCurrentLocation.getLatitude();       //get the latitude
-        longitude = mCurrentLocation.getLongitude();     //get the longitude
-        place = new LatLng(latitude, longitude);  //initiate LatLng object
+        curlatitude = mCurrentLocation.getLatitude();       //get the latitude
+        curlongitude = mCurrentLocation.getLongitude();     //get the longitude
+        place = new LatLng(curlatitude, curlongitude);  //initiate LatLng object
         if (marker != null) {
             marker.remove();                             //remove the previous marker on the map
         }
@@ -204,6 +205,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    public int toInt(String var){
+        try{
+            int i = Integer.parseInt(var.trim());
+            return i;
+        }
+
+        catch (NumberFormatException nfe){
+            inputerror = true;
+            return 0;
+        }
+
+    }
+
     //Called on clicking the checkout button
     public void checkIn(View view) {
 
@@ -213,31 +227,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         min = (EditText) findViewById(R.id.min);
         dollar = (EditText) findViewById(R.id.dollar);
         cent = (EditText) findViewById(R.id.cent);
+        LatLng markerposition = marker.getPosition();
+        markerlatitude = markerposition.latitude;
+        markerlongitude = markerposition.longitude;
+
 
         //Time checkoutTime = new Time(Integer.parseInt(hour.getText().toString()),Integer.parseInt(min.getText().toString()));
-        int dollars = Integer.parseInt(dollar.getText().toString());
-        int cents  = Integer.parseInt(cent.getText().toString());
+        int dollars = toInt(dollar.getText().toString());
+        int cents  = toInt(cent.getText().toString());
+        int hours  = toInt(hour.getText().toString());
+        int mins  = toInt(min.getText().toString());
 
+        if(inputerror){
+            Toast.makeText(this,"Please enter Integer values",Toast.LENGTH_LONG).show();
+            inputerror=false;
+        }
+        else {
+            database = FirebaseDatabase.getInstance().getReference();
+            checkinTime = simpleDateFormat.format(calendar.getTime());
+            String key = database.child("CheckIns").push().getKey();
+            CheckIn checkIn = new CheckIn(markerlatitude, markerlongitude, hours,
+                    mins, dollars, cents, UID, true);
+            Map<String, Object> checkInValues = checkIn.toMap();
+            HashMap<String, Object> checkInMap = new HashMap<>();
+            checkInMap.put("latitude", markerlatitude);
+            checkInMap.put("longitude", markerlongitude);
+            checkInMap.put("checkInTime", checkinTime);
 
-        database = FirebaseDatabase.getInstance().getReference();
-        checkinTime = simpleDateFormat.format(calendar.getTime());
-        String key = database.child("CheckIns").push().getKey();
-        CheckIn checkIn = new CheckIn(latitude,longitude,Integer.parseInt(hour.getText().toString()),
-                Integer.parseInt(min.getText().toString()),dollars,cents,UID,true);
-        Map<String, Object> checkInValues = checkIn.toMap();
-        HashMap<String, Object> checkInMap = new HashMap<>();
-        checkInMap.put("latitude", latitude);
-        checkInMap.put("longitude",longitude);
-        checkInMap.put("checkInTime", checkinTime );
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("/CheckIns/" + key, checkInMap);
+            childUpdates.put("/CheckInDetails/" + key, checkInValues);
+            database.updateChildren(childUpdates);
+            inputerror=false;
 
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/CheckIns/"+key,checkInMap);
-        childUpdates.put("/CheckInDetails/"+key,checkInValues);
-        database.updateChildren(childUpdates);
-
-        //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
-        //Intent intent = new Intent(this, CheckedIn.class);
-        //startActivity(intent);
+            //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
+            Intent intent = new Intent(this, CheckedIn.class);
+            startActivity(intent);
+        }
 
     }
 
