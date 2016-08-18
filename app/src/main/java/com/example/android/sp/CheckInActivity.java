@@ -49,6 +49,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import com.example.android.sp.CheckInKeys;
+import com.example.android.sp.CheckInDetails;
+
 
 
 public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
@@ -239,18 +242,22 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         else {
             database = FirebaseDatabase.getInstance().getReference();
             checkinTime = simpleDateFormat.format(calendar.getTime());
-            String key = database.child("CheckIns").push().getKey();
-            CheckIn checkIn = new CheckIn(markerlatitude, markerlongitude, hours,
-                    mins, dollars, cents, UID, true);
-            Map<String, Object> checkInValues = checkIn.toMap();
-            HashMap<String, Object> checkInMap = new HashMap<>();
-            checkInMap.put("latitude", markerlatitude);
-            checkInMap.put("longitude", markerlongitude);
-            checkInMap.put("checkInTime", checkinTime);
+
+            String key = database.child("CheckInKeys").push().getKey();
+            CheckInKeys checkInKeys = new CheckInKeys(markerlatitude,key);
+            Map<String, Object> checkInKeyMap = checkInKeys.toMap();
+
+            CheckInDetails checkInDetails = new CheckInDetails(markerlongitude,hours,mins,dollars,cents,UID,false);
+            Map<String, Object> checkInDetailsMap = checkInDetails.toMap();
+
+            String lon = Double.toString(markerlongitude);
+            lon = lon.replace(".","&");
+            Toast.makeText(this,lon,Toast.LENGTH_LONG).show();
 
             Map<String, Object> childUpdates = new HashMap<>();
-            childUpdates.put("/CheckIns/" + key, checkInMap);
-            childUpdates.put("/CheckInDetails/" + key, checkInValues);
+            childUpdates.put("/CheckInKeys/"+lon, checkInKeyMap);
+            childUpdates.put("/CheckInDetails/" + key, checkInDetailsMap);
+            childUpdates.put("/CheckInUsers/"+UID,key);
             database.updateChildren(childUpdates);
             inputerror=false;
 
