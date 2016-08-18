@@ -16,7 +16,7 @@ public class OptionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
-        UID     = intent1.getStringExtra(FacebookLogin.UID);
+        UID     = intent1.getStringExtra(LoginActivity.UID);
 
 
     }
@@ -31,7 +31,7 @@ public class OptionsActivity extends AppCompatActivity {
 
     public void checkin(View view){
         //Go to Main Activity
-        Intent intent = new Intent(this, MainActivity.class); //send Intent
+        Intent intent = new Intent(this, CheckInActivity.class); //send Intent
         intent.putExtra(ID,UID);
         startActivity(intent);
         this.finish();
