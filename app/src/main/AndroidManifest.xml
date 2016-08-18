@@ -37,7 +37,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".FacebookLogin"
+            android:name=".LoginActivity"
             android:label="@string/app_name"
             android:noHistory="false"
             android:windowSoftInputMode="adjustResize">
@@ -59,7 +59,7 @@
             android:value="@string/facebook_app_id" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".CheckInActivity"
             android:noHistory="true" />
         <activity android:name=".CheckedIn" />
         <activity android:name=".OptionsActivity" />

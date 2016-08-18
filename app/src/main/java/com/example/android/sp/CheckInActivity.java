@@ -54,7 +54,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
+public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
 
     //Necessary global variable declarations
     private GoogleMap map;
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void backtologin(View view){
         String message1 = "1";
 
-        Intent intent3 = new Intent(MainActivity.this, FacebookLogin.class);  //pass intent to login activity
+        Intent intent3 = new Intent(CheckInActivity.this, LoginActivity.class);  //pass intent to login activity
         intent3.putExtra(fbl,message1);                                       //put the boolean string into it
         startActivity(intent3);                                               //start login activity and kill itself
         finish();
