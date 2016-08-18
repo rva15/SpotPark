@@ -90,7 +90,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_CheckIn);
+        setContentView(R.layout.activity_checkin);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
         UID     = intent1.getStringExtra(OptionsActivity.ID);
 
