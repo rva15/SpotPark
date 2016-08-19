@@ -31,6 +31,8 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Comment;
 
+import java.util.Vector;
+
 
 public class SearchActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
 
@@ -48,6 +50,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     String UID="";
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
+    Vector latitudelist = new Vector(1000,1000);
 
 
     @Override
@@ -70,6 +73,9 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        Double d = new Double(26.234);
+        latitudelist.add(d);
+        Double s = (Double)latitudelist.elementAt(0);
     }
 
     @Override
@@ -143,27 +149,8 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true)); //add marker at new location
         searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 13)); //zoom on the location
         database = FirebaseDatabase.getInstance().getReference();
-        database.child("CheckIns").child("-KPPWyMQhdHN7UGPrDvu").child("latitude").addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Get user value
-                        //User user = dataSnapshot.getValue(User.class);
-
-                        Double l = dataSnapshot.getValue(Double.class);
-                        Log.w(TAG, "koi hai : " + l.toString() );
 
 
-
-                        // ...
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                }
-        );
 
         //com.google.firebase.database.Query getCheckIns = database.child("CheckIns").child("latitude").orderByValue();
         //getCheckIns.addChildEventListener(childEventListener);

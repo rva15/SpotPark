@@ -45,13 +45,12 @@ import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import com.example.android.sp.CheckInKeys;
-import com.example.android.sp.CheckInDetails;
-
 
 
 public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
@@ -217,6 +216,24 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
+    public String getLatLngCode(double lat, double lon){
+
+        lat = lat*100;
+        lon = lon*100;
+        int lat1 = (int)Math.round(lat);
+        int lon1 = (int)Math.round(lon);
+        String lons = Integer.toString(lon1);
+        String lats = Integer.toString(lat1);
+
+        if(lon1>=0){
+            lons = "+"+lons;
+        }
+        if(lat1>=0){
+            lats = "+"+lats;
+        }
+        return (lons+lats);
+    }
+
     //Called on clicking the checkout button
     public void checkIn(View view) {
 
@@ -240,22 +257,24 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             inputerror=false;
         }
         else {
+
             database = FirebaseDatabase.getInstance().getReference();
             checkinTime = simpleDateFormat.format(calendar.getTime());
+            String LatLngCode = getLatLngCode(markerlatitude,markerlongitude);
+            //String LatLngCode = getLatLngCode(12.234,11.54232);
+            Log.d(TAG, "LatLngCode : " + LatLngCode);
 
-            String key = database.child("CheckInKeys").push().getKey();
-            CheckInKeys checkInKeys = new CheckInKeys(markerlatitude,key);
-            Map<String, Object> checkInKeyMap = checkInKeys.toMap();
+            String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
 
-            CheckInDetails checkInDetails = new CheckInDetails(markerlongitude,hours,mins,dollars,cents,UID,false);
+            CheckInDetails checkInDetails = new CheckInDetails(markerlongitude,markerlatitude,hours,mins,dollars,cents,UID,false);
             Map<String, Object> checkInDetailsMap = checkInDetails.toMap();
 
-            String lon = Double.toString(markerlongitude);
+            /*String lon = Double.toString(markerlongitude);
             lon = lon.replace(".","&");
-            Toast.makeText(this,lon,Toast.LENGTH_LONG).show();
+            Toast.makeText(this,lon,Toast.LENGTH_LONG).show();*/
 
             Map<String, Object> childUpdates = new HashMap<>();
-            childUpdates.put("/CheckInKeys/"+lon, checkInKeyMap);
+            childUpdates.put("/CheckInKeys/"+LatLngCode, key);
             childUpdates.put("/CheckInDetails/" + key, checkInDetailsMap);
             childUpdates.put("/CheckInUsers/"+UID,key);
             database.updateChildren(childUpdates);

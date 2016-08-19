@@ -11,7 +11,7 @@ import java.util.Map;
 public class CheckInDetails {
     int checkouthours=0,checkoutmins=0;
     int dollars=0,cents=0;
-    double longitude=0.0;
+    double longitude=0.0,latitude=0.0;
     String ID = "";
     boolean readyToLeave=false;
 
@@ -20,9 +20,10 @@ public class CheckInDetails {
     public CheckInDetails(){}
 
 
-    public CheckInDetails(double longitude, int checkouthours,int checkoutmins,int dollars,int cents,String ID,boolean readyToLeave){
+    public CheckInDetails(double longitude,double latitude, int checkouthours,int checkoutmins,int dollars,int cents,String ID,boolean readyToLeave){
 
         this.longitude=longitude;
+        this.latitude = latitude;
         this.checkouthours=checkouthours;
         this.checkoutmins=checkoutmins;
         this.dollars=dollars;
@@ -33,6 +34,7 @@ public class CheckInDetails {
 
 
     public double   getLongitude(){return this.longitude;}
+    public double   getLatitude(){return this.latitude;}
     public int      getCheckouthours(){return this.checkouthours;}
     public int      getCheckoutmins(){return this.checkoutmins;}
     public int      getDollars(){return this.dollars;}
@@ -44,6 +46,7 @@ public class CheckInDetails {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("longitude",this.longitude);
+        result.put("latitude",this.latitude);
         result.put("checkOutHours",this.checkouthours);
         result.put("checkOutMins",this.checkoutmins);
         result.put("dollars",this.dollars);
