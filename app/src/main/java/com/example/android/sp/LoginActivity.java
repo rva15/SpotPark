@@ -6,7 +6,6 @@ package com.example.android.sp;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,7 +28,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -153,12 +151,12 @@ public class LoginActivity extends AppCompatActivity
         Log.d(TAG, "onAuthStateChanged:addNewUser");
         mDatabase = FirebaseDatabase.getInstance().getReference();
         String key = mDatabase.child("UserInformation").push().getKey();
-        User user = new User(userName,numberOfKeys,plateNumber);
+        /*CheckInUser user = new CheckInUser(userName,numberOfKeys,plateNumber);
         Map<String, Object> newUser = user.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);
-        mDatabase.updateChildren(childUpdates);
+        mDatabase.updateChildren(childUpdates);*/
 
     }
 
