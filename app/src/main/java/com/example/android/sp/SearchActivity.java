@@ -1,6 +1,5 @@
 package com.example.android.sp;
 
-//All the required imports
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -10,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.location.LocationListener;
@@ -28,15 +28,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.ValueEventListener;
-import com.example.android.sp.SpotFinder;
+
 import org.w3c.dom.Comment;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
 
 public class SearchActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
-    //declare required variables
+
     private GoogleMap searchmap;
     GoogleApiClient ApiClient;
     LocationRequest locationRequest;
@@ -49,18 +46,16 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     Marker marker;
     float zoom = 16;
     String UID="";
+    private DatabaseReference database;
     private static final String TAG = "Debugger ";
-    int i=0;
-    ArrayList<String> array = new ArrayList<String>();
 
 
-    //the onCreate Method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        Intent intent1 = getIntent();                       //Receive intent from Options Activity
-        UID     = intent1.getStringExtra(OptionsActivity.ID); //Receive user's unique ID
+        Intent intent1 = getIntent();           //Receive intent from Login Activity
+        UID     = intent1.getStringExtra(OptionsActivity.ID);
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.searchmap);
@@ -71,11 +66,10 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
                 .addApi(LocationServices.API)
                 .build();
 
-        locationRequest = new LocationRequest();        //request location updates
-        locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);//set them to periodically update
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
         locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
     }
 
     @Override
@@ -143,29 +137,48 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         latitude = currentLocation.getLatitude();       //get the latitude
         longitude = currentLocation.getLongitude();     //get the longitude
         place = new LatLng(latitude, longitude);  //initiate LatLng object
-        //when function is called first time, set a marker at the users location
-        if(i==0){
-            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true));
-            searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
+        if (marker != null) {
+            marker.remove();                             //remove the previous marker on the map
         }
-        i=i+1;
+        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true)); //add marker at new location
+        searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 13)); //zoom on the location
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("CheckIns").child("-KPPWyMQhdHN7UGPrDvu").child("latitude").addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // Get user value
+                        //User user = dataSnapshot.getValue(User.class);
 
-        SpotFinder finder = new SpotFinder(latitude,longitude,searchmap); //declare the SpotFinder and pass it user's location and searchmap
-        finder.addListener();   //call its addListener method
+                        Double l = dataSnapshot.getValue(Double.class);
+                        Log.w(TAG, "koi hai : " + l.toString() );
+
+
+
+                        // ...
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
+
+        //com.google.firebase.database.Query getCheckIns = database.child("CheckIns").child("latitude").orderByValue();
+        //getCheckIns.addChildEventListener(childEventListener);
 
     }
-
-
 
     @Override
     public void onConnectionSuspended(int x){
         //notify user of lost connection
-        Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT);  //notify user when connection is suspended
+        Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        searchmap = googleMap;               //when GoogleMap is ready, put it into the existing map object
+        searchmap = googleMap;  //when GoogleMap is ready, put it into the existing map object
     }
 
 }
