@@ -15,7 +15,7 @@ public class CheckedIn extends AppCompatActivity {
         setContentView(R.layout.activity_checked_in);
 
 
-        Intent intent = getIntent();
+        Intent intentfromcheckin = getIntent();
         //String text = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
 
 
