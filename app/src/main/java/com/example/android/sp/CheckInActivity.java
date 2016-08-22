@@ -17,11 +17,14 @@ package com.example.android.sp;
  * limitations under the License.
  */
 //All the imports
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,6 +49,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import com.example.android.sp.LocationService;
 
 
 public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleMap.OnMarkerDragListener{
@@ -76,6 +80,8 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     boolean inputerror= false;
     int i=0;
     LatLng markerposition;
+    LocationService mService;
+    boolean mBound = false;
 
 
 
@@ -255,8 +261,12 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             inputerror=false;
 
             //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
+
+            Intent i= new Intent(this, LocationService.class);
+            this.startService(i);
             Intent intent = new Intent(this, CheckedIn.class);
             startActivity(intent);
+
         }
 
     }
@@ -303,4 +313,24 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         finish();
 
     }
+
+    /*private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get
+            // LocalService instance
+            LocationService.LocalBinder binder = (LocationService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };*/
+
+
 }
