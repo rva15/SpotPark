@@ -42,6 +42,12 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -305,4 +311,6 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         finish();
 
     }
+
+
 }
