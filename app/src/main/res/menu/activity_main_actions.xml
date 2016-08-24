@@ -21,13 +21,12 @@
 
     <!-- Help -->
     <item android:id="@+id/action_help"
-        android:icon="@mipmap/ic_launcher"
         android:title="@string/action_help"
         app:showAsAction="never"/>
 
     <!-- Check updates -->
-    <item android:id="@+id/action_check_updates"
-        android:icon="@mipmap/ic_launcher"
-        android:title="@string/action_check_updates"
+    <!--TODO: Doesn't work -->
+    <item android:id="@+id/logout"
+        android:title="@string/logout"
         app:showAsAction="never"/>
 </menu>
