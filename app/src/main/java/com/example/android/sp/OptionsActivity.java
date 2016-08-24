@@ -4,6 +4,8 @@ package com.example.android.sp;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.util.Log;
 
@@ -19,6 +21,14 @@ public class OptionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_options);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
         UID     = intent1.getStringExtra(LoginActivity.UID);    //get user's unique ID
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_actions, menu);
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     public void search(View view){
