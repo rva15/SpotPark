@@ -349,7 +349,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         String sensor = "sensor=false";
 
         //Api key
-        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+        String key = "AIzaSyCDd6CQylKpMorda6lB75UchEgtRRoX_hA";
 
         // Building the parameters to the web service
         String parameters = str_origin + "&" + str_dest + "&key=";

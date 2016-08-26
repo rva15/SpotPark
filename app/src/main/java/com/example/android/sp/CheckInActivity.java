@@ -24,7 +24,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -101,9 +106,14 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken("283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
         mGoogleApiClient = new GoogleApiClient.Builder(this)   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
         mLocationRequest = new LocationRequest();            // Create location request
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
@@ -314,7 +324,13 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     //gets called on pressing the logout button
     public void backtologin(View view){
         String message1 = "1";
-
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Log.d(TAG,"google signed out");
+                    }
+                });
         Intent intent3 = new Intent(CheckInActivity.this, LoginActivity.class);  //pass intent to login activity
         intent3.putExtra(fbl,message1);                                       //put the boolean string into it
         startActivity(intent3);                                               //start login activity and kill itself
