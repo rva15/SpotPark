@@ -9,30 +9,30 @@ import java.util.Map;
  */
 public class CheckInUser {
 
-    public String LatLngCode;
+    public String latlngcode;
     public String key;
 
     public CheckInUser() {
         // Default constructor required for calls to DataSnapshot.getValue(com.example.android.sp.CheckInUser.class)
     }
 
-    public CheckInUser(String LatLngCode, String key) {
-        this.LatLngCode     = LatLngCode;
+    public CheckInUser(String latlngcode, String key) {
+        this.latlngcode     = latlngcode;
         this.key    = key;
 
     }
 
-    public String getLatLngCode(){
-        return this.LatLngCode;
+    public String getlatlngcode(){
+        return this.latlngcode;
     }
-    public String getKey(){
+    public String getkey(){
         return this.key;
     }
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("LatLngCode", LatLngCode);
+        result.put("latlngcode", latlngcode);
         result.put("key", key);
 
         return result;

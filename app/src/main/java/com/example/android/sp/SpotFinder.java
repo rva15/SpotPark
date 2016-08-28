@@ -59,11 +59,13 @@ public class SpotFinder {
         for(int i=0;i<3;i++){
             for(int j=0;j<3;j++){
                 array.add(this.getCode(latarray[i],lonarray[j]));           //get LatLngCodes for all 9points and store them in an array
+                Log.d(TAG,"LatLng Code " + this.getCode(latarray[i],lonarray[j]));
             }
         }
 
         for(int k=0;k<9;k++){
             database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listeners to corresponding nodes in the database
+            Log.d(TAG,"adding listener to "+array.get(k));
         }
 
     }
@@ -75,7 +77,8 @@ public class SpotFinder {
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG, "somesh : " + dataSnapshot.getKey() );
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);  //retrieve a snapshot from the node and store it in CheckInDetails.class
-
+            Log.d(TAG,"added listener " + Double.toString(details.getlatitude()));
+            Log.d(TAG,"added listener " + Double.toString(details.getlongitude()));
             spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
             //add a blue marker at the spot
             spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));

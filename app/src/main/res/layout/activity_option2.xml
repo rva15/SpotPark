@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.android.sp.OptionsActivity">
+
+
+    <Button
+        android:id="@+id/navigate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="navigate"
+        android:text="Navigate to Car"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+    <Button
+        android:id="@+id/search2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="search"
+        android:text="Search for Spot"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+
+    <Button
+        android:id="@+id/report2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="report"
+        android:text="Report Free Parking"
+        />
+
+
+</LinearLayout>

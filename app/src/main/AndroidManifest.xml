@@ -9,9 +9,9 @@
     -->
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
@@ -68,11 +68,15 @@
         <activity android:name=".OptionsActivity" />
         <activity android:name=".SearchActivity" />
 
+        <receiver android:name=".NotificationPublisher" />
+
         <service
             android:name=".LocationService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
 
+        <activity android:name=".NavigationActivity" />
+        <activity android:name=".OptionActivity2"></activity>
     </application>
 
 </manifest>

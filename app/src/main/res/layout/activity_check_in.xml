@@ -14,93 +14,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical" >
-
-    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/map"
+    
+    
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_weight="4"
         android:layout_height="0dp"
-        class="com.google.android.gms.maps.SupportMapFragment" />
+        android:layout_weight="4">
 
-    <LinearLayout
+        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            class="com.google.android.gms.maps.SupportMapFragment" />
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/marker"
+            android:onClick="showCheckInDialog"
+            />
+
+    </RelativeLayout>
+
+    <Button
+        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_weight="3"
         android:layout_height="0dp"
-        android:orientation="vertical">
+        android:text="Logout"
+        android:onClick="backtologin"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="2">
-
-            <TimePicker
-                android:id="@+id/timePicker"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="3"
-                android:timePickerMode="spinner"
-                />
-
-            <!--<LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:orientation="vertical"
-                android:layout_weight="2">-->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="$"
-                android:layout_weight="1"/>
-            <!--<LinearLayout
-                 android:layout_width="match_parent"
-                 android:layout_height="wrap_content"
-                 android:layout_weight="1"
-                 android:orientation="horizontal">-->
-            <EditText
-                android:id="@+id/dollar"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                />
-            <EditText
-                android:id="@+id/cent"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="2"
-                />
-            <!--</LinearLayout>
-        </LinearLayout>-->
-
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="0">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <Button
-                    android:layout_weight="3"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="CheckIn"
-                    android:onClick="checkIn"/>
-
-                <Button
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:text="Logout"
-                    android:onClick="backtologin"/>
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </LinearLayout>
 
 </LinearLayout>

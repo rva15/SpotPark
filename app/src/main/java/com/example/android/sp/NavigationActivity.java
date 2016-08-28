@@ -1,6 +1,5 @@
 package com.example.android.sp;
 
-//All the required imports
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -13,6 +12,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.widget.Toast;
+
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.location.LocationListener;
@@ -22,20 +23,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.ValueEventListener;
-import com.example.android.sp.SpotFinder;
 
 import org.json.JSONObject;
-import org.w3c.dom.Comment;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,49 +44,44 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 
-
-public class SearchActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
-    //declare required variables
-    private GoogleMap searchmap;
-    GoogleApiClient ApiClient;
-    LocationRequest locationRequest;
+public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, LocationListener {
+    String UID="";
+    GoogleApiClient mGoogleApiClient;
+    LocationRequest mLocationRequest;
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    Location currentLocation;
-    double latitude,longitude;
+    Location mCurrentLocation;
+    double latitude,longitude,carlatitude,carlongitude;
     LatLng place;
+    int i = 0;
     Marker marker;
-    float zoom = 16;
-    String UID="";
+    GoogleMap navigationmap;
+    private DatabaseReference database;
     private static final String TAG = "Debugger ";
-    int i=0;
-    ArrayList<String> array = new ArrayList<String>();
+    String latlngcode="",key="";
 
-
-    //the onCreate Method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search);
-        Intent intentfromoptions = getIntent();                       //Receive intent from Options Activity
-        UID     = intentfromoptions.getStringExtra(OptionsActivity.ID); //Receive user's unique ID
+        setContentView(R.layout.activity_navigation);
+        Intent navigateintent = getIntent();
+        UID     = navigateintent.getStringExtra("user_id");
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
-                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.searchmap);
+                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.navigationmap);
         mapFragment.getMapAsync(this);
 
-        ApiClient = new GoogleApiClient.Builder(this)   //GoogleApiClient object initialization
+        mGoogleApiClient = new GoogleApiClient.Builder(this)   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
+        mLocationRequest = new LocationRequest();            // Create location request
+        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        locationRequest = new LocationRequest();        //request location updates
-        locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);//set them to periodically update
-        locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
     }
 
@@ -101,13 +95,13 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     protected void onStart(){
-        ApiClient.connect();      //onStart of the activity, connect apiclient
+        mGoogleApiClient.connect();      //onStart of the activity, connect apiclient
         super.onStart();
     }
 
     @Override
     protected void onStop() {
-        ApiClient.disconnect();  //disconnect apiclient on stop
+        mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         super.onStop();
     }
 
@@ -119,17 +113,16 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
-                ApiClient, this);
+                mGoogleApiClient, this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (ApiClient.isConnected()) {    //start location updates once apiclient is connected
+        if (mGoogleApiClient.isConnected()) {    //start location updates once apiclient is connected
             startLocationUpdates();
         }
     }
-
 
     @Override
     public void onConnected(Bundle connectionHint) {
@@ -138,8 +131,8 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
     }
 
-    protected void startLocationUpdates() {
 
+    protected void startLocationUpdates() {
 
         //you need to check first if you have permissions from user
         if (Build.VERSION.SDK_INT >= 23 &&
@@ -149,42 +142,38 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         }
         //if yes, request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(
-                ApiClient, locationRequest, this);
+                mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
 
     }
 
     @Override
     public void onLocationChanged(Location location) {   //triggered after location change
-        currentLocation = location;                     //stores current location
+        mCurrentLocation = location;                     //stores current location
         updateUI();                                      //will update UI accordingly
     }
 
     private void updateUI() {
 
-        latitude = currentLocation.getLatitude();       //get the latitude
-        longitude = currentLocation.getLongitude();     //get the longitude
+        latitude = mCurrentLocation.getLatitude();       //get the latitude
+        longitude = mCurrentLocation.getLongitude();     //get the longitude
         place = new LatLng(latitude, longitude);  //initiate LatLng object
         //when function is called first time, set a marker at the users location
-        if(i==0){
-            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));
-            searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
-            LatLng origin = new LatLng(latitude,longitude);
-            LatLng dest = new LatLng(40.5279534271587,-74.4646624848246);
-            String url = getUrl(origin, dest);
-            Log.d("onMapClick", url.toString());
-            //FetchUrl FetchUrl = new FetchUrl();
-            //FetchUrl.execute(url);
-            searchmap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-            //searchmap.animateCamera(CameraUpdateFactory.zoomTo(16));
+
+        if(marker!=null){
+            marker.remove();
+        }
+
+        marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here"));
+
+        if(i==0) {
+            navigationmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
+            getcarLocation(UID);
         }
         i=i+1;
 
-        SpotFinder finder = new SpotFinder(latitude,longitude,searchmap); //declare the SpotFinder and pass it user's location and searchmap
-        finder.addListener();   //call its addListener method
+
 
     }
-
-
 
     @Override
     public void onConnectionSuspended(int x){
@@ -194,7 +183,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        searchmap = googleMap;               //when GoogleMap is ready, put it into the existing map object
+        navigationmap = googleMap;               //when GoogleMap is ready, put it into the existing map object
     }
 
     private class FetchUrl extends AsyncTask<String, Void, String> {
@@ -328,7 +317,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
             // Drawing polyline in the Google Map for the i-th route
             if(lineOptions != null) {
-                searchmap.addPolyline(lineOptions);
+                navigationmap.addPolyline(lineOptions);
             }
             else {
                 Log.d("onPostExecute","without Polylines drawn");
@@ -364,8 +353,89 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         return url;
     }
 
+    public void getcarLocation(String id){
+        Log.d(TAG,"user id is :"+id);
+        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+        com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
+        getcheckin.addChildEventListener(listener1);
+
+    }
+
+    //define the ChildEventListener
+    ChildEventListener listener1 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG,"detected something");
+            CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
+            latlngcode = user.getlatlngcode();
+            key = user.getkey();
+
+            com.google.firebase.database.Query getlocation = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
+            getlocation.addChildEventListener(listener2);
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
 
+    ChildEventListener listener2 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
+            carlatitude = details.getlatitude();
+            carlongitude = details.getlongitude();
+            drawroute(carlatitude,carlongitude);
+            Log.d(TAG,"detected location "+Double.toString(carlatitude));
+        }
 
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    public void drawroute(double carlatitude,double carlongitude){
+        LatLng origin = new LatLng(latitude, longitude);
+        LatLng dest = new LatLng(carlatitude, carlongitude);
+        navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        String url = getUrl(origin, dest);
+        FetchUrl FetchUrl = new FetchUrl();
+        FetchUrl.execute(url);
+
+    }
 
 }

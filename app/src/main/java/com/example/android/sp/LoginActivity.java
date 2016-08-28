@@ -24,6 +24,7 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -38,11 +39,15 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.example.android.sp.SignupDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener,SignupDialog.SignupDialogListener
@@ -57,10 +62,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private FirebaseAuth.AuthStateListener mAuthListener,newAccountListener;
     private static final String TAG = "Sign in debug ";
     public final static String UID="";
+    String userid="";
     String logoutFlag = "0";
     GoogleApiClient mGoogleApiClient;
     public String firstname="",email="",lastname="",platenumber="";
-    int numberOfKeys=0;
+    int numberOfKeys=0,count=0;
+    DatabaseReference database;
+    boolean isCheckedIn=false;
 
 
     //onCreate method
@@ -106,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     //if someone is already signed in, move on to main activity
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     addNewUser(user.getUid());
-                    goAhead(user.getUid());
+                    checkStatus(user.getUid());
                 } else {
                     // there is no one signed in
                     Log.d(TAG, "onAuthStateChanged:no user");
@@ -125,7 +133,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     //account created, add user to firebase
                     Log.d(TAG, "onAuthStateChanged:acc created" + user.getUid());
                     addNewUser(user.getUid());
-                    goAhead(user.getUid());
+                    checkStatus(user.getUid());
 
 
                 } else {
@@ -190,11 +198,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     //go Ahead to Main Activity
     public void goAhead(String ID){
-        Intent intent = new Intent(LoginActivity.this, OptionsActivity.class); //send Intent
-        intent.putExtra(UID,ID);
-        startActivity(intent);
-        Log.d(TAG, "onAuthStateChanged:going ahead");
-        this.finish();                                                      //destroy login activity
+        checkStatus(ID);
+        if(isCheckedIn){
+            Intent intent = new Intent(LoginActivity.this, OptionActivity2.class); //send Intent
+            intent.putExtra(UID,ID);
+            startActivity(intent);
+            Log.d(TAG, "onAuthStateChanged:going ahead");
+            this.finish();                                                      //destroy login activity
+        }
+        else{
+            Intent intent = new Intent(LoginActivity.this, OptionsActivity.class); //send Intent
+            intent.putExtra(UID,ID);
+            startActivity(intent);
+            Log.d(TAG, "onAuthStateChanged:going ahead");
+            this.finish();                                                      //destroy login activity
+        }
 
     }
 
@@ -437,6 +455,45 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // ...
                     }
                 });
+    }
+
+    public void checkStatus(String UID){
+        showLoading();
+        userid = UID;
+        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+        //com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
+        //getcheckin.addChildEventListener(listener1);
+
+        ValueEventListener valuelistener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(count==0) {
+                    if (dataSnapshot.exists()) {
+                        Log.d(TAG, "exists");
+                        isCheckedIn=true;
+
+                    }
+                    else if(!dataSnapshot.exists()){
+                        Log.d(TAG, "not exists");
+                        isCheckedIn=false;
+
+                    }
+                    goAhead(userid);
+                }
+                count=count+1;
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+
+            }
+        };
+        database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener);
+
     }
 
 }

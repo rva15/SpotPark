@@ -17,11 +17,19 @@ package com.example.android.sp;
  * limitations under the License.
  */
 //All the imports
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.Dialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
@@ -37,58 +45,66 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RemoteViews;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import android.support.v4.app.NotificationCompat;
+
+import org.json.JSONObject;
 
 
-public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleMap.OnMarkerDragListener{
+public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,CheckInDialog.CheckInDialogListener{
 
     //Necessary global variable declarations
     private GoogleMap map;
     private GoogleApiClient mGoogleApiClient;
-    public  double curlatitude,markerlatitude;
-    public  double curlongitude,markerlongitude;
+    public  double curlatitude;
+    public  double curlongitude;
     float zoom = 16;
     public String checkinTime;
     public final static String EXTRA_MESSAGE = "com.example.android.";
     public final static String fbl = "fbl";
     private static final String TAG = "Debugger ";
     Location mCurrentLocation;
-    Marker marker;
     TimePicker timePicker;
-    EditText dollar,cent;
+    EditText rate;
     Calendar calendar;
     LatLng place;
     SimpleDateFormat simpleDateFormat;
     private DatabaseReference database;
-    String UID="";
+    String UID="",navigate;
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     LocationRequest mLocationRequest;
     boolean inputerror= false;
     int i=0;
-    LatLng markerposition;
+    double hours,mins,dollars,cents,checkinhour,checkinmin;
+    public static String PACKAGE_NAME;
+    String startedfrom;
 
 
 
@@ -100,6 +116,9 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         setContentView(R.layout.activity_check_in);
         Intent intent1 = getIntent();           //Receive intent from Options Activity
         UID     = intent1.getStringExtra(OptionsActivity.ID); //Receive logged in user's unique ID
+
+        String startedfrom= intent1.getStringExtra("started_from");
+        Log.d(TAG,"startedfrom :"+startedfrom);
 
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
@@ -121,6 +140,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         calendar = Calendar.getInstance();                    //get current time
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");  //and set its format
+        PACKAGE_NAME = getApplicationContext().getPackageName();
 
 
     }
@@ -200,12 +220,17 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         place = new LatLng(curlatitude, curlongitude);  //initiate LatLng object
         //first time this method is called, put a marker on user's location and zoom in on it
         if(i==0){
-            marker = map.addMarker(new MarkerOptions().position(place).title("You're here").draggable(true)); //enable marker dragging
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));                                   //zoom on the location
-            markerposition = place;                 //default marker position
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
         }
         i=i+1;
-
+        if(false){
+            Log.d(TAG,"navigating");
+            LatLng origin = new LatLng(curlatitude,curlongitude);
+            LatLng dest = new LatLng(40.5279534271587,-74.4646624848246);
+            String url = getUrl(origin, dest);
+            FetchUrl FetchUrl = new FetchUrl();
+            FetchUrl.execute(url);
+        }
     }
 
 
@@ -219,57 +244,62 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;                    //when GoogleMap is ready, put it into the existing map object
-        map.setOnMarkerDragListener(this);  //set the on marker drag listener to the map
+
+    }
+
+
+    public void showCheckInDialog(View v) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new CheckInDialog();
+        dialog.show(getSupportFragmentManager(),"CheckIn fragment");
 
     }
 
     @Override
-    public void onMarkerDrag(Marker marker){
-        //Do nothing
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        Dialog dialogView = dialog.getDialog();
+        rate = (EditText) dialogView.findViewById(R.id.rate);
+        timePicker = (TimePicker) dialogView.findViewById(R.id.time);
+        Double rph = toDouble(rate.getText().toString());
+        dollars =  Math.floor(rph);
+        cents = (100*(rph - Math.floor(rph)));
+        hours = (double)timePicker.getCurrentHour();
+        mins = (double) timePicker.getCurrentMinute();
+        checkIn();
+
     }
 
     @Override
-    public void onMarkerDragEnd(Marker marker){
-        markerposition = marker.getPosition();    //update the markerposition to marker's position at the end of marker drag
-    }
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
 
-    @Override
-    public void onMarkerDragStart(Marker arg0) {
-        // nothing
     }
-
 
     //Called on clicking the checkout button
-    public void checkIn(View view) {
+    public void checkIn() {
 
-        //get all values from the textboxes
-        timePicker = (TimePicker) findViewById(R.id.timePicker);
-        dollar = (EditText) findViewById(R.id.dollar);
-        cent = (EditText) findViewById(R.id.cent);
-        //get the current postition of marker
-        markerlatitude = markerposition.latitude;
-        markerlongitude = markerposition.longitude;
 
-        //convert all variables input by user to doubles
-        double dollars = Double.parseDouble(dollar.getText().toString());
-        double cents  = Double.parseDouble(cent.getText().toString());
-        double hours = timePicker.getCurrentHour();
-        double mins = timePicker.getCurrentMinute();
 
         if(inputerror){
-            Toast.makeText(this,"Please enter Integer values",Toast.LENGTH_LONG).show();  //not used currently
+            Toast.makeText(this,"Please enter correct rate",Toast.LENGTH_LONG).show();  //not used currently
             inputerror=false;
         }
         else {
 
+            CameraPosition position = map.getCameraPosition();
+            LatLng cameracenter = position.target;
             database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
             checkinTime = simpleDateFormat.format(calendar.getTime());  //get the checkin time
-            String LatLngCode = getLatLngCode(markerlatitude,markerlongitude);  //convert the checkin location to its LatLngCode
+            String[] timearray = checkinTime.split(":");
+            checkinhour = Double.parseDouble(timearray[0]);
+            checkinmin = Double.parseDouble(timearray[1]);
+            String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
             Log.d(TAG, "LatLngCode : " + LatLngCode);
 
             String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into the database and get its key
             //construct the CheckInDetails object
-            CheckInDetails checkInDetails = new CheckInDetails(markerlongitude,markerlatitude,hours,mins,dollars,cents,UID,false);
+            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,false);
             Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
             CheckInUser user = new CheckInUser(LatLngCode,key);            // construct the CheckInUser object
             Map<String, Object> userMap = user.toMap();                    //call its toMap method
@@ -281,23 +311,196 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             inputerror=false;
 
             //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
-            Intent servIntent = new Intent(this,LocationService.class);
-            startService(servIntent);
+            //Intent servIntent = new Intent(this,LocationService.class);
+            //startService(servIntent);
+            int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;
+            if (delay<0){
+                Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();
+                return;
+            }
+            scheduleNotification(getNotification(),delay);
             Intent intent = new Intent(this, CheckedIn.class);
             startActivity(intent);
         }
 
     }
 
-    public int toInt(String var){                                   //currently unused function
+    private class FetchUrl extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try {
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+                Log.d("Background Task data", data.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+
+        }
+    }
+
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        java.io.InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+            data = sb.toString();
+            Log.d("downloadUrl", data.toString());
+            br.close();
+
+        } catch (Exception e) {
+            Log.d("Exception", e.toString());
+        } finally {
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                Log.d("ParserTask",jsonData[0].toString());
+                DataParser parser = new DataParser();
+                Log.d("ParserTask", parser.toString());
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+                Log.d("ParserTask","Executing routes");
+                Log.d("ParserTask",routes.toString());
+
+            } catch (Exception e) {
+                Log.d("ParserTask",e.toString());
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points;
+            PolylineOptions lineOptions = null;
+
+            // Traversing through all the routes
+            for (int i = 0; i < result.size(); i++) {
+                points = new ArrayList<>();
+                lineOptions = new PolylineOptions();
+
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+
+                // Adding all the points in the route to LineOptions
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(android.graphics.Color.RED);
+
+                Log.d("onPostExecute","onPostExecute lineoptions decoded");
+
+            }
+
+            // Drawing polyline in the Google Map for the i-th route
+            if(lineOptions != null) {
+                map.addPolyline(lineOptions);
+            }
+            else {
+                Log.d("onPostExecute","without Polylines drawn");
+            }
+        }
+    }
+
+    private String getUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        //Api key
+        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&key=";
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +key;
+
+
+        return url;
+    }
+
+    public Double toDouble(String var){                                   //currently unused function
         try{
-            int i = Integer.parseInt(var.trim());
+            Double i = Double.parseDouble(var.trim());
             return i;
         }
 
         catch (NumberFormatException nfe){
             inputerror = true;
-            return 0;
+            return 0.;
         }
 
     }
@@ -319,6 +522,49 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             lats = "+"+lats;
         }
         return (lons+lats);
+    }
+
+    private void scheduleNotification(Notification notification, int delay) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
+    private Notification getNotification() {
+
+        Intent navigate = new Intent(this, NavigationActivity.class);
+        navigate.putExtra("user_id",UID);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, 0);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.icon);
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Parking Ticket expires in 15min !");
+        builder.addAction(accept);
+
+
+        return builder.build();
+    }
+
+    public double getDelay(double checkinhour,double checkinmin,double checkouthour,double checkoutmin){
+        double comins;
+        double cimins;
+        double mindelay=0.;
+        cimins = checkinhour*60 + checkinmin;
+        comins = checkouthour*60 + checkoutmin;
+        if(comins>=cimins){
+            mindelay = comins - cimins;
+        }
+        if(comins<cimins){
+            mindelay = (24*60-cimins)+comins;
+        }
+        return (mindelay*60*1000);
     }
 
     //gets called on pressing the logout button
