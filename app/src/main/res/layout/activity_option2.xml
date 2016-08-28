@@ -23,6 +23,17 @@
         android:layout_height="16dp" />
 
     <Button
+        android:id="@+id/delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="delete"
+        android:text="Delete Your Checkin"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+    <Button
         android:id="@+id/search2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
