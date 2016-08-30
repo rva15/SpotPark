@@ -12,14 +12,14 @@ public class CheckInDetails {
     double dollars=0,cents=0;
     double longitude=0.0,latitude=0.0;
     String id = "";
-    boolean readytoleave=false;
+    int minstoleave = 0;
 
 
 
     public CheckInDetails(){}
 
 
-    public CheckInDetails(double latitude,double longitude, double checkouthours,double checkoutmins,double dollars,double cents,String id,boolean readytoleave){
+    public CheckInDetails(double latitude,double longitude, double checkouthours,double checkoutmins,double dollars,double cents,String id,int minstoleave){
 
         this.longitude=longitude;
         this.latitude = latitude;
@@ -28,7 +28,7 @@ public class CheckInDetails {
         this.dollars=dollars;
         this.cents=cents;
         this.id=id;
-        this.readytoleave=readytoleave;
+        this.minstoleave=minstoleave;
     }
 
 
@@ -39,7 +39,7 @@ public class CheckInDetails {
     public double      getdollars(){return this.dollars;}
     public double      getcents(){return this.cents;}
     public String   getid(){return this.id;}
-    public boolean  getreadytoleave(){return this.readytoleave;}
+    public int  getminstoleave(){return this.minstoleave;}
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -51,7 +51,7 @@ public class CheckInDetails {
         result.put("dollars",this.dollars);
         result.put("cents",this.cents);
         result.put("id",this.id);
-        result.put("readytoleave",this.readytoleave);
+        result.put("minstoleave",this.minstoleave);
 
         return result;
     }

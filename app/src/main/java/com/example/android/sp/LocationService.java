@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,10 +19,18 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 import java.lang.Math;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.example.android.sp.WalkTime;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by ruturaj on 8/21/16.
@@ -33,13 +42,19 @@ public class LocationService extends android.app.Service{
     public NotificationManager mNM;
     private int NOTIFICATION = 1;
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 10000;
+    private static final int LOCATION_INTERVAL = 15000;
     private static final float LOCATION_DISTANCE = 0;
-    int count = 0;
+    int count = 0,i=0;
+    String UID ="",key="";
+    public DatabaseReference database;
+    private ExampleDBHelper dbHelper;
+    Double carlat,carlon;
+
 
     //onCreate method
     @Override
     public void onCreate(){
+        Log.d(TAG, "running service");
 
         initializeLocationManager();
         try {
@@ -70,7 +85,7 @@ public class LocationService extends android.app.Service{
 
         mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         /*showNotification();
-        Log.d(TAG, "running service");
+
         stopSelf();*/
     }
 
@@ -78,6 +93,7 @@ public class LocationService extends android.app.Service{
         Log.e(TAG, "initializeLocationManager");
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
         }
     }
 
@@ -104,6 +120,16 @@ public class LocationService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+        dbHelper = new ExampleDBHelper(this);
+        Cursor res = dbHelper.getInfo();
+        res.moveToFirst();
+        UID = res.getString(res.getColumnIndex("_id"));
+        carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
+        carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+
+        Log.d(TAG,"Location Service params " + key);
+        Log.d(TAG,"Location Service params " + carlat.toString());
+        Log.d(TAG,"Location Service params" + carlon.toString());
         return START_STICKY;
     }
 
@@ -112,7 +138,7 @@ public class LocationService extends android.app.Service{
         //PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                // new Intent(this, LoginActivity.class), 0);
 
-        Notification notification = new Notification.Builder(this)
+        /*Notification notification = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.icon)  // the status icon
                 .setTicker("you are in the zone!")  // the status text
                 .setWhen(System.currentTimeMillis())  // the time stamp
@@ -120,7 +146,7 @@ public class LocationService extends android.app.Service{
                 .setContentText("you are in the zone!")  // the contents of the entry
                 .build();
 
-        mNM.notify(NOTIFICATION, notification);
+        mNM.notify(NOTIFICATION, notification);*/
 
 
     }
@@ -138,19 +164,22 @@ public class LocationService extends android.app.Service{
         @Override
         public void onLocationChanged(Location location)
         {
+            Log.d(TAG,"this shit fired");
+
             double lat = location.getLatitude();
             double lon = location.getLongitude();
+
+            if (count < 10) {
+                WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
+                walkTime.getWalkTime();
+            }
+            count = count + 1;
             Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
             mLastLocation.set(location);
-            double clat = lat*100;
-            double clon = lon*100;
-            if(Math.abs(clat - 4052)<1 && Math.abs(clon +7446)<1){
-                showNotification();
-                Log.e(TAG,"you are in the zone!");
-                stopSelf();
-            }
+
 
         }
+
 
         @Override
         public void onProviderDisabled(String provider)

@@ -1,5 +1,7 @@
 package com.example.android.sp;
 
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -44,6 +46,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import com.example.android.sp.NotificationPublisher;
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, LocationListener {
     String UID="";
@@ -61,9 +64,13 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
     String latlngcode="",key="";
+    public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.cancel(1);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Intent navigateintent = getIntent();

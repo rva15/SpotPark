@@ -24,6 +24,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -56,7 +57,7 @@ import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
+import android.database.sqlite.SQLiteOpenHelper;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -72,6 +73,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import android.support.v4.app.NotificationCompat;
+import android.database.sqlite.SQLiteDatabase;
+import com.example.android.sp.ExampleDBHelper;
 
 import org.json.JSONObject;
 
@@ -80,6 +83,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
     //Necessary global variable declarations
     private GoogleMap map;
+    private ExampleDBHelper dbHelper ;
     private GoogleApiClient mGoogleApiClient;
     public  double curlatitude;
     public  double curlongitude;
@@ -105,6 +109,8 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     double hours,mins,dollars,cents,checkinhour,checkinmin;
     public static String PACKAGE_NAME;
     String startedfrom;
+    CameraPosition position;
+    LatLng cameracenter;
 
 
 
@@ -141,6 +147,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         calendar = Calendar.getInstance();                    //get current time
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");  //and set its format
         PACKAGE_NAME = getApplicationContext().getPackageName();
+
 
 
     }
@@ -223,14 +230,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
         }
         i=i+1;
-        if(false){
-            Log.d(TAG,"navigating");
-            LatLng origin = new LatLng(curlatitude,curlongitude);
-            LatLng dest = new LatLng(40.5279534271587,-74.4646624848246);
-            String url = getUrl(origin, dest);
-            FetchUrl FetchUrl = new FetchUrl();
-            FetchUrl.execute(url);
-        }
+
     }
 
 
@@ -287,8 +287,8 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         }
         else {
 
-            CameraPosition position = map.getCameraPosition();
-            LatLng cameracenter = position.target;
+            position = map.getCameraPosition();
+            cameracenter = position.target;
             database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
             checkinTime = simpleDateFormat.format(calendar.getTime());  //get the checkin time
             String[] timearray = checkinTime.split(":");
@@ -299,7 +299,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
             String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into the database and get its key
             //construct the CheckInDetails object
-            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,false);
+            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,10031);
             Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
             CheckInUser user = new CheckInUser(LatLngCode,key);            // construct the CheckInUser object
             Map<String, Object> userMap = user.toMap();                    //call its toMap method
@@ -318,179 +318,16 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();
                 return;
             }
-            scheduleNotification(getNotification(),delay);
+            scheduleNotification(getAlertNotification(),delay,1);
+            scheduleNotification(getInformNotification(),delay+120000,23);
+            dbHelper = new ExampleDBHelper(this);
+            dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude);
             Intent intent = new Intent(this, CheckedIn.class);
             startActivity(intent);
         }
 
     }
 
-    private class FetchUrl extends AsyncTask<String, Void, String> {
-
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try {
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
-            } catch (Exception e) {
-                Log.d("Background Task", e.toString());
-            }
-            return data;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-
-        }
-    }
-
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        java.io.InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-            Log.d("downloadUrl", data.toString());
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
-
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
-                DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
-
-            } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
-
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
-
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
-
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
-                }
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(android.graphics.Color.RED);
-
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
-            }
-
-            // Drawing polyline in the Google Map for the i-th route
-            if(lineOptions != null) {
-                map.addPolyline(lineOptions);
-            }
-            else {
-                Log.d("onPostExecute","without Polylines drawn");
-            }
-        }
-    }
-
-    private String getUrl(LatLng origin, LatLng dest) {
-
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        //Api key
-        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&key=";
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +key;
-
-
-        return url;
-    }
 
     public Double toDouble(String var){                                   //currently unused function
         try{
@@ -524,22 +361,23 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         return (lons+lats);
     }
 
-    private void scheduleNotification(Notification notification, int delay) {
+    private void scheduleNotification(Notification notification, int delay,int unique) {
 
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, 1);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, unique, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         long futureInMillis = SystemClock.elapsedRealtime() + delay;
         AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 
-    private Notification getNotification() {
+    private Notification getAlertNotification() {
 
         Intent navigate = new Intent(this, NavigationActivity.class);
         navigate.putExtra("user_id",UID);
+        navigate.putExtra("started_from","notification");
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, 0);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -547,6 +385,29 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         builder.setContentTitle("SpotPark");
         builder.setContentText("Parking Ticket expires in 15min !");
         builder.addAction(accept);
+        builder.setAutoCancel(true);
+
+
+
+        return builder.build();
+    }
+
+    private Notification getInformNotification() {
+
+        Intent serviceintent = new Intent(this,LocationService.class);
+        serviceintent.putExtra("user_id",UID);
+        serviceintent.putExtra("carlatitude",Double.toString(cameracenter.latitude));
+        serviceintent.putExtra("carlongitude",Double.toString(cameracenter.longitude));
+        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, 0);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.icon);
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Inform other users that you're leaving?");
+        builder.addAction(accept);
+        builder.addAction(cancel);
+        builder.setAutoCancel(true);
 
 
         return builder.build();

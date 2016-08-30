@@ -68,7 +68,8 @@
         <activity android:name=".OptionsActivity" />
         <activity android:name=".SearchActivity" />
 
-        <receiver android:name=".NotificationPublisher" />
+        <receiver android:name=".NotificationPublisher"
+            />
 
         <service
             android:name=".LocationService"
