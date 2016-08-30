@@ -22,10 +22,15 @@
     <string name="account_successfully_created">"Account Successfully Created"</string>
     <string name="facebook_app_id">1088141281275611</string>
 
-    <string name="action_search">"Action Search"</string>
-    <string name="action_location_found">"Action Location found"</string>
-    <string name="action_refresh">"Action Refresh"</string>
     <string name="action_help">"Action Help"</string>
     <string name="logout">Logout</string>
+
+    <string name="navigation_view_item_1">Main Activity</string>
+    <string name="navigation_view_item_2">Viral Android</string>
+    <string name="navigation_view_item_3">Google</string>
+    <string name="navigation_view_item_4">Viral Android</string>
+    <string name="navigation_view_item_5">Google</string>
+    <string name="navigation_view_item_6">Viral Android</string>
+    <string name="navigation_view_category_1">Sliding Menu</string>
 
 </resources>
