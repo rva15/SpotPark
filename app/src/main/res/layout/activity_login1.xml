@@ -8,12 +8,33 @@
     android:gravity="center"
     android:orientation="vertical" >
 
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center" >
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+    </RelativeLayout>
+
     <com.facebook.login.widget.LoginButton
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="8dp" />
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/google_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,10 +43,12 @@
         android:gravity="center_horizontal"
         android:orientation="vertical" >
 
+
         <EditText
             android:id="@+id/username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:hint="Username"
             />
 
         <EditText
@@ -33,15 +56,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
+            android:hint="Password"
             />
 
-        <Button
-            android:id="@+id/account"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="signup"
-            android:text="SignUp"
-            />
 
         <Button
             android:id="@+id/login"
@@ -49,6 +66,14 @@
             android:layout_height="wrap_content"
             android:onClick="login"
             android:text="Login"
+            />
+
+        <Button
+            android:id="@+id/account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="showNoticeDialog"
+            android:text="Create Account"
             />
 
     </LinearLayout>

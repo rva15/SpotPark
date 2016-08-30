@@ -19,7 +19,7 @@ public class CheckInDetails {
     public CheckInDetails(){}
 
 
-    public CheckInDetails(double longitude,double latitude, double checkouthours,double checkoutmins,double dollars,double cents,String id,boolean readytoleave){
+    public CheckInDetails(double latitude,double longitude, double checkouthours,double checkoutmins,double dollars,double cents,String id,boolean readytoleave){
 
         this.longitude=longitude;
         this.latitude = latitude;

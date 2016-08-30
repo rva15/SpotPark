@@ -21,6 +21,7 @@ public class OptionsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_options);
         Intent intent1 = getIntent();           //Receive intent from Login Activity
         UID     = intent1.getStringExtra(LoginActivity.UID);    //get user's unique ID
+
     }
 
     @Override
