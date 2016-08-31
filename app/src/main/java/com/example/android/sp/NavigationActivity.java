@@ -49,7 +49,7 @@ import java.util.List;
 import com.example.android.sp.NotificationPublisher;
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, LocationListener {
-    String UID="";
+    String UID="",origin="";
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
@@ -75,6 +75,8 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         setContentView(R.layout.activity_navigation);
         Intent navigateintent = getIntent();
         UID     = navigateintent.getStringExtra("user_id");
+        origin = navigateintent.getStringExtra("started_from");
+        Log.d(TAG,"origin is "+origin);
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.navigationmap);

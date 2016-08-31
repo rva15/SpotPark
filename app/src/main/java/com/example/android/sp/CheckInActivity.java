@@ -24,9 +24,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -48,35 +46,23 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.RemoteViews;
 import android.widget.TimePicker;
 import android.widget.Toast;
-import android.database.sqlite.SQLiteOpenHelper;
-import com.google.android.gms.maps.model.PolylineOptions;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import android.support.v4.app.NotificationCompat;
-import android.database.sqlite.SQLiteDatabase;
-import com.example.android.sp.ExampleDBHelper;
-
-import org.json.JSONObject;
 
 
 public class CheckInActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,CheckInDialog.CheckInDialogListener{
@@ -311,17 +297,18 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             inputerror=false;
 
             //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
-            //Intent servIntent = new Intent(this,LocationService.class);
-            //startService(servIntent);
+
             int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;
             if (delay<0){
                 Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();
                 return;
             }
             scheduleNotification(getAlertNotification(),delay,1);
-            scheduleNotification(getInformNotification(),delay+120000,23);
+            scheduleNotification(getInformNotification(),delay+120000 ,23);
             dbHelper = new ExampleDBHelper(this);
-            dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude);
+            dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
+            Intent servIntent = new Intent(this,LocationService.class);
+            startService(servIntent);
             Intent intent = new Intent(this, CheckedIn.class);
             startActivity(intent);
         }
@@ -394,19 +381,19 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
     private Notification getInformNotification() {
 
-        Intent serviceintent = new Intent(this,LocationService.class);
-        serviceintent.putExtra("user_id",UID);
-        serviceintent.putExtra("carlatitude",Double.toString(cameracenter.latitude));
-        serviceintent.putExtra("carlongitude",Double.toString(cameracenter.longitude));
+        Intent serviceintent = new Intent(this,DirectionService.class);
+        //serviceintent.putExtra("user_id",UID);
+        //serviceintent.putExtra("carlatitude",Double.toString(cameracenter.latitude));
+        //serviceintent.putExtra("carlongitude",Double.toString(cameracenter.longitude));
         PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, 0);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
-        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
+        //NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.icon);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform other users that you're leaving?");
         builder.addAction(accept);
-        builder.addAction(cancel);
+        //builder.addAction(cancel);
         builder.setAutoCancel(true);
 
 

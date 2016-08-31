@@ -18,6 +18,11 @@ public class ExampleDBHelper extends SQLiteOpenHelper {
     public static final String ID = "_id";
     public static final String carlat = "Carlatitude";
     public static final String carlon = "Carlongitude";
+    public static final String cih = "CheckInHour";
+    public static final String cim = "CheckInMin";
+    public static final String lh = "LastHour";
+    public static final String lm = "LastMin";
+
 
     public ExampleDBHelper(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
@@ -27,9 +32,10 @@ public class ExampleDBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + rownum + " INTEGER PRIMARY KEY, " +
                 ID + " TEXT , " + carlat + " REAL , " +
-                carlon + " REAL)"
+                carlon + " REAL, "+ cih + " REAL , " +
+                cim + " REAL, "+ lh+" REAL , "+lm+" REAL)"
         );
-        db.execSQL("INSERT INTO " + TABLE_NAME + "(" +rownum+ " , "+ ID + " , " + carlat + "  , " + carlon + ") VALUES (1,null,null,null)");
+        db.execSQL("INSERT INTO " + TABLE_NAME + "(" +rownum+ " , "+ ID + " , " + carlat + "  , " + carlon +" , " + cih + "  , " + cim +" , "+ lh+" , "+lm+ ") VALUES (1,null,null,null,null,null,null,null)");
     }
 
     public Cursor getInfo() {
@@ -39,12 +45,16 @@ public class ExampleDBHelper extends SQLiteOpenHelper {
     }
 
 
-    public boolean updateInfo(String key,double carlatitude, double carlongitude) {
+    public boolean updateInfo(String key,double carlatitude, double carlongitude,double chkinhour,double chkinmin,double lsthour,double lstmin) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ID, key);
         contentValues.put(carlat, carlatitude);
         contentValues.put(carlon, carlongitude);
+        contentValues.put(cih,chkinhour);
+        contentValues.put(cim,chkinmin);
+        contentValues.put(lh,lsthour);
+        contentValues.put(lm,lstmin);
         db.update(TABLE_NAME, contentValues, rownum + " = ? ", new String[] { Integer.toString(1) } );
         return true;
     }

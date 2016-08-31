@@ -1,9 +1,10 @@
 package com.example.android.sp;
 
+
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,20 +16,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import java.lang.Math;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import com.google.firebase.database.DatabaseReference;
 
 /**
  * Created by ruturaj on 8/21/16.
  */
-public class LocationService extends android.app.Service{
+public class DirectionService extends android.app.Service{
 
     public final static int MINUTE = 1000 * 60;
     private static final String TAG = "Debugger ";
@@ -38,18 +36,18 @@ public class LocationService extends android.app.Service{
     private static final int LOCATION_INTERVAL = 15000;
     private static final float LOCATION_DISTANCE = 0;
     int count = 0,i=0;
-    String UID ="",key="",checkinTime="";
+    String UID ="",key="";
     public DatabaseReference database;
     private ExampleDBHelper dbHelper;
-    Double carlat,carlon,checkinhour,checkinmin,lasthour,lastmin,diff,lastentry;
-    SimpleDateFormat simpleDateFormat;
-    Calendar calendar;
+    Double carlat,carlon;
 
 
     //onCreate method
     @Override
     public void onCreate(){
-        Log.d(TAG, "running locationservice");
+        Log.d(TAG, "running service");
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.cancel(23);
 
         initializeLocationManager();
         try {
@@ -78,6 +76,7 @@ public class LocationService extends android.app.Service{
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
+
     }
 
     private void initializeLocationManager() {
@@ -94,10 +93,10 @@ public class LocationService extends android.app.Service{
     private final IBinder mBinder = new LocalBinder();
 
     public class LocalBinder extends Binder {
-        public LocationService getService() {
+        public DirectionService getService() {
             // Return this instance of LocalService so clients can call public
             // methods
-            return LocationService.this;
+            return DirectionService.this;
         }
     }
 
@@ -111,60 +110,20 @@ public class LocationService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        calendar = Calendar.getInstance();
         dbHelper = new ExampleDBHelper(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
         UID = res.getString(res.getColumnIndex("_id"));
         carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
         carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
-        checkinhour = res.getDouble(res.getColumnIndex("CheckInHour"));
-        checkinmin = res.getDouble(res.getColumnIndex("CheckInMin"));
-        lasthour = res.getDouble(res.getColumnIndex("LastHour"));
-        lastmin = res.getDouble(res.getColumnIndex("LastMin"));
-        lastentry = lasthour*60 + lastmin;
 
-
-        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
         Log.d(TAG,"Location Service params " + key);
         Log.d(TAG,"Location Service params " + carlat.toString());
         Log.d(TAG,"Location Service params" + carlon.toString());
         return START_STICKY;
     }
 
-    private void scheduleNotification(Notification notification, int delay,int unique) {
 
-        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, unique, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        long futureInMillis = SystemClock.elapsedRealtime() + delay;
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-    }
-
-
-    private Notification getInformNotification() {
-        Intent serviceintent = new Intent(this,DirectionService.class);
-        serviceintent.putExtra("user_id",UID);
-        serviceintent.putExtra("carlatitude",Double.toString(carlat));
-        serviceintent.putExtra("carlongitude",Double.toString(carlon));
-        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, 0);
-        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
-        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.drawable.icon);
-        builder.setContentTitle("SpotPark");
-        builder.setContentText("Inform others that you're leaving?");
-        builder.addAction(accept);
-        builder.addAction(cancel);
-        builder.setAutoCancel(true);
-
-
-        return builder.build();
-
-    }
 
     private class LocationListener implements android.location.LocationListener{
 
@@ -179,54 +138,25 @@ public class LocationService extends android.app.Service{
         @Override
         public void onLocationChanged(Location location)
         {
-            //Log.d(TAG,"this shit fired");
+            Log.d(TAG,"this shit fired");
 
             double lat = location.getLatitude();
             double lon = location.getLongitude();
 
-
+            if (count < 10) {
+                WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
+                walkTime.getWalkTime();
+            }
+            count = count + 1;
             Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
             mLastLocation.set(location);
-            checkinTime = simpleDateFormat.format(calendar.getTime());
-            String[] timearray = checkinTime.split(":");
-            double diff = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),checkinhour*60+checkinmin);
-            if(diff>36000000){
-                stopSelf();
-            }
-
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
             if((deltalat<1)&&(deltalon<1)){
-                Log.d(TAG,"carpos "+carlat.toString());
-                Log.d(TAG,"carpos "+carlon.toString());
-                Log.d(TAG,"carpos"+Double.toString(lat));
-                Log.d(TAG,"carpos"+Double.toString(lon));
-
-                double difference = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),lastentry);
-                if(difference>15){
-                    scheduleNotification(getInformNotification(),1000,29);
-                }
-                else{
-                    lastentry = Double.parseDouble(timearray[0])*60 + Double.parseDouble(timearray[1]);
-                    dbHelper.updateInfo(UID,carlat,carlon,checkinhour,checkinmin,Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]));
-                }
-
+                Log.d(TAG,"stopping directionservice");
+                stopSelf();
             }
 
-        }
-
-        public double gettimediff(double lh,double lm,double chinmins){
-            double currmins = lh*60 + lm;
-
-            if(currmins>=chinmins){
-                diff = currmins-chinmins;
-                return diff;
-            }
-            if(chinmins>currmins){
-                diff = (24*60 - chinmins)+currmins;
-                return diff;
-            }
-            return 0;
         }
 
 
@@ -255,6 +185,22 @@ public class LocationService extends android.app.Service{
             new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent){
+        Log.d(TAG,"TaskRemoved");
+        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+        restartServiceIntent.setPackage(getPackageName());
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000,
+                restartServicePendingIntent);
+
+        super.onTaskRemoved(rootIntent);
+    }
+
+
 
 }
-

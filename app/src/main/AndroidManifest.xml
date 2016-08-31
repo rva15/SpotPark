@@ -72,6 +72,10 @@
             />
 
         <service
+            android:name=".DirectionService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
             android:name=".LocationService"
             android:enabled="true"
             android:exported="false" />
