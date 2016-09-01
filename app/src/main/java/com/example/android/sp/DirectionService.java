@@ -36,7 +36,7 @@ public class DirectionService extends android.app.Service{
     private static final int LOCATION_INTERVAL = 15000;
     private static final float LOCATION_DISTANCE = 0;
     int count = 0,i=0;
-    String UID ="",key="";
+    String UID ="",key="",origin="",origin2="";
     public DatabaseReference database;
     private ExampleDBHelper dbHelper;
     Double carlat,carlon;
@@ -110,6 +110,25 @@ public class DirectionService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+        if(intent!=null) {
+            origin = (String) intent.getExtras().get("started_from");
+            if(origin.equals("LS")){
+                Log.d(TAG,"entered LS");
+                Intent cancelaction = new Intent(this, NotificationPublisher.class);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
+                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                alarmManager.cancel(pendingIntent);
+                Intent cancelaction2 = new Intent(this, NotificationPublisher.class);
+                PendingIntent pendingIntent2 = PendingIntent.getBroadcast(this, 23, cancelaction2, PendingIntent.FLAG_UPDATE_CURRENT);
+                AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
+                alarmManager2.cancel(pendingIntent2);
+            }
+            if(origin.equals("checkin")){
+                Log.d(TAG,"entered checkin");
+                stopService(new Intent(DirectionService.this,LocationService.class));
+            }
+        }
+        Log.d(TAG,"origin is :"+origin);
         dbHelper = new ExampleDBHelper(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
@@ -153,6 +172,7 @@ public class DirectionService extends android.app.Service{
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
             if((deltalat<1)&&(deltalon<1)){
+
                 Log.d(TAG,"stopping directionservice");
                 stopSelf();
             }
@@ -186,20 +206,17 @@ public class DirectionService extends android.app.Service{
     };
 
     @Override
-    public void onTaskRemoved(Intent rootIntent){
-        Log.d(TAG,"TaskRemoved");
-        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
-        restartServiceIntent.setPackage(getPackageName());
-
-        PendingIntent restartServicePendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-        alarmService.set(
-                AlarmManager.ELAPSED_REALTIME,
-                SystemClock.elapsedRealtime() + 1000,
-                restartServicePendingIntent);
-
-        super.onTaskRemoved(rootIntent);
+    public void onDestroy() {
+        Log.d(TAG,"on destroy");
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mLocationManager.removeUpdates(mLocationListeners[0]);
+        mLocationManager.removeUpdates(mLocationListeners[1]);
     }
+
 
 
 

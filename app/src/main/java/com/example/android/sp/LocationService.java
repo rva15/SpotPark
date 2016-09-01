@@ -111,7 +111,7 @@ public class LocationService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        calendar = Calendar.getInstance();
+
         dbHelper = new ExampleDBHelper(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
@@ -147,10 +147,8 @@ public class LocationService extends android.app.Service{
 
     private Notification getInformNotification() {
         Intent serviceintent = new Intent(this,DirectionService.class);
-        serviceintent.putExtra("user_id",UID);
-        serviceintent.putExtra("carlatitude",Double.toString(carlat));
-        serviceintent.putExtra("carlongitude",Double.toString(carlon));
-        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, 0);
+        serviceintent.putExtra("started_from","LS");
+        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
         NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -186,9 +184,18 @@ public class LocationService extends android.app.Service{
 
 
             Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
+            Log.d(TAG,"carpos "+carlat.toString());
+            Log.d(TAG,"carpos "+carlon.toString());
+            Log.d(TAG,"carpos"+Double.toString(lat));
+            Log.d(TAG,"carpos"+Double.toString(lon));
+            Log.d(TAG,"carpos"+Double.toString(lastentry));
+
             mLastLocation.set(location);
+            calendar = Calendar.getInstance();
             checkinTime = simpleDateFormat.format(calendar.getTime());
             String[] timearray = checkinTime.split(":");
+            Log.d(TAG,"difference :"+timearray[0]);
+            Log.d(TAG,"difference :"+timearray[1]);
             double diff = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),checkinhour*60+checkinmin);
             if(diff>36000000){
                 stopSelf();
@@ -196,15 +203,15 @@ public class LocationService extends android.app.Service{
 
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
-            if((deltalat<1)&&(deltalon<1)){
-                Log.d(TAG,"carpos "+carlat.toString());
-                Log.d(TAG,"carpos "+carlon.toString());
-                Log.d(TAG,"carpos"+Double.toString(lat));
-                Log.d(TAG,"carpos"+Double.toString(lon));
+            if((deltalat<3)&&(deltalon<3)){
 
                 double difference = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),lastentry);
                 if(difference>15){
-                    scheduleNotification(getInformNotification(),1000,29);
+                    if(count==0) {
+                        scheduleNotification(getInformNotification(), 1000, 29);
+                        stopSelf();
+                    }
+                    count=count+1;
                 }
                 else{
                     lastentry = Double.parseDouble(timearray[0])*60 + Double.parseDouble(timearray[1]);
@@ -254,6 +261,18 @@ public class LocationService extends android.app.Service{
             new LocationListener(LocationManager.GPS_PROVIDER),
             new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG,"on destroy");
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mLocationManager.removeUpdates(mLocationListeners[0]);
+        mLocationManager.removeUpdates(mLocationListeners[1]);
+    }
 
 
 }

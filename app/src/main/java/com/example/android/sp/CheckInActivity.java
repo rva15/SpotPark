@@ -130,7 +130,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        calendar = Calendar.getInstance();                    //get current time
+
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");  //and set its format
         PACKAGE_NAME = getApplicationContext().getPackageName();
 
@@ -276,6 +276,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             position = map.getCameraPosition();
             cameracenter = position.target;
             database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            calendar = Calendar.getInstance();                    //get current time
             checkinTime = simpleDateFormat.format(calendar.getTime());  //get the checkin time
             String[] timearray = checkinTime.split(":");
             checkinhour = Double.parseDouble(timearray[0]);
@@ -304,7 +305,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 return;
             }
             scheduleNotification(getAlertNotification(),delay,1);
-            scheduleNotification(getInformNotification(),delay+120000 ,23);
+            scheduleNotification(getInformNotification(),delay+60000 ,23);
             dbHelper = new ExampleDBHelper(this);
             dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
             Intent servIntent = new Intent(this,LocationService.class);
@@ -365,7 +366,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         Intent navigate = new Intent(this, NavigationActivity.class);
         navigate.putExtra("user_id",UID);
         navigate.putExtra("started_from","notification");
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.icon);
@@ -382,18 +383,15 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     private Notification getInformNotification() {
 
         Intent serviceintent = new Intent(this,DirectionService.class);
-        //serviceintent.putExtra("user_id",UID);
-        //serviceintent.putExtra("carlatitude",Double.toString(cameracenter.latitude));
-        //serviceintent.putExtra("carlongitude",Double.toString(cameracenter.longitude));
-        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, 0);
+        serviceintent.putExtra("started_from","checkin");
+        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
-        //NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.icon);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform other users that you're leaving?");
         builder.addAction(accept);
-        //builder.addAction(cancel);
         builder.setAutoCancel(true);
 
 
