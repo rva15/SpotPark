@@ -286,7 +286,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
             String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into the database and get its key
             //construct the CheckInDetails object
-            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,10031);
+            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,8);
             Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
             CheckInUser user = new CheckInUser(LatLngCode,key);            // construct the CheckInUser object
             Map<String, Object> userMap = user.toMap();                    //call its toMap method

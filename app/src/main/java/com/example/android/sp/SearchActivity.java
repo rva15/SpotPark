@@ -45,6 +45,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 
@@ -65,6 +67,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     private static final String TAG = "Debugger ";
     int i=0;
     ArrayList<String> array = new ArrayList<String>();
+    Timer t;
 
 
     //the onCreate Method
@@ -102,12 +105,14 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     protected void onStart(){
         ApiClient.connect();      //onStart of the activity, connect apiclient
+        i=0;
         super.onStart();
     }
 
     @Override
     protected void onStop() {
         ApiClient.disconnect();  //disconnect apiclient on stop
+        t.cancel();
         super.onStop();
     }
 
@@ -164,24 +169,31 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         latitude = currentLocation.getLatitude();       //get the latitude
         longitude = currentLocation.getLongitude();     //get the longitude
         place = new LatLng(latitude, longitude);  //initiate LatLng object
+        if(marker!=null){
+            marker.remove();
+        }
+        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));
         //when function is called first time, set a marker at the users location
         if(i==0){
-            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));
             searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
-            LatLng origin = new LatLng(latitude,longitude);
-            LatLng dest = new LatLng(40.5279534271587,-74.4646624848246);
-            String url = getUrl(origin, dest);
-            Log.d("onMapClick", url.toString());
-            //FetchUrl FetchUrl = new FetchUrl();
-            //FetchUrl.execute(url);
-            searchmap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-            //searchmap.animateCamera(CameraUpdateFactory.zoomTo(16));
+            t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    SpotFinder finder = new SpotFinder(latitude,longitude,searchmap); //declare the SpotFinder and pass it user's location and searchmap
+                    finder.addListener();   //call its addListener method
+                    Log.d(TAG,"timer called");
+                }
+
+            },0, 60000);
         }
         i=i+1;
 
-        SpotFinder finder = new SpotFinder(latitude,longitude,searchmap); //declare the SpotFinder and pass it user's location and searchmap
-        finder.addListener();   //call its addListener method
+    }
 
+    public void sendLocation(){
+        latitude = currentLocation.getLatitude();       //get the latitude
+        longitude = currentLocation.getLongitude();     //get the longitude
     }
 
 

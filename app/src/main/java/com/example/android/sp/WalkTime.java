@@ -139,9 +139,13 @@ public class WalkTime {
 
                 // Starts parsing data
                 totalseconds = parser.parse(jObject);
-                database = FirebaseDatabase.getInstance().getReference();
-                com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
-                getcheckin.addChildEventListener(listener1);
+
+                if(totalseconds>10){
+                    //do nothing
+                }
+                else{
+                    updatedata();
+                }
 
                 Log.d("ParserTask","Executing routes");
                 Log.d("ParserTask totalseconds",Integer.toString(totalseconds));
@@ -151,6 +155,12 @@ public class WalkTime {
                 e.printStackTrace();
             }
             return routes;
+        }
+
+        public void updatedata(){
+            database = FirebaseDatabase.getInstance().getReference();
+            com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
+            getcheckin.addChildEventListener(listener1);
         }
 
         //define the ChildEventListener

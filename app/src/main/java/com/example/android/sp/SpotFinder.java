@@ -1,5 +1,6 @@
 package com.example.android.sp;
 //Necassary imports
+import android.database.Cursor;
 import android.util.Log;
 import android.widget.Toast;
 import com.google.android.gms.maps.GoogleMap;
@@ -14,7 +15,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,6 +34,8 @@ public class SpotFinder {
     Marker spotmarker;
     private GoogleMap searchmap;
     int i=0;
+    SearchHelperDB helperDB;
+    Map markers = new HashMap();
 
     public SpotFinder(){};  //empty constructor
 
@@ -38,6 +43,7 @@ public class SpotFinder {
         this.latitude=latitude;
         this.longitude=longitude;
         this.searchmap=searchmap;
+        helperDB = new SearchHelperDB(SPApplication.getContext());
 
     }
 
@@ -79,15 +85,60 @@ public class SpotFinder {
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);  //retrieve a snapshot from the node and store it in CheckInDetails.class
             Log.d(TAG,"added listener " + Double.toString(details.getlatitude()));
             Log.d(TAG,"added listener " + Double.toString(details.getlongitude()));
-            spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
-            //add a blue marker at the spot
-            spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+            int time = details.getminstoleave();
+            if (time>10){
+                Log.d(TAG,"time greater than 10");
+                //do nothing
+            }
+            if(time<=2){
+                insertdata(dataSnapshot.getKey(),time,1);
+                spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
+                //add a blue marker at the spot
+                Marker marker = (Marker) markers.get(spotplace);
+                if(marker!=null){
+                    Log.d(TAG,"marker exists");
+                }
+                else {
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    markers.put(spotplace,spotmarker);
+                }
+            }
+            if(time>2 && time<=10){
+                Log.d(TAG,"inserting data");
+                if(checkStatus(dataSnapshot.getKey())){
+                    spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
+                    Marker marker = (Marker) markers.get(spotplace);
+                    if(marker!=null){
+                        Log.d(TAG,"marker exists");
+                    }
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    markers.put(spotplace,spotmarker);
+                }
+                else {
+                    insertdata(dataSnapshot.getKey(), time, 0);
+                }
+            }
 
         }
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
+            Log.d(TAG,"onchildchanged fired");
+            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
+            if(makedecision(dataSnapshot.getKey(),details.getminstoleave())){
+                Log.d(TAG,"decision positive");
+                spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
+                //add a blue marker at the spot
+                Marker marker = (Marker) markers.get(spotplace);
+                if(marker!=null){
+                    Log.d(TAG,"marker exists");
+                }
+                else {
+                    Log.d(TAG,"adding marker");
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    markers.put(spotplace,spotmarker);
+                }
+            }
         }
 
         @Override
@@ -106,6 +157,46 @@ public class SpotFinder {
         }
     };
 
+    public void insertdata(String unique, int mins,int status){
+        helperDB.insertEntry(unique,mins,status);
+    }
+
+    public boolean makedecision(String unique, int mins){
+        Log.d(TAG,"making decision");
+        Log.d(TAG,"making decision "+unique+Integer.toString(mins));
+        Cursor res = helperDB.getInfo(unique);
+        res.moveToFirst();
+        int status = Integer.parseInt(res.getString(res.getColumnIndex("Status")));
+        Log.d(TAG,"making decision status "+Integer.toString(status));
+        if(status==0) {
+            int min = Integer.parseInt(res.getString(res.getColumnIndex("Time")));
+            Log.d(TAG,"making decision "+Integer.toString(min));
+            if (min-mins >= 2) {
+                helperDB.updateStatus(unique);
+                return true;
+            }
+        }
+        if(status==1){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkStatus(String unique){
+        Log.d(TAG,"checking status");
+        Cursor res = helperDB.getInfo(unique);
+        if(res.getCount() <= 0){
+            res.close();
+            return false;
+        }
+        res.moveToFirst();
+        int status = Integer.parseInt(res.getString(res.getColumnIndex("Status")));
+        if(status==1){
+            return true;
+        }
+        return false;
+    }
+
 
     //the getCode method that returns LatLngCodes
     public String getCode(int i,int j){
@@ -120,6 +211,8 @@ public class SpotFinder {
 
         return (lons+lats);
     }
+
+
 
 
 
