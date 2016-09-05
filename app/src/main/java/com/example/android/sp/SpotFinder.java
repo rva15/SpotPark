@@ -27,6 +27,7 @@ import java.util.Map;
 public class SpotFinder {
     //Necassary variable declaration
     double latitude=0.0,longitude=0.0;
+    String UID="";
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
     ArrayList<String> array = new ArrayList<String>();
@@ -36,13 +37,15 @@ public class SpotFinder {
     int i=0;
     SearchHelperDB helperDB;
     Map markers = new HashMap();
+    Map searchers = new HashMap();
 
     public SpotFinder(){};  //empty constructor
 
-    public SpotFinder(double latitude, double longitude, GoogleMap searchmap){  //contructor receives parameters
+    public SpotFinder(double latitude, double longitude, GoogleMap searchmap,String id){  //contructor receives parameters
         this.latitude=latitude;
         this.longitude=longitude;
         this.searchmap=searchmap;
+        this.UID = id;
         helperDB = new SearchHelperDB(SPApplication.getContext());
 
     }
@@ -71,6 +74,7 @@ public class SpotFinder {
 
         for(int k=0;k<9;k++){
             database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listeners to corresponding nodes in the database
+            database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);
             Log.d(TAG,"adding listener to "+array.get(k));
         }
 
@@ -144,6 +148,69 @@ public class SpotFinder {
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
 
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
+    ChildEventListener listener2 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Searcher searcher = dataSnapshot.getValue(Searcher.class);
+            if(!dataSnapshot.getKey().equals(UID)){
+                spotplace = new LatLng(searcher.getlatitude(),searcher.getlongitude());  //store the spot's location in spotplace
+                Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
+                if(marker!=null){
+                    Log.d(TAG,"marker exists");
+                    marker.remove();
+                }
+                else {
+                    Log.d(TAG,"adding marker");
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                    searchers.put(dataSnapshot.getKey(),spotmarker);
+                }
+            }
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            Searcher searcher = dataSnapshot.getValue(Searcher.class);
+            if(!dataSnapshot.getKey().equals(UID)){
+                spotplace = new LatLng(searcher.getlatitude(),searcher.getlongitude());  //store the spot's location in spotplace
+                Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
+                if(marker!=null){
+                    Log.d(TAG,"marker exists");
+                    marker.remove();
+                }
+                else {
+                    Log.d(TAG,"adding marker");
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                    searchers.put(dataSnapshot.getKey(),spotmarker);
+                }
+            }
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+            Searcher searcher = dataSnapshot.getValue(Searcher.class);
+            if(!dataSnapshot.getKey().equals(UID)){
+                Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
+                if(marker!=null){
+                    Log.d(TAG,"marker exists");
+                    marker.remove();
+                }
+            }
         }
 
         @Override
