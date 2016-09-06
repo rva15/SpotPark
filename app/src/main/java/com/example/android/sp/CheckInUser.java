@@ -9,6 +9,8 @@ import java.util.Map;
  */
 public class CheckInUser {
 
+    public double carlatitude;
+    public double carlongitude;
     public String latlngcode;
     public String key;
 
@@ -16,24 +18,31 @@ public class CheckInUser {
         // Default constructor required for calls to DataSnapshot.getValue(com.example.android.sp.CheckInUser.class)
     }
 
-    public CheckInUser(String latlngcode, String key) {
-        this.latlngcode     = latlngcode;
-        this.key    = key;
+    public CheckInUser(double carlatitude, double carlongitude,String latlngcode,String key) {
+        this.carlatitude     = carlatitude;
+        this.carlongitude    = carlongitude;
+        this.latlngcode      = latlngcode;
+        this.key             = key;
 
     }
 
-    public String getlatlngcode(){
-        return this.latlngcode;
+    public double getcarlatitude(){
+        return this.carlatitude;
     }
-    public String getkey(){
-        return this.key;
+    public double getcarlongitude(){
+        return this.carlongitude;
     }
+    public String getlatlngcode(){return  this.latlngcode;}
+    public String getkey(){return  this.key;}
+
 
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
-        result.put("latlngcode", latlngcode);
-        result.put("key", key);
+        result.put("carlatitude", carlatitude);
+        result.put("carlongitude", carlongitude);
+        result.put("latlngcode",latlngcode);
+        result.put("key",key);
 
         return result;
     }

@@ -70,6 +70,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     ArrayList<String> array = new ArrayList<String>();
     Timer t;
     public DatabaseReference database;
+    SpotFinder finder;
 
     //the onCreate Method
     @Override
@@ -188,7 +189,7 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
             t.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    SpotFinder finder = new SpotFinder(latitude,longitude,searchmap,UID); //declare the SpotFinder and pass it user's location and searchmap
+                    finder = new SpotFinder(latitude,longitude,searchmap,UID); //declare the SpotFinder and pass it user's location and searchmap
                     finder.addListener();   //call its addListener method
                     Log.d(TAG,"timer called");
                 }
@@ -410,6 +411,12 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
         return url;
+    }
+
+    public void found(android.view.View v){
+        String code = getLatLngCode(latitude,longitude);
+        finder.deletenearest(latitude,longitude,code);
+
     }
 
 

@@ -286,9 +286,9 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
             String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into the database and get its key
             //construct the CheckInDetails object
-            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,hours,mins,dollars,cents,UID,8);
+            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
             Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
-            CheckInUser user = new CheckInUser(LatLngCode,key);            // construct the CheckInUser object
+            CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);            // construct the CheckInUser object
             Map<String, Object> userMap = user.toMap();                    //call its toMap method
 
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
@@ -304,8 +304,8 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();
                 return;
             }
-            scheduleNotification(getAlertNotification(),delay,1);
-            scheduleNotification(getInformNotification(),delay+60000 ,23);
+            //scheduleNotification(getAlertNotification(),delay,1);
+            scheduleNotification(getInformNotification(),delay ,23);
             dbHelper = new ExampleDBHelper(this);
             dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
             Intent servIntent = new Intent(this,LocationService.class);

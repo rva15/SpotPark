@@ -91,8 +91,6 @@ public class OptionActivity2 extends AppCompatActivity {
             if(count==0) {
                 Log.d(TAG, "detected something");
                 CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-                latlngcode = user.getlatlngcode();
-                key = user.getkey();
                 deletedata();
             }
             count = count+1;

@@ -16,6 +16,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,8 @@ public class SpotFinder {
     SearchHelperDB helperDB;
     Map markers = new HashMap();
     Map searchers = new HashMap();
+    Map chintimes = new HashMap();
+    Map chinkeys = new HashMap();
 
     public SpotFinder(){};  //empty constructor
 
@@ -89,9 +92,13 @@ public class SpotFinder {
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);  //retrieve a snapshot from the node and store it in CheckInDetails.class
             Log.d(TAG,"added listener " + Double.toString(details.getlatitude()));
             Log.d(TAG,"added listener " + Double.toString(details.getlongitude()));
+            spotplace = new LatLng(details.getlatitude(),details.getlongitude());
             int time = details.getminstoleave();
+            chintimes.put(spotplace,time);
+            chinkeys.put(spotplace,dataSnapshot.getKey());
             if (time>10){
                 Log.d(TAG,"time greater than 10");
+
                 //do nothing
             }
             if(time<=2){
@@ -101,10 +108,12 @@ public class SpotFinder {
                 Marker marker = (Marker) markers.get(spotplace);
                 if(marker!=null){
                     Log.d(TAG,"marker exists");
+
                 }
                 else {
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     markers.put(spotplace,spotmarker);
+
                 }
             }
             if(time>2 && time<=10){
@@ -114,12 +123,15 @@ public class SpotFinder {
                     Marker marker = (Marker) markers.get(spotplace);
                     if(marker!=null){
                         Log.d(TAG,"marker exists");
+
                     }
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                     markers.put(spotplace,spotmarker);
+
                 }
                 else {
                     insertdata(dataSnapshot.getKey(), time, 0);
+
                 }
             }
 
@@ -129,6 +141,9 @@ public class SpotFinder {
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG,"onchildchanged fired");
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
+            spotplace = new LatLng(details.getlatitude(),details.getlongitude());
+            int time = details.getminstoleave();
+            chintimes.put(spotplace,time);
             if(makedecision(dataSnapshot.getKey(),details.getminstoleave())){
                 Log.d(TAG,"decision positive");
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
@@ -224,6 +239,8 @@ public class SpotFinder {
         }
     };
 
+
+
     public void insertdata(String unique, int mins,int status){
         helperDB.insertEntry(unique,mins,status);
     }
@@ -232,6 +249,11 @@ public class SpotFinder {
         Log.d(TAG,"making decision");
         Log.d(TAG,"making decision "+unique+Integer.toString(mins));
         Cursor res = helperDB.getInfo(unique);
+        if(res.getCount() <= 0){
+            res.close();
+            insertdata(unique, mins, 0);
+            return false;
+        }
         res.moveToFirst();
         int status = Integer.parseInt(res.getString(res.getColumnIndex("Status")));
         Log.d(TAG,"making decision status "+Integer.toString(status));
@@ -277,6 +299,40 @@ public class SpotFinder {
         }
 
         return (lons+lats);
+    }
+
+    public void deletenearest(double x,double y,String LatLngCode ){
+        Log.d(TAG,"delete nearest "+Double.toString(x));
+        Log.d(TAG,"delete nearest "+Double.toString(y));
+        Iterator it = markers.entrySet().iterator();
+        int c = 0;
+        String key ="";
+        LatLng l= new LatLng(0,0);
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            l = (LatLng)pair.getKey();
+            Log.d(TAG,"delete nearest "+Double.toString(l.latitude));
+            Log.d(TAG,"delete nearest "+Double.toString(l.longitude));
+            double dx = 10000*Math.abs(x-l.latitude);
+            double dy = 10000*Math.abs(y-l.longitude);
+            if(dx<6 && dy<6){
+                key = (String) chinkeys.get(l);
+                c=c+1;
+            }
+        }
+        if(c==1){
+            int t = (int)chintimes.get(l);
+            if (t<=1) {
+                Map<String, Object> childUpdates = new HashMap<>();
+                childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, null);
+                database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+                database.updateChildren(childUpdates);
+                Log.d(TAG, "delete nearest key " + key);
+                //delete the entry
+            }
+        }
+        Log.d(TAG,"delete nearest c "+Integer.toString(c));
+
     }
 
 

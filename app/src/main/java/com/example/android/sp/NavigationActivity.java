@@ -63,7 +63,6 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     GoogleMap navigationmap;
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
-    String latlngcode="",key="";
     public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
 
 
@@ -376,44 +375,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG,"detected something");
             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-            latlngcode = user.getlatlngcode();
-            key = user.getkey();
-
-            com.google.firebase.database.Query getlocation = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
-            getlocation.addChildEventListener(listener2);
-
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-
-    ChildEventListener listener2 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
-            carlatitude = details.getlatitude();
-            carlongitude = details.getlongitude();
+            carlatitude = user.getcarlatitude();
+            carlongitude = user.getcarlongitude();
             drawroute(carlatitude,carlongitude);
-            Log.d(TAG,"detected location "+Double.toString(carlatitude));
+
+
+
         }
 
         @Override
