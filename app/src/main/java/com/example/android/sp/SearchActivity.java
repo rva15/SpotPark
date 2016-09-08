@@ -45,6 +45,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 
@@ -65,7 +68,9 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     private static final String TAG = "Debugger ";
     int i=0;
     ArrayList<String> array = new ArrayList<String>();
-
+    Timer t;
+    public DatabaseReference database;
+    SpotFinder finder;
 
     //the onCreate Method
     @Override
@@ -102,12 +107,20 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     protected void onStart(){
         ApiClient.connect();      //onStart of the activity, connect apiclient
+        i=0;
         super.onStart();
     }
 
     @Override
     protected void onStop() {
         ApiClient.disconnect();  //disconnect apiclient on stop
+        t.cancel();
+        String LatLngCode = getLatLngCode(latitude,longitude);
+        database = FirebaseDatabase.getInstance().getReference();
+        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, null);
+        database.updateChildren(childUpdates);
         super.onStop();
     }
 
@@ -163,26 +176,62 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
         latitude = currentLocation.getLatitude();       //get the latitude
         longitude = currentLocation.getLongitude();     //get the longitude
+        sendLocation();
         place = new LatLng(latitude, longitude);  //initiate LatLng object
+        if(marker!=null){
+            marker.remove();
+        }
+        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));
         //when function is called first time, set a marker at the users location
         if(i==0){
-            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));
             searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
-            LatLng origin = new LatLng(latitude,longitude);
-            LatLng dest = new LatLng(40.5279534271587,-74.4646624848246);
-            String url = getUrl(origin, dest);
-            Log.d("onMapClick", url.toString());
-            //FetchUrl FetchUrl = new FetchUrl();
-            //FetchUrl.execute(url);
-            searchmap.moveCamera(CameraUpdateFactory.newLatLng(origin));
-            //searchmap.animateCamera(CameraUpdateFactory.zoomTo(16));
+            t = new Timer();
+            t.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    finder = new SpotFinder(latitude,longitude,searchmap,UID); //declare the SpotFinder and pass it user's location and searchmap
+                    finder.addListener();   //call its addListener method
+                    Log.d(TAG,"timer called");
+                }
+
+            },0, 60000);
         }
         i=i+1;
 
-        SpotFinder finder = new SpotFinder(latitude,longitude,searchmap); //declare the SpotFinder and pass it user's location and searchmap
-        finder.addListener();   //call its addListener method
-
     }
+
+    public void sendLocation(){
+        latitude = currentLocation.getLatitude();       //get the latitude
+        longitude = currentLocation.getLongitude();     //get the longitude
+        String LatLngCode = getLatLngCode(latitude,longitude);
+        database = FirebaseDatabase.getInstance().getReference();
+        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
+
+        Searcher searcher = new Searcher(latitude,longitude);
+        Map<String, Object> searcherMap = searcher.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, searcherMap);
+        database.updateChildren(childUpdates);
+    }
+
+    public String getLatLngCode(double lat, double lon){
+
+        lat = lat*100;     //get the centi latitudes and centi longitudes
+        lon = lon*100;
+        int lat1 = (int)Math.round(lat);   //round them off
+        int lon1 = (int)Math.round(lon);
+        String lons = Integer.toString(lon1);   //convert them to strings
+        String lats = Integer.toString(lat1);
+
+        if(lon1>=0){                //concatenate those strings to form the code
+            lons = "+"+lons;
+        }
+        if(lat1>=0){
+            lats = "+"+lats;
+        }
+        return (lons+lats);
+    }
+
 
 
 
@@ -363,6 +412,14 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
 
         return url;
     }
+
+    public void found(android.view.View v){
+        String code = getLatLngCode(latitude,longitude);
+        finder.deletenearest(latitude,longitude,code);
+
+    }
+
+
 
 
 

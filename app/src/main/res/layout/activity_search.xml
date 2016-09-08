@@ -21,8 +21,8 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Quit Search"
-            android:onClick="quit"/>
+            android:text="Found Parking"
+            android:onClick="found"/>
 
 
 

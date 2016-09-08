@@ -1,5 +1,7 @@
 package com.example.android.sp;
 
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -44,9 +46,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import com.example.android.sp.NotificationPublisher;
 
 public class NavigationActivity extends AppCompatActivity implements OnMapReadyCallback,GoogleApiClient.ConnectionCallbacks, LocationListener {
-    String UID="";
+    String UID="",origin="";
     GoogleApiClient mGoogleApiClient;
     LocationRequest mLocationRequest;
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
@@ -60,14 +63,19 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
     GoogleMap navigationmap;
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
-    String latlngcode="",key="";
+    public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.cancel(1);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_navigation);
         Intent navigateintent = getIntent();
         UID     = navigateintent.getStringExtra("user_id");
+        origin = navigateintent.getStringExtra("started_from");
+        Log.d(TAG,"origin is "+origin);
 
         SupportMapFragment mapFragment =       //Load the fragment with the google map
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.navigationmap);
@@ -367,44 +375,12 @@ public class NavigationActivity extends AppCompatActivity implements OnMapReadyC
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG,"detected something");
             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-            latlngcode = user.getlatlngcode();
-            key = user.getkey();
-
-            com.google.firebase.database.Query getlocation = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
-            getlocation.addChildEventListener(listener2);
-
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-
-    ChildEventListener listener2 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
-            carlatitude = details.getlatitude();
-            carlongitude = details.getlongitude();
+            carlatitude = user.getcarlatitude();
+            carlongitude = user.getcarlongitude();
             drawroute(carlatitude,carlongitude);
-            Log.d(TAG,"detected location "+Double.toString(carlatitude));
+
+
+
         }
 
         @Override

@@ -1,6 +1,8 @@
 package com.example.android.sp;
 
 //Necessary imports
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -67,7 +69,16 @@ public class OptionActivity2 extends AppCompatActivity {
     }
 
     public void delete(View view){
-
+        stopService(new Intent(OptionActivity2.this,LocationService.class));
+        stopService(new Intent(OptionActivity2.this,DirectionService.class));
+        Intent cancelaction = new Intent(this, NotificationPublisher.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+        Intent cancelaction2 = new Intent(this, NotificationPublisher.class);
+        PendingIntent pendingIntent2 = PendingIntent.getBroadcast(this, 23, cancelaction2, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager2.cancel(pendingIntent2);
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
         getcheckin.addChildEventListener(listener1);
@@ -80,8 +91,6 @@ public class OptionActivity2 extends AppCompatActivity {
             if(count==0) {
                 Log.d(TAG, "detected something");
                 CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-                latlngcode = user.getlatlngcode();
-                key = user.getkey();
                 deletedata();
             }
             count = count+1;
