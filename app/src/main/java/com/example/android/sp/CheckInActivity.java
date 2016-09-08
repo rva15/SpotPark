@@ -414,7 +414,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     //gets called on pressing the logout button
-    public void backtologin(View view){
+    public void backToLogin(View view){
         String message1 = "1";
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
