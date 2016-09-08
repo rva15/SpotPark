@@ -2,27 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- Search / will display always -->
-    <item android:id="@+id/action_search"
-        android:icon="@mipmap/ic_launcher"
-        android:title="@string/action_search"
-        app:showAsAction="ifRoom"/>
 
     <!-- Location Found -->
-    <item android:id="@+id/action_location_found"
+    <!--<item android:id="@+id/action_location_found"
         android:icon="@mipmap/ic_launcher"
         android:title="@string/action_location_found"
-        app:showAsAction="ifRoom"/>
-
-    <!-- Refresh -->
-    <item android:id="@+id/action_refresh"
-        android:icon="@mipmap/ic_launcher"
-        android:title="@string/action_refresh"
-        app:showAsAction="ifRoom"/>
-
-    <!-- Help -->
-    <item android:id="@+id/action_help"
-        android:title="@string/action_help"
-        app:showAsAction="never"/>
+        app:showAsAction="ifRoom"/> -->
 
     <!-- Check updates -->
     <!--TODO: Doesn't work -->
