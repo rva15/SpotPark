@@ -49,6 +49,9 @@ public class OptionsActivity extends AppCompatActivity {
     }
 
     public void report(View view){
-        //Go to report Activity
+        Intent intent = new Intent(this, ReportActivity.class); //send Intent
+        intent.putExtra(ID,UID);
+        startActivity(intent);
+        this.finish();
     }
 }

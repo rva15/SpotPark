@@ -4,18 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <EditText
-        android:id="@+id/rate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"/>
-
     <TimePicker
-        android:id="@+id/time"
+        android:id="@+id/freetime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:timePickerMode="clock">
+        android:timePickerMode="spinner">
     </TimePicker>
 
 

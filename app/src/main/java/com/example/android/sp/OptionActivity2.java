@@ -66,6 +66,10 @@ public class OptionActivity2 extends AppCompatActivity {
 
     public void report(View view){
         //Go to report Activity
+        Intent intent = new Intent(this, ReportActivity.class); //send Intent
+        intent.putExtra("user_id",UID);
+        startActivity(intent);
+        this.finish();
     }
 
     public void delete(View view){
