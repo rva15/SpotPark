@@ -25,12 +25,11 @@
     <string name="action_help">"Action Help"</string>
     <string name="logout">Logout</string>
 
-    <string name="navigation_view_item_1">Main Activity</string>
-    <string name="navigation_view_item_2">Viral Android</string>
-    <string name="navigation_view_item_3">Google</string>
-    <string name="navigation_view_item_4">Viral Android</string>
-    <string name="navigation_view_item_5">Google</string>
-    <string name="navigation_view_item_6">Viral Android</string>
+    <string name="navigation_view_item_1">Search</string>
+    <string name="navigation_view_item_2">Checkin</string>
+    <string name="navigation_view_item_3">Report</string>
+    <string name="navigation_view_item_4">Account</string>
+    <string name="navigation_view_item_5">Help</string>
     <string name="navigation_view_category_1">Sliding Menu</string>
 
 </resources>
