@@ -12,12 +12,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.*;
 import com.facebook.login.LoginManager;
@@ -30,6 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -70,6 +75,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     DatabaseReference database;
     boolean isCheckedIn=false;
 
+    // -------------  Activity LifeCycle Functions -------------------------------//
+
 
     //onCreate method
     @Override
@@ -105,7 +112,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         FacebookSdk.sdkInitialize(getApplicationContext()); //set Facebook context
         callbackManager = CallbackManager.Factory.create(); //callbackManager for facebook login
         mAuthstart = FirebaseAuth.getInstance();            //get current state of login
-        //create an auth state listener
+        //create an auth state listener allows already logged in users to proceed
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -113,7 +120,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (user != null) {
                     //if someone is already signed in, move on to main activity
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    addNewUser(user.getUid());
                     checkStatus(user.getUid());
                 } else {
                     // there is no one signed in
@@ -144,8 +150,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             }
         };
-
+        //this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login1);  //setup the content view for the loginActivity
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
+        SignInButton signInButton = (SignInButton)findViewById(R.id.google_login);
+        setGooglePlusButtonText(signInButton);
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         login_button        = (LoginButton) findViewById(R.id.login_button);  //find facebook's login button
         username = (EditText) findViewById(R.id.username);                    //find username textbox
@@ -179,24 +190,75 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //End of onCreate method
     }
 
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+    }
+
+
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
+        Toast.makeText(this,"Connectivity problems!",Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.google_login:
-                googlelogin();
-                break;
-            // ...
-        }
+
+
+    //------------------- Functions belonging to Activity ----------------------------------//
+
+    public void checkStatus(String UID){
+        showLoading();
+        userid = UID;
+        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+        //com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
+        //getcheckin.addChildEventListener(listener1);
+
+        ValueEventListener valuelistener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Get Post object and use the values to update the UI
+                if(count==0) {
+                    if (dataSnapshot.exists()) {
+                        Log.d(TAG, "exists");
+                        isCheckedIn=true;
+
+                    }
+                    else if(!dataSnapshot.exists()){
+                        Log.d(TAG, "not exists");
+                        isCheckedIn=false;
+
+                    }
+                    goAhead(userid);
+                }
+                count=count+1;
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
+
+            }
+        };
+        database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener);
+
     }
 
-    //go Ahead to Main Activity
+    //go Ahead to relevant Options Activity
     public void goAhead(String ID){
         checkStatus(ID);
         if(isCheckedIn){
@@ -216,6 +278,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    public void showLoading(){
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+        login_button.setVisibility(View.GONE);
+
+        //Toast.makeText(this,"Authenticating credentials",Toast.LENGTH_LONG).show();
+    }
+
+
+    //------------------------ Email Signup Functions -----------------------------------------------//
+
     //add a new user to database
     public void addNewUser(String userID){
         Log.d(TAG, "onAuthStateChanged:addNewUser");
@@ -228,6 +300,97 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mDatabase.updateChildren(childUpdates);
 
     }
+
+    public void showNoticeDialog(View v) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new SignupDialog();
+        dialog.show(getSupportFragmentManager(),"Signup fragment");
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        Dialog dialogView = dialog.getDialog();
+        fn = (EditText) dialogView.findViewById(R.id.firstname);
+        ln = (EditText) dialogView.findViewById(R.id.lastname);
+        user = (EditText) dialogView.findViewById(R.id.newusername);
+        pass = (EditText) dialogView.findViewById(R.id.newuserpassword);
+        signup();
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+        //Do nothing
+        Log.d(TAG,"negative click");
+    }
+
+    // This function is triggered when user presses signup button
+    public void signup() {
+        showLoading();//show loading
+
+        firstname = fn.getText().toString();
+        lastname = ln.getText().toString();
+        email = user.getText().toString();
+        mAuthsignup = FirebaseAuth.getInstance();               //get Firebase instance
+        //create a listener for signup process
+        mAuthsignup.addAuthStateListener(newAccountListener);        //add listener
+        mAuthsignup.createUserWithEmailAndPassword(user.getText().toString(), pass.getText().toString()) //create the user
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            login_button.setVisibility(View.VISIBLE);
+                            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                            Toast.makeText(LoginActivity.this, "Unable to create the account!",
+                                    Toast.LENGTH_LONG).show();
+                        }
+
+                    }
+                });
+    }
+
+    //----------------------- Email Login -----------------------------------------------//
+
+    //This function is triggered when you press the login button
+    public void login(View view) {
+
+        if(!username.getText().toString().contains(".com") || !username.getText().toString().contains("@"))
+        {
+            Toast.makeText(this,"Invalid email !",Toast.LENGTH_SHORT).show();     //check for validity of email id
+            return;
+        }
+        showLoading();                                 //show loading toast
+        mAuthlogin = FirebaseAuth.getInstance();       //get Firebase instance
+
+        mAuthlogin.addAuthStateListener(mAuthListener);//add listener to it
+        mAuthlogin.signInWithEmailAndPassword(username.getText().toString(), password.getText().toString()) //sign in with email
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            login_button.setVisibility(View.VISIBLE);
+                            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+
+                    }
+                });
+
+    }
+
+    //------------------------------------Facebook Login ------------------------------------//
 
     //this method is called on fb's successful login
     private void handleFacebookAccessToken(AccessToken token) {
@@ -280,125 +443,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 });
     }
 
-    public void showLoading(){
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-        login_button.setVisibility(View.GONE);
-
-        //Toast.makeText(this,"Authenticating credentials",Toast.LENGTH_LONG).show();
-    }
-
-    //This function is triggered when you press the login button
-    public void login(View view) {
-
-        if(!username.getText().toString().contains(".com") || !username.getText().toString().contains("@"))
-        {
-            Toast.makeText(this,"Invalid email !",Toast.LENGTH_SHORT).show();     //check for validity of email id
-            return;
-        }
-        showLoading();                                 //show loading toast
-        mAuthlogin = FirebaseAuth.getInstance();       //get Firebase instance
-
-        mAuthlogin.addAuthStateListener(mAuthListener);//add listener to it
-        mAuthlogin.signInWithEmailAndPassword(username.getText().toString(), password.getText().toString()) //sign in with email
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            login_button.setVisibility(View.VISIBLE);
-                            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-                            Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-
-                    }
-                });
-
-    }
-
-    public void googlelogin(){
-        Log.d(TAG,"googlelogin called");
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        startActivityForResult(signInIntent, 45);
-    }
-
-    public void showNoticeDialog(View v) {
-        // Create an instance of the dialog fragment and show it
-        DialogFragment dialog = new SignupDialog();
-        dialog.show(getSupportFragmentManager(),"Signup fragment");
-
-
-    }
-
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        // User touched the dialog's positive button
-        Dialog dialogView = dialog.getDialog();
-        fn = (EditText) dialogView.findViewById(R.id.firstname);
-        ln = (EditText) dialogView.findViewById(R.id.lastname);
-        user = (EditText) dialogView.findViewById(R.id.newusername);
-        pass = (EditText) dialogView.findViewById(R.id.newuserpassword);
-        signup();
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-        // User touched the dialog's negative button
-        //Do nothing
-        Log.d(TAG,"negative click");
-    }
-
-    // This function is triggered when user presses signup button
-    public void signup() {
-        showLoading();//show loading
-
-        firstname = fn.getText().toString();
-        lastname = ln.getText().toString();
-        email = user.getText().toString();
-        mAuthsignup = FirebaseAuth.getInstance();               //get Firebase instance
-        //create a listener for signup process
-        mAuthsignup.addAuthStateListener(newAccountListener);        //add listener
-        mAuthsignup.createUserWithEmailAndPassword(user.getText().toString(), pass.getText().toString()) //create the user
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-
-
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
-                        if (!task.isSuccessful()) {
-                            login_button.setVisibility(View.VISIBLE);
-                            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-                            Toast.makeText(LoginActivity.this, "could not create",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-                });
-    }
-
-    //Activity lifecycle functions. Currently just set to default
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-    }
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-    }
-
-    //something to do with fb login
+    //on activity result function
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -409,6 +454,40 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             handleSignInResult(result);
         }
     }
+
+    //----------------------------------- Google Login ----------------------------------------//
+
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.google_login:
+                googlelogin();
+                break;
+            // ...
+        }
+    }
+
+    protected void setGooglePlusButtonText(SignInButton signInButton) {
+        // Find the TextView that is inside of the SignInButton and set its text
+        for (int i = 0; i < signInButton.getChildCount(); i++) {
+            View v = signInButton.getChildAt(i);
+
+            if (v instanceof TextView) {
+                TextView tv = (TextView) v;
+                tv.setText("Login with Google");
+                return;
+            }
+        }
+    }
+
+
+    public void googlelogin(){
+        Log.d(TAG,"googlelogin called");
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, 45);
+    }
+
 
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
@@ -421,12 +500,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             firebaseAuthWithGoogle(account);
             Log.d(TAG,"google sign in success");
-            //mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
-            //updateUI(true);
+
         } else {
             Log.d(TAG,"no success");
-            // Signed out, show unauthenticated UI.
-            //updateUI(false);
+
         }
     }
 
@@ -457,43 +534,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 });
     }
 
-    public void checkStatus(String UID){
-        showLoading();
-        userid = UID;
-        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
-        //com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
-        //getcheckin.addChildEventListener(listener1);
 
-        ValueEventListener valuelistener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get Post object and use the values to update the UI
-                if(count==0) {
-                    if (dataSnapshot.exists()) {
-                        Log.d(TAG, "exists");
-                        isCheckedIn=true;
-
-                    }
-                    else if(!dataSnapshot.exists()){
-                        Log.d(TAG, "not exists");
-                        isCheckedIn=false;
-
-                    }
-                    goAhead(userid);
-                }
-                count=count+1;
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-
-            }
-        };
-        database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener);
-
-    }
 
 }
