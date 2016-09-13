@@ -1,45 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.android.sp.OptionsActivity">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <ImageView
+        android:src="@drawable/backgrnd"
+        android:scaleType="centerCrop"
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"/>
 
-
-    <Button
-        android:id="@+id/search"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="search"
-        android:text="Search for Spot"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="16dp" />
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.example.android.sp.OptionsActivity">
 
-    <Button
-        android:id="@+id/checkin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="checkin"
-        android:text="Checkin at a Spot"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="16dp" />
+        <RelativeLayout
+            android:clickable="true"
+            android:onClick="search"
+            android:background="@android:drawable/btn_default"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/searchtext"
+                android:text="Search for a Spot"
+                android:layout_centerInParent="true"
+                android:textAppearance="?android:attr/textAppearanceButton"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"></TextView>
+            <ImageView
+                android:id="@+id/searchimage"
+                android:layout_toLeftOf="@id/searchtext"
+                android:layout_centerVertical="true"
+                android:src="@drawable/search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </ImageView>
 
-    <Button
-        android:id="@+id/report"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="report"
-        android:text="Report Free Parking"
-        />
+        </RelativeLayout>
 
+        <RelativeLayout
+            android:clickable="true"
+            android:onClick="checkin"
+            android:background="@android:drawable/btn_default"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/checkintext"
+                android:text="Checkin at a Spot"
+                android:layout_centerInParent="true"
+                android:textAppearance="?android:attr/textAppearanceButton"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"></TextView>
+            <ImageView
+                android:id="@+id/checkinimage"
+                android:layout_toLeftOf="@id/checkintext"
+                android:layout_centerVertical="true"
+                android:src="@drawable/checkin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </ImageView>
 
-</LinearLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:clickable="true"
+            android:onClick="report"
+            android:background="@android:drawable/btn_default"
+            android:layout_marginBottom="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <TextView
+                android:id="@+id/reporttext"
+                android:text="Report a free Spot"
+                android:layout_centerInParent="true"
+                android:textAppearance="?android:attr/textAppearanceButton"
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"></TextView>
+            <ImageView
+                android:id="@+id/reportimage"
+                android:layout_toLeftOf="@id/reporttext"
+                android:layout_centerVertical="true"
+                android:src="@drawable/report"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </ImageView>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    </FrameLayout>

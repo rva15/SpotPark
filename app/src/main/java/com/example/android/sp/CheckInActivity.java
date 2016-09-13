@@ -50,6 +50,7 @@ import com.google.android.gms.maps.model.LatLng;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TimePicker;
@@ -69,14 +70,14 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
     //Necessary global variable declarations
     private GoogleMap map;
-    private ExampleDBHelper dbHelper ;
+    private CheckInHelperDB dbHelper ;
     private GoogleApiClient mGoogleApiClient;
     public  double curlatitude;
     public  double curlongitude;
     float zoom = 16;
     public String checkinTime;
     public final static String EXTRA_MESSAGE = "com.example.android.";
-    public final static String fbl = "fbl";
+    public final static String fbl = "logoutflag";
     private static final String TAG = "Debugger ";
     Location mCurrentLocation;
     TimePicker timePicker;
@@ -92,21 +93,22 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
     LocationRequest mLocationRequest;
     boolean inputerror= false;
     int i=0;
-    double hours,mins,dollars,cents,checkinhour,checkinmin;
+    double hours,mins,checkinhour,checkinmin;
+    int dollars,cents;
     public static String PACKAGE_NAME;
     String startedfrom;
     CameraPosition position;
     LatLng cameracenter;
 
 
-
+    //----------------------------Activity Lifecycle Functions--------------------------------//
 
     //The onCreate method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_in);
-        Intent intent1 = getIntent();           //Receive intent from Options Activity
+        Intent intent1 = getIntent();           //Receive intent
         UID     = intent1.getStringExtra(OptionsActivity.ID); //Receive logged in user's unique ID
 
         String startedfrom= intent1.getStringExtra("started_from");
@@ -117,7 +119,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options
                 .requestIdToken("283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com")
                 .requestEmail()
                 .build();
@@ -128,22 +130,14 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
                 .build();
         mLocationRequest = new LocationRequest();            // Create location request
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");  //and set its format
-        PACKAGE_NAME = getApplicationContext().getPackageName();
+        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
+        PACKAGE_NAME = getApplicationContext().getPackageName();  //get package name
 
 
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main_actions, menu);
-
-        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -164,11 +158,6 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         stopLocationUpdates();       //stop location updates when activity pauses as defined below
     }
 
-    protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
-    }
-
     @Override
     public void onResume() {
         super.onResume();
@@ -177,12 +166,64 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         }
     }
 
+    //---------------------------Top Bar Menu-------------------------------
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_actions, menu);        //inflate menu
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logout:
+
+                Log.d(TAG,"pressed logout");                           //logout button in menu
+                backToLogin();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //gets called on pressing the logout button
+    public void backToLogin(){
+        String message1 = "1";
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Log.d(TAG,"google signed out");
+                    }
+                });
+        Intent intent3 = new Intent(CheckInActivity.this, LoginActivity.class);  //pass intent to login activity
+        intent3.putExtra(fbl,message1);                                       //put the boolean string into it
+        startActivity(intent3);                                               //start login activity and kill itself
+        finish();
+
+    }
+
+    //-----------------------------Location Updates Related Functioms---------------------------//
 
     @Override
     public void onConnected(Bundle connectionHint) {
         //call this function
         startLocationUpdates();
+    }
 
+    @Override
+    public void onConnectionSuspended(int x){
+        //notify user of lost connection
+        Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT); //notify user when connection is suspended
+    }
+
+    protected void stopLocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(
+                mGoogleApiClient, this);
     }
 
 
@@ -191,13 +232,12 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         //you need to check first if you have permissions from user
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
-            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
             return;
         }
         //if yes, request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
-
     }
 
     @Override
@@ -206,11 +246,147 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         updateUI();                                      //will update UI accordingly
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;                    //when GoogleMap is ready, put it into the existing map object
+    }
+
+
+    //----------------------------CheckIn Action Related Functions----------------------------//
+
+    public void showCheckInDialog(View v) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new CheckInDialog();
+        dialog.show(getSupportFragmentManager(),"CheckIn fragment");
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        Dialog dialogView = dialog.getDialog();
+        rate = (EditText) dialogView.findViewById(R.id.rate);
+        timePicker = (TimePicker) dialogView.findViewById(R.id.time);  //Obtain all variables from dialog box
+        Double rph = toDouble(rate.getText().toString());
+        if(rph==12345.){
+            Toast.makeText(this,"Invalid Rate!",Toast.LENGTH_SHORT).show();    //check if the user input rate is valid
+            return;
+        }
+        dollars =  (int)Math.round(Math.floor(rph));
+        cents = (int)Math.round(100*(rph - Math.floor(rph)));
+        hours = (double)timePicker.getCurrentHour();
+        mins = (double) timePicker.getCurrentMinute();
+        checkIn();                                             //call the checkIn function
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+    }
+
+    //Called on clicking the checkout button
+    public void checkIn() {
+
+        position = map.getCameraPosition();                 //get the camera position
+        cameracenter = position.target;                     //and get the center of the map
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        calendar = Calendar.getInstance();                    //get current time
+        checkinTime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
+        String[] timearray = checkinTime.split(":");               //split the time into hours and mins
+        checkinhour = Double.parseDouble(timearray[0]);
+        checkinmin = Double.parseDouble(timearray[1]);
+        String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
+        Log.d(TAG, "LatLngCode : " + LatLngCode);
+
+        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
+        //construct the CheckInDetails object
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
+        Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
+        CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
+        Map<String, Object> userMap = user.toMap();                    //call its toMap method
+
+        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+        childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
+        childUpdates.put("/CheckInUsers/"+UID,userMap);
+        database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
+
+        //Proceed towards starting NotificationBroadcast
+
+        int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;            //get the delay for notification
+        if (delay<0){
+            Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();  //cant set notification if time is too less
+            return;
+        }
+        scheduleNotification(getAlertNotification(),delay,1);       //schedule notification 15mins prior to ticket expiring
+        scheduleNotification(getInformNotification(),delay + 60000 ,23);    //ask user if he wants to inform others by this notification
+
+        //Put in checkin information into phone local storage
+        dbHelper = new CheckInHelperDB(this);
+        dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
+        Intent servIntent = new Intent(this,LocationService.class);     //start the LocationService
+        startService(servIntent);
+        Intent intent = new Intent(this, CheckedIn.class);             //move on to the next activity
+        startActivity(intent);
+
+    }
+
+    //-------------------------------------Notifications Related Functions-----------------------------//
+
+    private void scheduleNotification(Notification notification, int delay,int unique) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);   //send intent to NotificationPublisher class
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);  //attach Notification ID
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification); //and Notification with the intent
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, unique, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT); //setup the broadcase with the pending intent
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);       //setup an AlarmService
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
+    //construct the notification that allows the user to navigate back to his car
+    private Notification getAlertNotification() {
+
+        Intent navigate = new Intent(this, NavigationActivity.class);
+        navigate.putExtra("user_id",UID);
+        navigate.putExtra("started_from","notification");
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.icon);
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Parking Ticket expires in 15min !");
+        builder.addAction(accept);
+        builder.setAutoCancel(true);
+
+        return builder.build();
+    }
+
+    //construct notification asking users to inform others
+    private Notification getInformNotification() {
+
+        Intent serviceintent = new Intent(this,DirectionService.class);
+        serviceintent.putExtra("started_from","checkin");
+        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.icon);
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Inform other users that you're leaving?");
+        builder.addAction(accept);
+        builder.setAutoCancel(true);
+
+
+        return builder.build();
+    }
+
+    //------------------------------------Other Helper Funcations---------------------------------//
+
     private void updateUI() {
         Log.d(TAG, "yayy location updated !!!");
         curlatitude = mCurrentLocation.getLatitude();       //get the latitude
         curlongitude = mCurrentLocation.getLongitude();     //get the longitude
-        place = new LatLng(curlatitude, curlongitude);  //initiate LatLng object
+        place = new LatLng(curlatitude, curlongitude);      //initiate LatLng object
         //first time this method is called, put a marker on user's location and zoom in on it
         if(i==0){
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
@@ -219,105 +395,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
     }
 
-
-    @Override
-    public void onConnectionSuspended(int x){
-        //notify user of lost connection
-        Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT); //notify user when connection is suspended
-    }
-
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        map = googleMap;                    //when GoogleMap is ready, put it into the existing map object
-
-    }
-
-
-    public void showCheckInDialog(View v) {
-        // Create an instance of the dialog fragment and show it
-        DialogFragment dialog = new CheckInDialog();
-        dialog.show(getSupportFragmentManager(),"CheckIn fragment");
-
-    }
-
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        // User touched the dialog's positive button
-        Dialog dialogView = dialog.getDialog();
-        rate = (EditText) dialogView.findViewById(R.id.rate);
-        timePicker = (TimePicker) dialogView.findViewById(R.id.time);
-        Double rph = toDouble(rate.getText().toString());
-        dollars =  Math.floor(rph);
-        cents = (100*(rph - Math.floor(rph)));
-        hours = (double)timePicker.getCurrentHour();
-        mins = (double) timePicker.getCurrentMinute();
-        checkIn();
-
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-        // User touched the dialog's negative button
-
-    }
-
-    //Called on clicking the checkout button
-    public void checkIn() {
-
-
-
-        if(inputerror){
-            Toast.makeText(this,"Please enter correct rate",Toast.LENGTH_LONG).show();  //not used currently
-            inputerror=false;
-        }
-        else {
-
-            position = map.getCameraPosition();
-            cameracenter = position.target;
-            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-            calendar = Calendar.getInstance();                    //get current time
-            checkinTime = simpleDateFormat.format(calendar.getTime());  //get the checkin time
-            String[] timearray = checkinTime.split(":");
-            checkinhour = Double.parseDouble(timearray[0]);
-            checkinmin = Double.parseDouble(timearray[1]);
-            String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
-            Log.d(TAG, "LatLngCode : " + LatLngCode);
-
-            String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into the database and get its key
-            //construct the CheckInDetails object
-            CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
-            Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
-            CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);            // construct the CheckInUser object
-            Map<String, Object> userMap = user.toMap();                    //call its toMap method
-
-            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-            childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
-            childUpdates.put("/CheckInUsers/"+UID,userMap);
-            database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
-            inputerror=false;
-
-            //intent.putExtra(EXTRA_MESSAGE,message);                              //put info in the intent and then start the next activity
-
-            int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;
-            if (delay<0){
-                Toast.makeText(CheckInActivity.this,"Cannot set notification",Toast.LENGTH_LONG).show();
-                return;
-            }
-            //scheduleNotification(getAlertNotification(),delay,1);
-            scheduleNotification(getInformNotification(),delay ,23);
-            dbHelper = new ExampleDBHelper(this);
-            dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
-            Intent servIntent = new Intent(this,LocationService.class);
-            startService(servIntent);
-            Intent intent = new Intent(this, CheckedIn.class);
-            startActivity(intent);
-        }
-
-    }
-
-
-    public Double toDouble(String var){                                   //currently unused function
+    public Double toDouble(String var){                                   //convert String to Double
         try{
             Double i = Double.parseDouble(var.trim());
             return i;
@@ -325,7 +403,7 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
 
         catch (NumberFormatException nfe){
             inputerror = true;
-            return 0.;
+            return 12345.;
         }
 
     }
@@ -349,55 +427,8 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
         return (lons+lats);
     }
 
-    private void scheduleNotification(Notification notification, int delay,int unique) {
 
-        Intent notificationIntent = new Intent(this, NotificationPublisher.class);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);
-        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, unique, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        long futureInMillis = SystemClock.elapsedRealtime() + delay;
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-    }
-
-    private Notification getAlertNotification() {
-
-        Intent navigate = new Intent(this, NavigationActivity.class);
-        navigate.putExtra("user_id",UID);
-        navigate.putExtra("started_from","notification");
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
-        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.drawable.icon);
-        builder.setContentTitle("SpotPark");
-        builder.setContentText("Parking Ticket expires in 15min !");
-        builder.addAction(accept);
-        builder.setAutoCancel(true);
-
-
-
-        return builder.build();
-    }
-
-    private Notification getInformNotification() {
-
-        Intent serviceintent = new Intent(this,DirectionService.class);
-        serviceintent.putExtra("started_from","checkin");
-        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
-        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.drawable.icon);
-        builder.setContentTitle("SpotPark");
-        builder.setContentText("Inform other users that you're leaving?");
-        builder.addAction(accept);
-        builder.setAutoCancel(true);
-
-
-        return builder.build();
-    }
-
+    //function that calculates time difference between two times in milliseconds
     public double getDelay(double checkinhour,double checkinmin,double checkouthour,double checkoutmin){
         double comins;
         double cimins;
@@ -411,23 +442,6 @@ public class CheckInActivity extends AppCompatActivity implements OnMapReadyCall
             mindelay = (24*60-cimins)+comins;
         }
         return (mindelay*60*1000);
-    }
-
-    //gets called on pressing the logout button
-    public void backToLogin(View view){
-        String message1 = "1";
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        Log.d(TAG,"google signed out");
-                    }
-                });
-        Intent intent3 = new Intent(CheckInActivity.this, LoginActivity.class);  //pass intent to login activity
-        intent3.putExtra(fbl,message1);                                       //put the boolean string into it
-        startActivity(intent3);                                               //start login activity and kill itself
-        finish();
-
     }
 
 

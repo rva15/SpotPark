@@ -40,7 +40,7 @@ public class LocationService extends android.app.Service{
     int count = 0,i=0;
     String UID ="",key="",checkinTime="";
     public DatabaseReference database;
-    private ExampleDBHelper dbHelper;
+    private CheckInHelperDB dbHelper;
     Double carlat,carlon,checkinhour,checkinmin,lasthour,lastmin,diff,lastentry;
     SimpleDateFormat simpleDateFormat;
     Calendar calendar;
@@ -112,7 +112,7 @@ public class LocationService extends android.app.Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        dbHelper = new ExampleDBHelper(this);
+        dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
         UID = res.getString(res.getColumnIndex("_id"));

@@ -19,7 +19,6 @@ package com.example.android.sp;
 //All the imports
 import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +27,6 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
@@ -56,12 +54,10 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+
 import android.support.v4.app.NotificationCompat;
 
 
@@ -69,7 +65,7 @@ public class ReportActivity extends AppCompatActivity implements OnMapReadyCallb
 
     //Necessary global variable declarations
     private GoogleMap reportmap;
-    private ExampleDBHelper dbHelper ;
+    private CheckInHelperDB dbHelper ;
     private GoogleApiClient mGoogleApiClient;
     public  double curlatitude;
     public  double curlongitude;

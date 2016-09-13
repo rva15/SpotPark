@@ -100,8 +100,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //this is to receive the intent from CheckInActivity
         Intent intent = getIntent();
         //logout current user on receiving a signal from CheckInActivity
-        if(intent.getExtras() != null && intent.getStringExtra(CheckInActivity.fbl) != null){
-            logoutFlag = intent.getStringExtra(CheckInActivity.fbl);
+        if(intent.getExtras() != null && intent.getStringExtra("logoutflag") != null){
+            logoutFlag = intent.getStringExtra("logoutflag");
             if(logoutFlag.equals("1")) {
                 LoginManager.getInstance().logOut();//logout Facebook
                 FirebaseAuth.getInstance().signOut(); //logout Firebase
@@ -153,8 +153,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login1);  //setup the content view for the loginActivity
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.hide();
+        //ActionBar actionBar = getSupportActionBar();
+        //actionBar.hide();
         SignInButton signInButton = (SignInButton)findViewById(R.id.google_login);
         setGooglePlusButtonText(signInButton);
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);

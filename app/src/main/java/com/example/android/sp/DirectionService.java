@@ -15,7 +15,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
@@ -38,7 +37,7 @@ public class DirectionService extends android.app.Service{
     int count = 0,i=0;
     String UID ="",key="",origin="",origin2="";
     public DatabaseReference database;
-    private ExampleDBHelper dbHelper;
+    private CheckInHelperDB dbHelper;
     Double carlat,carlon;
 
 
@@ -129,7 +128,7 @@ public class DirectionService extends android.app.Service{
             }
         }
         Log.d(TAG,"origin is :"+origin);
-        dbHelper = new ExampleDBHelper(this);
+        dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
         UID = res.getString(res.getColumnIndex("_id"));

@@ -8,7 +8,7 @@ import java.util.Map;
  * Created by ruturaj on 8/18/16.
  */
 public class CheckInDetails {
-    double dollars=0,cents=0;
+    int dollars=0,cents=0;
     double longitude=0.0,latitude=0.0;
     String id = "";
     int minstoleave = 0;
@@ -18,7 +18,7 @@ public class CheckInDetails {
     public CheckInDetails(){}
 
 
-    public CheckInDetails(double latitude,double longitude, double dollars,double cents,String id,int minstoleave){
+    public CheckInDetails(double latitude,double longitude, int dollars,int cents,String id,int minstoleave){
 
         this.longitude=longitude;
         this.latitude = latitude;
@@ -31,8 +31,8 @@ public class CheckInDetails {
 
     public double   getlongitude(){return this.longitude;}
     public double   getlatitude(){return this.latitude;}
-    public double      getdollars(){return this.dollars;}
-    public double      getcents(){return this.cents;}
+    public int      getdollars(){return this.dollars;}
+    public int      getcents(){return this.cents;}
     public String   getid(){return this.id;}
     public int  getminstoleave(){return this.minstoleave;}
 

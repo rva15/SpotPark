@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 /**
  * Created by ruturaj on 8/1/16.
  */
-public class ExampleDBHelper extends SQLiteOpenHelper {
+public class CheckInHelperDB extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "NewCheckInInfo.db";
     private static final int DATABASE_VERSION = 1;
@@ -24,7 +24,7 @@ public class ExampleDBHelper extends SQLiteOpenHelper {
     public static final String lm = "LastMin";
 
 
-    public ExampleDBHelper(Context context) {
+    public CheckInHelperDB(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
     }
 
