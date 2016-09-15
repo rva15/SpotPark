@@ -123,7 +123,7 @@ public class OptionsActivity extends AppCompatActivity implements GoogleApiClien
 
     public void checkin(View view){
         //Go to Main Activity
-        Intent intent = new Intent(this, CheckInActivity.class); //send Intent
+        Intent intent = new Intent(this, HomeScreenActivity.class); //send Intent
         intent.putExtra(ID,UID);
         startActivity(intent);
 

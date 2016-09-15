@@ -1,25 +1,6 @@
-//This is the activity for Check-ins
 package com.example.android.sp;
-
-/*
- * Copyright (C) 2012 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-//All the imports
 import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -30,51 +11,39 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.Toast;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.TimePicker;
-import android.widget.Toast;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import android.support.v4.app.NotificationCompat;
 
+/**
+ * Created by ruturaj on 9/13/16.
+ */
+public class CheckInFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener{
 
-public class CheckInActivity extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener{
+    //variable declarations
 
-    //Necessary global variable declarations
     private GoogleMap map;
     private CheckInHelperDB dbHelper ;
     private GoogleApiClient mGoogleApiClient;
@@ -82,17 +51,13 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
     public  double curlongitude;
     float zoom = 16;
     public String checkinTime;
-    public final static String EXTRA_MESSAGE = "com.example.android.";
-    public final static String fbl = "logoutflag";
     private static final String TAG = "Debugger ";
     Location mCurrentLocation;
-    TimePicker timePicker;
-    EditText rate;
     Calendar calendar;
     LatLng place;
     SimpleDateFormat simpleDateFormat;
     private DatabaseReference database;
-    String UID="",navigate;
+    String UID="";
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -101,42 +66,34 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
     int i=0;
     double hours,mins,checkinhour,checkinmin;
     int dollars,cents;
-    public static String PACKAGE_NAME;
-    String startedfrom;
     CameraPosition position;
     LatLng cameracenter;
     public static final String ARG_PAGE = "ARG_PAGE";
+    MapView gMapView;
     private int mPage;
+    ImageView pin;
+    private static final int REQ_CODE = 1;
+    String rph,h,m;
 
+    //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
-    //----------------------------Activity Lifecycle Functions--------------------------------//
-
-    public static CheckInActivity newInstance(int page) {
+    public static CheckInFragment newInstance(int page) {
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
-        CheckInActivity fragment = new CheckInActivity();
+        CheckInFragment fragment = new CheckInFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    //The onCreate method
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         mPage = getArguments().getInt(ARG_PAGE);
 
-
-
-
-
-        GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options
-                .requestIdToken("283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com")
-                .requestEmail()
-                .build();
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
         mLocationRequest = new LocationRequest();            // Create location request
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
@@ -144,28 +101,6 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
-        //PACKAGE_NAME = getApplicationContext().getPackageName();  //get package name
-
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        FragmentManager fm = getChildFragmentManager();
-        SupportMapFragment fragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
-        if (fragment == null) {
-            fragment = SupportMapFragment.newInstance();
-            fm.beginTransaction().replace(R.id.map, fragment).commit();
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_check_in, container, false);
-        //TextView textView = (TextView) view;
-        //textView.setText("Fragment #" + mPage);
-        return view;
 
     }
 
@@ -177,7 +112,7 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
 
     @Override
     public void onStop() {
-        i=0;
+        i=0;                            //set counter for UpdateUI back to 0
         mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         super.onStop();
     }
@@ -186,7 +121,31 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
     public void onPause() {
         super.onPause();
         stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        if (null != gMapView){
+            gMapView.onPause();}
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (null != gMapView)
+            gMapView.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (null != gMapView)
+            gMapView.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (null != gMapView)
+            gMapView.onLowMemory();
+    }
+
 
     @Override
     public void onResume() {
@@ -194,67 +153,26 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         if (mGoogleApiClient.isConnected()) {    //start location updates once apiclient is connected
             startLocationUpdates();
         }
+        if (null != gMapView){
+            gMapView.onResume();}
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_checkin, container, false); //inflate the view
+        pin = (ImageView)view.findViewById(R.id.pinimage);                         //get the marker
+        pin.setOnClickListener(this);                                              //and set its onclicklistener
+        gMapView = (MapView) view.findViewById(R.id.gmap);
+        gMapView.onCreate(savedInstanceState);
+        gMapView.onResume();                                                      //get mapView and initialize it
+        MapsInitializer.initialize(getActivity());
+        gMapView.getMapAsync(this);
 
-        try {
-            Field childFragmentManager = Fragment.class
-                    .getDeclaredField("mChildFragmentManager");
-            childFragmentManager.setAccessible(true);
-            childFragmentManager.set(this, null);
-
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        return view;
     }
 
-    //---------------------------Top Bar Menu-------------------------------
-
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main_actions, menu);        //inflate menu
-
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.logout:
-
-                Log.d(TAG,"pressed logout");                           //logout button in menu
-                backToLogin();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    //gets called on pressing the logout button
-    public void backToLogin(){
-        String message1 = "1";
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        Log.d(TAG,"google signed out");
-                    }
-                });
-        Intent intent3 = new Intent(CheckInActivity.this, LoginActivity.class);  //pass intent to login activity
-        intent3.putExtra(fbl,message1);                                       //put the boolean string into it
-        startActivity(intent3);                                               //start login activity and kill itself
-        finish();
-
-    }*/
-
-    //-----------------------------Location Updates Related Functioms---------------------------//
+    //----------------------Location Related Functions----------------------------------//
 
     @Override
     public void onConnected(Bundle connectionHint) {
@@ -265,8 +183,22 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onConnectionSuspended(int x){
         //notify user of lost connection
-        //Toast.makeText(this, "Connection suspended", Toast.LENGTH_SHORT); //notify user when connection is suspended
+        Toast.makeText(this.getActivity(), "Connection suspended", Toast.LENGTH_SHORT); //notify user when connection is suspended
     }
+
+    @Override
+    public void onLocationChanged(Location location) {   //triggered after location change
+        mCurrentLocation = location;                     //stores current location
+        updateUI();                                      //will update UI accordingly
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        map = googleMap;                    //when GoogleMap is ready, put it into the existing map object
+        map.getUiSettings().setMyLocationButtonEnabled(true);
+
+    }
+
 
     protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(
@@ -287,29 +219,38 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
                 mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
     }
 
-    @Override
-    public void onLocationChanged(Location location) {   //triggered after location change
-        mCurrentLocation = location;                     //stores current location
-        updateUI();                                      //will update UI accordingly
-    }
+    //-------------------------------CheckIn Action Related Functions-------------------------//
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        map = googleMap;                    //when GoogleMap is ready, put it into the existing map object
+    public void onClick(View v) {
+        showCheckInDialog();           //get the dialog when user clicks marker
     }
 
-
-    //----------------------------CheckIn Action Related Functions----------------------------//
-
-    public void showCheckInDialog(View v) {
+    public void showCheckInDialog() {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new CheckInDialog();
+        dialog.setTargetFragment(CheckInFragment.this, REQ_CODE);       //set target fragment to this fragment
         dialog.show(this.getActivity().getSupportFragmentManager(),"CheckIn fragment");
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //fetch information from the dialog and call the checkIn function
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==-1){
+            Bundle bundle = data.getExtras();
+            String rate = bundle.getString("rates", rph);
+            String hour = bundle.getString("hours",h);
+            String min  = bundle.getString("mins",m);
+            Log.d(TAG,"rate per hour : "+ rate);
+            Log.d(TAG,"rate per hour : "+ hour);
+            Log.d(TAG,"rate per hour : "+ min);
+            checkIn(rate,hour,min);
+        }
+    }
 
-    //Called on clicking the checkout button
-    public void checkIn() {
+
+    public void checkIn(String parkrate,String parkhour,String parkmin) {
 
         position = map.getCameraPosition();                 //get the camera position
         cameracenter = position.target;                     //and get the center of the map
@@ -319,12 +260,19 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         String[] timearray = checkinTime.split(":");               //split the time into hours and mins
         checkinhour = Double.parseDouble(timearray[0]);
         checkinmin = Double.parseDouble(timearray[1]);
+        double d = toDouble(parkrate);
+        if(d==12345.){
+            Toast.makeText(this.getActivity(),"Invalid parking rate!",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        dollars =  (int)Math.round(Math.floor(d));
+        cents = (int)Math.round(100*(d - Math.floor(d)));
         String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
         Log.d(TAG, "LatLngCode : " + LatLngCode);
 
         String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails object
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,10031);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
@@ -335,7 +283,8 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
 
         //Proceed towards starting NotificationBroadcast
-
+        hours = Double.parseDouble(parkhour);
+        mins = Double.parseDouble(parkmin);
         int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;            //get the delay for notification
         if (delay<0){
             Toast.makeText(this.getActivity(),"Cannot set notification",Toast.LENGTH_LONG).show();  //cant set notification if time is too less
@@ -354,9 +303,9 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    //-------------------------------------Notifications Related Functions-----------------------------//
+    //---------------------------Notifications Related Functions---------------------------//
 
-    private void scheduleNotification(Notification notification, int delay,int unique) {
+    private void scheduleNotification(Notification notification, int delay, int unique) {
 
         Intent notificationIntent = new Intent(this.getActivity(), NotificationPublisher.class);   //send intent to NotificationPublisher class
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);  //attach Notification ID
@@ -377,7 +326,7 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         PendingIntent pIntent = PendingIntent.getActivity(this.getActivity(), 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
-        builder.setSmallIcon(R.drawable.icon);
+        builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Parking Ticket expires in 15min !");
         builder.addAction(accept);
@@ -405,7 +354,7 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         return builder.build();
     }
 
-    //------------------------------------Other Helper Funcations---------------------------------//
+    //--------------------------------------Other Helper Functions------------------------------------//
 
     private void updateUI() {
         Log.d(TAG, "yayy location updated !!!");
@@ -468,6 +417,7 @@ public class CheckInActivity extends Fragment implements OnMapReadyCallback, Goo
         }
         return (mindelay*60*1000);
     }
+
 
 
 }

@@ -5,67 +5,84 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.support.v4.app.DialogFragment;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.TimePicker;
 
 /**
  * Created by ruturaj on 8/26/16.
  */
 public class CheckInDialog extends DialogFragment {
     Activity a;
+    EditText rph;
+    TimePicker timePicker;
+    String hourlyrate;
+    double hours,mins;
+    String hour,min;
+    public CheckInDialog(){}
+
+    /*@Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // R.layout.my_layout - that's the layout where your textview is placed
+        View view = inflater.inflate(R.layout.checkindialog, container, false);
+        rph = (EditText) view.findViewById(R.id.rate);
+        // you can use your textview.
+        return view;
+    }*/
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        final View view = inflater.inflate(R.layout. checkindialog, null);
+
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        builder.setView(inflater.inflate(R.layout.checkindialog, null))
+        builder.setView(view)
                 // Add action buttons
                 .setPositiveButton("CheckIn", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        mListener.onDialogPositiveClick(CheckInDialog.this);
-
+                        //rph = (EditText) getView().findViewById(R.id.rate);
+                        rph = (EditText) view.findViewById(R.id.rate);
+                        timePicker = (TimePicker) view.findViewById(R.id.time);
+                        hourlyrate = rph.getText().toString();
+                        hours = (double)timePicker.getCurrentHour();
+                        mins = (double) timePicker.getCurrentMinute();
+                        hour = Double.toString(hours);
+                        min = Double.toString(mins);
+                        Intent i = new Intent().putExtra("rates",hourlyrate);
+                        i.putExtra("hours",hour);
+                        i.putExtra("mins",min);
+                        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        mListener.onDialogNegativeClick(CheckInDialog.this);
+
                         CheckInDialog.this.getDialog().cancel();
                     }
                 });
+
         return builder.create();
 
+
+
     }
 
-    public interface CheckInDialogListener {
-        public void onDialogPositiveClick(android.support.v4.app.DialogFragment dialog);
-        public void onDialogNegativeClick(android.support.v4.app.DialogFragment dialog);
-    }
 
-    CheckInDialogListener mListener;
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
 
-        if (context instanceof Activity){
-            a=(Activity) context;
-        }
-        // Verify that the host activity implements the callback interface
-        try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (CheckInDialogListener) a;
-        } catch (ClassCastException e) {
-            // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException(a.toString()
-                    + " must implement NoticeDialogListener");
-        }
-    }
+
 
 
 }
