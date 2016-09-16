@@ -115,12 +115,12 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     protected void onStop() {
         ApiClient.disconnect();  //disconnect apiclient on stop
         t.cancel();
-        String LatLngCode = getLatLngCode(latitude,longitude);
-        database = FirebaseDatabase.getInstance().getReference();
-        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, null);
-        database.updateChildren(childUpdates);
+        //String LatLngCode = getLatLngCode(latitude,longitude);
+        //database = FirebaseDatabase.getInstance().getReference();
+        //String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
+        //Map<String, Object> childUpdates = new HashMap<>();
+        //childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, null);
+        //database.updateChildren(childUpdates);
         super.onStop();
     }
 
@@ -205,13 +205,13 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
         longitude = currentLocation.getLongitude();     //get the longitude
         String LatLngCode = getLatLngCode(latitude,longitude);
         database = FirebaseDatabase.getInstance().getReference();
-        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
+        //String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();
 
-        Searcher searcher = new Searcher(latitude,longitude);
-        Map<String, Object> searcherMap = searcher.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, searcherMap);
-        database.updateChildren(childUpdates);
+        //Searcher searcher = new Searcher(latitude,longitude);
+        //Map<String, Object> searcherMap = searcher.toMap();
+        //Map<String, Object> childUpdates = new HashMap<>();
+        //childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, searcherMap);
+        //database.updateChildren(childUpdates);
     }
 
     public String getLatLngCode(double lat, double lon){
@@ -416,7 +416,6 @@ public class SearchActivity extends AppCompatActivity implements OnMapReadyCallb
     public void found(android.view.View v){
         String code = getLatLngCode(latitude,longitude);
         finder.deletenearest(latitude,longitude,code);
-
     }
 
 

@@ -30,6 +30,7 @@ import com.google.firebase.database.DatabaseReference;
  */
 public class LocationService extends android.app.Service{
 
+    //-------------------------Necessary variable declarations--------------//
     public final static int MINUTE = 1000 * 60;
     private static final String TAG = "Debugger ";
     public NotificationManager mNM;
@@ -38,13 +39,14 @@ public class LocationService extends android.app.Service{
     private static final int LOCATION_INTERVAL = 15000;
     private static final float LOCATION_DISTANCE = 0;
     int count = 0,i=0;
-    String UID ="",key="",checkinTime="";
+    String UID ="",key="",currTime="";
     public DatabaseReference database;
     private CheckInHelperDB dbHelper;
     Double carlat,carlon,checkinhour,checkinmin,lasthour,lastmin,diff,lastentry;
     SimpleDateFormat simpleDateFormat;
     Calendar calendar;
 
+    //---------------------------Service LifeCycle Methods------------------------//
 
     //onCreate method
     @Override
@@ -60,7 +62,7 @@ public class LocationService extends android.app.Service{
                 return;
             }
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //request location updates through network
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
@@ -70,7 +72,7 @@ public class LocationService extends android.app.Service{
 
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,  //request location updates through GPS
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
@@ -87,7 +89,6 @@ public class LocationService extends android.app.Service{
 
         }
     }
-
 
 
     // Binder given to clients
@@ -114,7 +115,7 @@ public class LocationService extends android.app.Service{
 
         dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
-        res.moveToFirst();
+        res.moveToFirst();                              //get all info from the CheckInHelper db
         UID = res.getString(res.getColumnIndex("_id"));
         carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
         carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
@@ -129,8 +130,23 @@ public class LocationService extends android.app.Service{
         Log.d(TAG,"Location Service params " + key);
         Log.d(TAG,"Location Service params " + carlat.toString());
         Log.d(TAG,"Location Service params" + carlon.toString());
-        return START_STICKY;
+        return START_STICKY;                                //START_STICKY to keep service going
     }
+
+    @Override
+    public void onDestroy() {  //on Destroy is called when stopSelf() executes
+        Log.d(TAG,"on destroy");
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
+        mLocationManager.removeUpdates(mLocationListeners[1]);
+    }
+
+
+    //-----------------------Notification Related Functions------------------------------//
 
     private void scheduleNotification(Notification notification, int delay,int unique) {
 
@@ -147,7 +163,7 @@ public class LocationService extends android.app.Service{
 
     private Notification getInformNotification() {
         Intent serviceintent = new Intent(this,DirectionService.class);
-        serviceintent.putExtra("started_from","LS");
+        serviceintent.putExtra("started_from","LS");            //inform that it was started from location service
         PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
         NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
@@ -164,6 +180,8 @@ public class LocationService extends android.app.Service{
 
     }
 
+    //-----------------------private locationlistener class-------------------------//
+
     private class LocationListener implements android.location.LocationListener{
 
         Location mLastLocation;
@@ -177,9 +195,8 @@ public class LocationService extends android.app.Service{
         @Override
         public void onLocationChanged(Location location)
         {
-            //Log.d(TAG,"this shit fired");
 
-            double lat = location.getLatitude();
+            double lat = location.getLatitude();        //get current location
             double lon = location.getLongitude();
 
 
@@ -192,29 +209,29 @@ public class LocationService extends android.app.Service{
 
             mLastLocation.set(location);
             calendar = Calendar.getInstance();
-            checkinTime = simpleDateFormat.format(calendar.getTime());
-            String[] timearray = checkinTime.split(":");
-            Log.d(TAG,"difference :"+timearray[0]);
+            currTime = simpleDateFormat.format(calendar.getTime());
+            String[] timearray = currTime.split(":");
+            Log.d(TAG,"difference :"+timearray[0]);                     //get current time
             Log.d(TAG,"difference :"+timearray[1]);
             double diff = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),checkinhour*60+checkinmin);
             if(diff>36000000){
-                stopSelf();
+                stopSelf();         //stop this service if it has been running longer than 10 hours
             }
 
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
-            double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
+            double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));   //get distance to car
             if((deltalat<3)&&(deltalon<3)){
 
                 double difference = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),lastentry);
                 if(difference>15){
                     if(count==0) {
-                        scheduleNotification(getInformNotification(), 1000, 29);
-                        stopSelf();
+                        scheduleNotification(getInformNotification(), 1000, 29);//if near car+time elapsed>15min, notify user
+                        stopSelf(); //and then stopSelf
                     }
                     count=count+1;
                 }
                 else{
-                    lastentry = Double.parseDouble(timearray[0])*60 + Double.parseDouble(timearray[1]);
+                    lastentry = Double.parseDouble(timearray[0])*60 + Double.parseDouble(timearray[1]);//otherwise update the lastentry field in db
                     dbHelper.updateInfo(UID,carlat,carlon,checkinhour,checkinmin,Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]));
                 }
 
@@ -222,7 +239,7 @@ public class LocationService extends android.app.Service{
 
         }
 
-        public double gettimediff(double lh,double lm,double chinmins){
+        public double gettimediff(double lh,double lm,double chinmins){ //function returns timedifference between two times
             double currmins = lh*60 + lm;
 
             if(currmins>=chinmins){
@@ -257,22 +274,13 @@ public class LocationService extends android.app.Service{
 
     }
 
+
+
     LocationListener[] mLocationListeners = new LocationListener[] {
-            new LocationListener(LocationManager.GPS_PROVIDER),
+            new LocationListener(LocationManager.GPS_PROVIDER),             //setup location listeners
             new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
 
-    @Override
-    public void onDestroy() {
-        Log.d(TAG,"on destroy");
-        if (Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mLocationManager.removeUpdates(mLocationListeners[0]);
-        mLocationManager.removeUpdates(mLocationListeners[1]);
-    }
 
 
 }

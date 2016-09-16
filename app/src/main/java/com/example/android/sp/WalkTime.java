@@ -29,13 +29,14 @@ import com.google.firebase.database.FirebaseDatabase;
  * Created by ruturaj on 8/28/16.
  */
 public class WalkTime {
+    //Necessary variables
     double carlatitude,carlongitude,userlatitude,userlongitude;
     public final static String TAG="";
     public DatabaseReference database;
     String latlngcode="",key="",UID="";
-    int totalseconds=0;
+    int totalmins=0;
 
-    public WalkTime(){}
+    public WalkTime(){} //empty constructor
 
     public WalkTime(double carlatitude,double carlongitude,double userlatitude,double userlongitude,String UID){
         this.carlatitude = carlatitude;
@@ -48,9 +49,9 @@ public class WalkTime {
     public void getWalkTime(){
         LatLng origin = new LatLng(userlatitude,userlongitude);
         LatLng dest = new LatLng(carlatitude,carlongitude);
-        String url = getUrl(origin, dest);
+        String url = getUrl(origin, dest); //fetch url to connect to google maps
         FetchUrl FetchUrl = new FetchUrl();
-        FetchUrl.execute(url);
+        FetchUrl.execute(url); //execure this asynctask
     }
 
     private class FetchUrl extends AsyncTask<String, Void, String> {
@@ -76,7 +77,6 @@ public class WalkTime {
             super.onPostExecute(result);
 
             ParserTask parserTask = new ParserTask();
-
             // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
 
@@ -134,21 +134,21 @@ public class WalkTime {
             try {
                 jObject = new JSONObject(jsonData[0]);
                 Log.d("ParserTask",jsonData[0].toString());
-                WalkTimeParser parser = new WalkTimeParser();
+                WalkTimeParser parser = new WalkTimeParser(); //initiate walktime parser object
                 Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
-                totalseconds = parser.parse(jObject);
+                totalmins = parser.parse(jObject);  //get mins required to walk to destination
 
-                if(totalseconds>10){
+                if(totalmins>10){
                     //do nothing
                 }
                 else{
-                    updatedata();
+                    updatedata(); //update entry in database if mins is less than 10
                 }
 
                 Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask totalseconds",Integer.toString(totalseconds));
+                Log.d("ParserTask totalmins",Integer.toString(totalmins));
 
             } catch (Exception e) {
                 Log.d("ParserTask",e.toString());
@@ -160,7 +160,7 @@ public class WalkTime {
         public void updatedata(){
             database = FirebaseDatabase.getInstance().getReference();
             com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
-            getcheckin.addChildEventListener(listener1);
+            getcheckin.addChildEventListener(listener1);   //add this listener to entry in CheckInUsers that equals this UID
         }
 
         //define the ChildEventListener
@@ -173,7 +173,7 @@ public class WalkTime {
                 key = user.getkey();
 
                 Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/minstoleave", totalseconds);
+                childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/minstoleave", totalmins); //update the total mins required
                 database.updateChildren(childUpdates);
 
 
@@ -204,44 +204,7 @@ public class WalkTime {
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            /*ArrayList<LatLng> points;
-            PolylineOptions lineOptions = null;
 
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
-
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
-
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
-                }
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(android.graphics.Color.RED);
-
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
-            }
-
-            // Drawing polyline in the Google Map for the i-th route
-            if(lineOptions != null) {
-                //map.addPolyline(lineOptions);
-            }
-            else {
-                Log.d("onPostExecute","without Polylines drawn");
-            }*/
         }
     }
 

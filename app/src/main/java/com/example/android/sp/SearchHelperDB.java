@@ -32,7 +32,7 @@ public class SearchHelperDB extends SQLiteOpenHelper {
                 key + " TEXT , " + time1 + " INTEGER , " + status + " INTEGER)"
 
         );
-        //db.execSQL("INSERT INTO " + TABLE_NAME + "(" +rownum+ " , "+ key + " , " + time1 + "  , " + time2 +" , " + marker+") VALUES (1,null,null,null,null)");
+        
     }
 
     public Cursor getInfo(String keys) {

@@ -27,6 +27,8 @@ import com.google.firebase.database.DatabaseReference;
  */
 public class DirectionService extends android.app.Service{
 
+    //Necassary Variables
+
     public final static int MINUTE = 1000 * 60;
     private static final String TAG = "Debugger ";
     public NotificationManager mNM;
@@ -40,13 +42,16 @@ public class DirectionService extends android.app.Service{
     private CheckInHelperDB dbHelper;
     Double carlat,carlon;
 
+    //---------------------------Service Lifecycle Methods---------------------------------//
+
 
     //onCreate method
     @Override
     public void onCreate(){
         Log.d(TAG, "running service");
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        manager.cancel(23);
+        manager.cancel(23);  //remove the inform notification from Location Service
+
 
         initializeLocationManager();
         try {
@@ -57,7 +62,7 @@ public class DirectionService extends android.app.Service{
                 return;
             }
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask network for location
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
@@ -67,7 +72,7 @@ public class DirectionService extends android.app.Service{
 
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask GPS for location
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
             Log.i(TAG, "fail to request location update, ignore", ex);
@@ -111,7 +116,7 @@ public class DirectionService extends android.app.Service{
         super.onStartCommand(intent, flags, startId);
         if(intent!=null) {
             origin = (String) intent.getExtras().get("started_from");
-            if(origin.equals("LS")){
+            if(origin.equals("LS")){ //this was started from location service
                 Log.d(TAG,"entered LS");
                 Intent cancelaction = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -120,18 +125,18 @@ public class DirectionService extends android.app.Service{
                 Intent cancelaction2 = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent2 = PendingIntent.getBroadcast(this, 23, cancelaction2, PendingIntent.FLAG_UPDATE_CURRENT);
                 AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
-                alarmManager2.cancel(pendingIntent2);
+                alarmManager2.cancel(pendingIntent2); //cancel the inform and alert notifications that user would have got
             }
-            if(origin.equals("checkin")){
+            if(origin.equals("checkin")){ //this was started from the inform notification
                 Log.d(TAG,"entered checkin");
-                stopService(new Intent(DirectionService.this,LocationService.class));
+                stopService(new Intent(DirectionService.this,LocationService.class)); //stop the location service
             }
         }
         Log.d(TAG,"origin is :"+origin);
         dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
         res.moveToFirst();
-        UID = res.getString(res.getColumnIndex("_id"));
+        UID = res.getString(res.getColumnIndex("_id"));             //get location of the car
         carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
         carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
 
@@ -141,6 +146,20 @@ public class DirectionService extends android.app.Service{
         return START_STICKY;
     }
 
+    @Override
+    public void onDestroy() {
+        Log.d(TAG,"on destroy");
+        if (Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mLocationManager.removeUpdates(mLocationListeners[0]); //remove location listeners on service destroy
+        mLocationManager.removeUpdates(mLocationListeners[1]);
+    }
+
+
+    //-------------------private location listener class------------------------------//
 
 
     private class LocationListener implements android.location.LocationListener{
@@ -156,14 +175,13 @@ public class DirectionService extends android.app.Service{
         @Override
         public void onLocationChanged(Location location)
         {
-            Log.d(TAG,"this shit fired");
 
-            double lat = location.getLatitude();
+            double lat = location.getLatitude();    //get current location
             double lon = location.getLongitude();
 
             if (count < 10) {
                 WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
-                walkTime.getWalkTime();
+                walkTime.getWalkTime(); //get estimated time of walk to the car
             }
             count = count + 1;
             Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
@@ -172,7 +190,7 @@ public class DirectionService extends android.app.Service{
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
             if((deltalat<1)&&(deltalon<1)){
 
-                Log.d(TAG,"stopping directionservice");
+                Log.d(TAG,"stopping directionservice"); //stop direction service once user is near car
                 stopSelf();
             }
 
@@ -204,17 +222,6 @@ public class DirectionService extends android.app.Service{
             new LocationListener(LocationManager.NETWORK_PROVIDER)
     };
 
-    @Override
-    public void onDestroy() {
-        Log.d(TAG,"on destroy");
-        if (Build.VERSION.SDK_INT >= 23 &&
-                ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        mLocationManager.removeUpdates(mLocationListeners[0]);
-        mLocationManager.removeUpdates(mLocationListeners[1]);
-    }
 
 
 

@@ -76,8 +76,8 @@ public class SpotFinder {
         }
 
         for(int k=0;k<9;k++){
-            database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listeners to corresponding nodes in the database
-            database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);
+            database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
+            database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
             Log.d(TAG,"adding listener to "+array.get(k));
         }
 
@@ -92,45 +92,44 @@ public class SpotFinder {
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);  //retrieve a snapshot from the node and store it in CheckInDetails.class
             Log.d(TAG,"added listener " + Double.toString(details.getlatitude()));
             Log.d(TAG,"added listener " + Double.toString(details.getlongitude()));
-            spotplace = new LatLng(details.getlatitude(),details.getlongitude());
-            int time = details.getminstoleave();
-            chintimes.put(spotplace,time);
-            chinkeys.put(spotplace,dataSnapshot.getKey());
+            spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //get location of spot
+            int time = details.getminstoleave();                                   //and the mins to leave
+            chintimes.put(spotplace,time);                                         //map the time to the place
+            chinkeys.put(spotplace,dataSnapshot.getKey());                         //map the checkinkey to the place
             if (time>10){
                 Log.d(TAG,"time greater than 10");
-
                 //do nothing
             }
             if(time<=2){
-                insertdata(dataSnapshot.getKey(),time,1);
+                insertdata(dataSnapshot.getKey(),time,1);                             //insert entry in local db and make it active
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
-                //add a blue marker at the spot
+
                 Marker marker = (Marker) markers.get(spotplace);
                 if(marker!=null){
-                    Log.d(TAG,"marker exists");
+                    Log.d(TAG,"marker exists");                             //check if marker already exists at the place
 
                 }
                 else {
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                    markers.put(spotplace,spotmarker);
+                    markers.put(spotplace,spotmarker);    //else put a marker and map it to the place
 
                 }
             }
             if(time>2 && time<=10){
                 Log.d(TAG,"inserting data");
-                if(checkStatus(dataSnapshot.getKey())){
+                if(checkStatus(dataSnapshot.getKey())){                                     //check if spot is already active
                     spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
                     Marker marker = (Marker) markers.get(spotplace);
                     if(marker!=null){
-                        Log.d(TAG,"marker exists");
+                        Log.d(TAG,"marker exists");                                        //then check if there is a marker at the spot
 
                     }
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                    markers.put(spotplace,spotmarker);
+                    markers.put(spotplace,spotmarker);          //else put a marker and map it to spot
 
                 }
                 else {
-                    insertdata(dataSnapshot.getKey(), time, 0);
+                    insertdata(dataSnapshot.getKey(), time, 0);         //make an entry in local db and mark it inactive
 
                 }
             }
@@ -140,14 +139,14 @@ public class SpotFinder {
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG,"onchildchanged fired");
-            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);
+            CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);      //get value of the changed spot detail
             spotplace = new LatLng(details.getlatitude(),details.getlongitude());
             int time = details.getminstoleave();
-            chintimes.put(spotplace,time);
-            if(makedecision(dataSnapshot.getKey(),details.getminstoleave())){
+            chintimes.put(spotplace,time);                                            //update the new time in the map
+            if(makedecision(dataSnapshot.getKey(),details.getminstoleave())){         //make a decision if that spot is now active
                 Log.d(TAG,"decision positive");
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
-                //add a blue marker at the spot
+
                 Marker marker = (Marker) markers.get(spotplace);
                 if(marker!=null){
                     Log.d(TAG,"marker exists");
@@ -155,13 +154,13 @@ public class SpotFinder {
                 else {
                     Log.d(TAG,"adding marker");
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-                    markers.put(spotplace,spotmarker);
+                    markers.put(spotplace,spotmarker);    //add a marker and map it if it doesn't exist already
                 }
             }
         }
 
         @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+        public void onChildRemoved(DataSnapshot dataSnapshot) {    //currently all these functions have been left empty
 
         }
 
@@ -180,18 +179,20 @@ public class SpotFinder {
     ChildEventListener listener2 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            Searcher searcher = dataSnapshot.getValue(Searcher.class);
-            if(!dataSnapshot.getKey().equals(UID)){
-                spotplace = new LatLng(searcher.getlatitude(),searcher.getlongitude());  //store the spot's location in spotplace
-                Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
-                if(marker!=null){
-                    Log.d(TAG,"marker exists");
-                    marker.remove();
-                }
-                else {
-                    Log.d(TAG,"adding marker");
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                    searchers.put(dataSnapshot.getKey(),spotmarker);
+
+            if(dataSnapshot.exists()) {    //check if any searcher exists
+                Searcher searcher = dataSnapshot.getValue(Searcher.class);
+                if (!dataSnapshot.getKey().equals(UID)) {
+                    spotplace = new LatLng(searcher.getlatitude(), searcher.getlongitude());  //store the spot's location in spotplace
+                    Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
+                    if (marker != null) {
+                        Log.d(TAG, "marker exists");
+                        marker.remove();
+                    } else {
+                        Log.d(TAG, "adding marker");
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+                        searchers.put(dataSnapshot.getKey(), spotmarker);   //put a marker at searchers spot and add to map
+                    }
                 }
             }
 
@@ -205,12 +206,12 @@ public class SpotFinder {
                 Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
                 if(marker!=null){
                     Log.d(TAG,"marker exists");
-                    marker.remove();
+                    marker.remove();            //remove marker belonging to the guy
                 }
                 else {
                     Log.d(TAG,"adding marker");
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
-                    searchers.put(dataSnapshot.getKey(),spotmarker);
+                    searchers.put(dataSnapshot.getKey(),spotmarker);        //add marker at the new place
                 }
             }
 
@@ -223,7 +224,7 @@ public class SpotFinder {
                 Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
                 if(marker!=null){
                     Log.d(TAG,"marker exists");
-                    marker.remove();
+                    marker.remove();                //remove marker when searcher quits search
                 }
             }
         }
@@ -242,7 +243,7 @@ public class SpotFinder {
 
 
     public void insertdata(String unique, int mins,int status){
-        helperDB.insertEntry(unique,mins,status);
+        helperDB.insertEntry(unique,mins,status);                   //insert entry into localdb
     }
 
     public boolean makedecision(String unique, int mins){
@@ -251,7 +252,7 @@ public class SpotFinder {
         Cursor res = helperDB.getInfo(unique);
         if(res.getCount() <= 0){
             res.close();
-            insertdata(unique, mins, 0);
+            insertdata(unique, mins, 0);  //if there is no such entry in db, add one and mark it inactive
             return false;
         }
         res.moveToFirst();
@@ -261,7 +262,7 @@ public class SpotFinder {
             int min = Integer.parseInt(res.getString(res.getColumnIndex("Time")));
             Log.d(TAG,"making decision "+Integer.toString(min));
             if (min-mins >= 2) {
-                helperDB.updateStatus(unique);
+                helperDB.updateStatus(unique);   //if time difference is >=2, change spot to active
                 return true;
             }
         }
@@ -271,7 +272,7 @@ public class SpotFinder {
         return false;
     }
 
-    public boolean checkStatus(String unique){
+    public boolean checkStatus(String unique){   //check status of spot
         Log.d(TAG,"checking status");
         Cursor res = helperDB.getInfo(unique);
         if(res.getCount() <= 0){
