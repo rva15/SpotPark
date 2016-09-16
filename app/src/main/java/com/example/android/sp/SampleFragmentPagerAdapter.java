@@ -34,7 +34,7 @@ public class SampleFragmentPagerAdapter extends FragmentPagerAdapter {
             return SearchFragment.newInstance(position + 1);
         }
         else{
-            return CheckInFragment.newInstance(position+1);
+            return ReportFragment.newInstance(position+1);
         }
     }
 
