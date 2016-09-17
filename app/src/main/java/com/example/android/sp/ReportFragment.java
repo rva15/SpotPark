@@ -11,11 +11,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TimePicker;
 import android.widget.Toast;
-
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -27,10 +24,6 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.firebase.database.DatabaseReference;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 /**
  * Created by ruturaj on 9/16/16.
@@ -46,7 +39,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     private static final String TAG = "Debugger ";
     Location mCurrentLocation;
     LatLng place;
-    SimpleDateFormat simpleDateFormat;
     static String UID="",ID="";
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
@@ -87,7 +79,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
     }
 
     @Override

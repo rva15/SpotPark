@@ -1,11 +1,16 @@
 package com.example.android.sp;
 
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.widget.TextView;
 
 public class HomeScreenActivity extends AppCompatActivity {
 
@@ -32,8 +37,13 @@ public class HomeScreenActivity extends AppCompatActivity {
         viewPager.setAdapter(new SampleFragmentPagerAdapter(getSupportFragmentManager(),
                 HomeScreenActivity.this,UID,isCheckedin));
 
+
+
         // Give the TabLayout the ViewPager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
+        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
+        tabLayout.getTabAt(1).setIcon(R.drawable.search);
+        tabLayout.getTabAt(2).setIcon(R.drawable.report);
     }
 }

@@ -1,7 +1,12 @@
 package com.example.android.sp;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.util.Log;
 
 /**
@@ -60,5 +65,13 @@ public class SampleFragmentPagerAdapter extends FragmentPagerAdapter {
             return tabTitles1[position];
         }
     }
+
+    private int[] imageResId = {
+            R.drawable.checkin,
+            R.drawable.search,
+            R.drawable.report
+    };
+
+
 
 }
