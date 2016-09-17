@@ -3,7 +3,8 @@
     <color name="colorPrimary">#F87520</color>
     <color name="colorPrimaryDark">#FF6600</color>
     <color name="colorAccent">#FF4081</color>
-
+    <color name="tab_background_selected">#e85624</color>
+    <color name="tab_background_unselected">#f37323</color>
     <color name="spotpark_bg">#F87520</color>
     <color name="white">#FFFFFF</color>
 </resources>

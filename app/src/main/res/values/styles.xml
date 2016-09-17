@@ -16,4 +16,16 @@
         <item name="android:windowIsTranslucent">true</item>
     </style>
 
+    <style name="Base.Widget.Design.TabLayout" parent="Widget.Design.TabLayout">
+        <item name="tabBackground">@drawable/tab_color_selector</item>
+        <item name="tabTextAppearance">@style/MyCustomTabText</item>
+        <item name="tabSelectedTextColor">#ffffff</item>
+        <item name="tabIndicatorColor">#ffffff</item>
+        <item name="tabIndicatorHeight">2dp</item>
+    </style>
+
+    <style name="MyCustomTabText" parent="TextAppearance.AppCompat.Button">
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
 </resources>
