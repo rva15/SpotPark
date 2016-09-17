@@ -5,6 +5,8 @@
     <color name="colorAccent">#FF4081</color>
     <color name="tab_background_selected">#e85624</color>
     <color name="tab_background_unselected">#f37323</color>
+
+    <color name="greyBg">#F3F3F3</color>
     <color name="spotpark_bg">#F87520</color>
     <color name="white">#FFFFFF</color>
 </resources>
