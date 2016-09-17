@@ -90,7 +90,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mPage = getArguments().getInt(ARG_PAGE);
+        //mPage = getArguments().getInt(ARG_PAGE);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
