@@ -47,7 +47,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     Location mCurrentLocation;
     LatLng place;
     SimpleDateFormat simpleDateFormat;
-    String UID="",ID="";
+    static String UID="",ID="";
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -61,7 +61,9 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     ImageView rpin;
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
-    public static ReportFragment newInstance(int page) {
+    public static ReportFragment newInstance(int page,String id) {
+        UID = id;
+        Log.d(TAG,"passed id : "+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         ReportFragment fragment = new ReportFragment();

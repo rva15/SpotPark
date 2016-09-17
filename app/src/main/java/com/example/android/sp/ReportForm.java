@@ -41,7 +41,7 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_form);
         Intent intentfromreport = getIntent();
-        UID     = intentfromreport.getStringExtra(OptionsActivity.ID);
+        UID     = intentfromreport.getStringExtra(ReportFragment.UID);
         x = intentfromreport.getStringExtra("lats");
         y = intentfromreport.getStringExtra("lons");
         latitude = Double.parseDouble(x);

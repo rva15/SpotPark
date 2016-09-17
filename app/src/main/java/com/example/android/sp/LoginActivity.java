@@ -74,6 +74,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     int numberOfKeys=0,count=0;
     DatabaseReference database;
     boolean isCheckedIn=false;
+    String sendstatus="";
 
     // -------------  Activity LifeCycle Functions -------------------------------//
 
@@ -261,21 +262,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //go Ahead to relevant Options Activity
     public void goAhead(String ID){
         checkStatus(ID);
-        if(isCheckedIn){
-            Intent intent = new Intent(LoginActivity.this, OptionActivity2.class); //send Intent
-            intent.putExtra(UID,ID);
-            startActivity(intent);
-            Log.d(TAG, "onAuthStateChanged:going ahead");
-            this.finish();                                                      //destroy login activity
-        }
-        else{
-            Intent intent = new Intent(LoginActivity.this, OptionsActivity.class); //send Intent
-            intent.putExtra(UID,ID);
-            startActivity(intent);
-            Log.d(TAG, "onAuthStateChanged:going ahead");
-            this.finish();                                                      //destroy login activity
-        }
-
+        Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
+        intent.putExtra(UID, ID);
+        intent.putExtra("sendstatus",isCheckedIn);
+        startActivity(intent);
     }
 
     public void showLoading(){

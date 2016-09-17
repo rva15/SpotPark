@@ -57,7 +57,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     LatLng place;
     SimpleDateFormat simpleDateFormat;
     private DatabaseReference database;
-    String UID="";
+    static String UID="";
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -77,7 +77,8 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
-    public static CheckInFragment newInstance(int page) {
+    public static CheckInFragment newInstance(int page,String id) {
+        UID = id;
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         CheckInFragment fragment = new CheckInFragment();

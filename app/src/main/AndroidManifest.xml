@@ -64,8 +64,6 @@
 
 
         <activity android:name=".CheckedIn" />
-        <activity android:name=".OptionsActivity" />
-        <activity android:name=".SearchActivity" />
 
         <receiver android:name=".NotificationPublisher" />
 
@@ -79,8 +77,6 @@
             android:exported="false" />
 
         <activity android:name=".NavigationActivity" />
-        <activity android:name=".OptionActivity2" />
-        <activity android:name=".ReportActivity" />
         <activity android:name=".ReportForm" />
         <activity android:name=".HomeScreenActivity"></activity>
     </application>

@@ -48,7 +48,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     Marker marker;
     float zoom = 16;
     private int mPage;
-    String UID="";
+    static String UID="";
     private static final String TAG = "Debugger ";
     int i=0;
     Timer t;
@@ -59,7 +59,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
-    public static SearchFragment newInstance(int page) {
+    public static SearchFragment newInstance(int page,String id) {
+        UID = id;
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         SearchFragment fragment = new SearchFragment();
