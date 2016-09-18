@@ -1,22 +1,29 @@
 package com.example.android.sp;
 
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.support.design.widget.TabLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 
-public class HomeScreenActivity extends AppCompatActivity {
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+
+public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks {
 
     String UID="";
     Boolean isCheckedin;
     public String TAG="debugger";
+    private GoogleApiClient mGoogleApiClient;
+    public final static String logoutFlagString = "logoutflag";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +44,14 @@ public class HomeScreenActivity extends AppCompatActivity {
         viewPager.setAdapter(new SampleFragmentPagerAdapter(getSupportFragmentManager(),
                 HomeScreenActivity.this,UID,isCheckedin));
 
-
+        GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options
+                .requestIdToken("283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com")
+                .requestEmail()
+                .build();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)   //GoogleApiClient object initialization
+                .addConnectionCallbacks(this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
+                .build();
 
         // Give the TabLayout the ViewPager
         TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
@@ -45,5 +59,72 @@ public class HomeScreenActivity extends AppCompatActivity {
         tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
         tabLayout.getTabAt(1).setIcon(R.drawable.search);
         tabLayout.getTabAt(2).setIcon(R.drawable.report);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.logout:
+                Log.d(TAG,"pressed logout");                           //logout button in menu
+                backToLogin();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void backToLogin(){
+        String message1 = "1";
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(       //signout google
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Log.d(TAG,"google signed out");
+                    }
+                });
+        Intent intent = new Intent(HomeScreenActivity.this, LoginActivity.class);  //pass intent to login activity
+        intent.putExtra(logoutFlagString, message1);  //put the boolean string into it
+        startActivity(intent); //start login activity and kill itself
+        finish();
+
+    }
+
+    @Override
+    public void onStart () {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    public void onStop () {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onPause () {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume () {
+        super.onResume();
+    }
+
+    @Override
+    public void onConnected (Bundle connectionHint) {
+    }
+
+    @Override
+    public void onConnectionSuspended (int x) {
     }
 }

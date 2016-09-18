@@ -75,6 +75,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     DatabaseReference database;
     boolean isCheckedIn=false;
     String sendstatus="";
+    String logoutFlagString = "logoutflag";
 
     // -------------  Activity LifeCycle Functions -------------------------------//
 
@@ -101,8 +102,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //this is to receive the intent from CheckInActivity
         Intent intent = getIntent();
         //logout current user on receiving a signal from CheckInActivity
-        if(intent.getExtras() != null && intent.getStringExtra("logoutflag") != null){
-            logoutFlag = intent.getStringExtra("logoutflag");
+        if(intent.getExtras() != null && intent.getStringExtra(logoutFlagString) != null){
+            logoutFlag = intent.getStringExtra(logoutFlagString);
             if(logoutFlag.equals("1")) {
                 LoginManager.getInstance().logOut();//logout Facebook
                 FirebaseAuth.getInstance().signOut(); //logout Firebase

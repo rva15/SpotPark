@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/white"
     android:gravity="center"
     android:orientation="vertical" >
 
@@ -32,7 +32,7 @@
             android:layout_marginTop="8dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_launcher"
+            android:src="@drawable/spotpark_logo_orange"
             android:layout_gravity="center"/>
         <TextView
             android:layout_width="match_parent"
@@ -40,7 +40,7 @@
             android:layout_marginTop="-40dp"
             android:layout_weight="1"
             android:textSize="24dp"
-            android:textColor="@color/white"
+            android:textColor="@color/colorPrimary"
             android:gravity="center"
             android:paddingTop="0px"
 
@@ -85,20 +85,20 @@
                 android:layout_weight="5"
                 android:layout_gravity="center"
                 android:layout_height="1dp"
-                android:background="@color/white"/>
+                android:background="@color/colorPrimary"/>
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:textColor="@color/white"
+                android:textColor="@color/colorPrimary"
                 android:text="OR"/>
             <View
                 android:layout_width="0dp"
                 android:layout_weight="5"
                 android:layout_height="1dp"
                 android:layout_gravity="center"
-                android:background="@color/white"/>
+                android:background="@color/colorPrimary"/>
 
         </LinearLayout>
 
@@ -113,7 +113,7 @@
             android:layout_weight="1"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:textColor="@color/white"
+            android:textColor="@color/colorPrimary"
             android:hint="Email"
             />
 
@@ -125,7 +125,7 @@
             android:inputType="textPassword"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:textColor="@color/white"
+            android:textColor="@color/colorPrimary"
             android:hint="Password"
             />
 
