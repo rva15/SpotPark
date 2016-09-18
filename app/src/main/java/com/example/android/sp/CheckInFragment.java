@@ -79,6 +79,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     public static CheckInFragment newInstance(int page,String id) {
         UID = id;
+        Log.d(TAG,"user id passed :"+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         CheckInFragment fragment = new CheckInFragment();
@@ -321,7 +322,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     //construct the notification that allows the user to navigate back to his car
     private Notification getAlertNotification() {
 
-        Intent navigate = new Intent(this.getActivity(), NavigationActivity.class);
+        Intent navigate = new Intent(this.getActivity(), HomeScreenActivity.class);
         navigate.putExtra("user_id",UID);
         navigate.putExtra("started_from","notification");
         PendingIntent pIntent = PendingIntent.getActivity(this.getActivity(), 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);

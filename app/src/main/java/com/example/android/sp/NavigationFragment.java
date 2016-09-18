@@ -1,5 +1,6 @@
 package com.example.android.sp;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
@@ -47,7 +49,7 @@ import java.util.List;
 /**
  * Created by ruturaj on 9/16/16.
  */
-public class NavigationFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener{
+public class NavigationFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener{
     //Necessary variable declarations
     static String UID="";
     GoogleApiClient mGoogleApiClient;
@@ -155,6 +157,8 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_navigation, container, false); //inflate the view
+        Button button = (Button) view.findViewById(R.id.informbutton);
+        button.setOnClickListener(this);
         nMapView = (MapView) view.findViewById(R.id.nmap);
         nMapView.onCreate(savedInstanceState);
         nMapView.onResume();                                                      //get mapView and initialize it
@@ -279,6 +283,16 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
         }
     };
+
+    @Override
+    public void onClick(View v) {
+        Log.d(TAG,"clicked inform");          //get the dialog when user clicks marker
+        Intent servIntent = new Intent(this.getActivity(),DirectionService.class);     //start the DirectionService
+        servIntent.putExtra("started_from","navigation");
+        this.getActivity().startService(servIntent);
+    }
+
+
 
 
     //--------------------Method that communicates with Directions API----------------------------//

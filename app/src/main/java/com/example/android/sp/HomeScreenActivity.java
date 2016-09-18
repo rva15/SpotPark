@@ -32,6 +32,22 @@ public class HomeScreenActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_home_screen);
 
+        Bundle bundle = new Bundle();
+        bundle.putString("edttext", "From Activity");
+        // set Fragmentclass Arguments
+        TabsFragment fragobj = new TabsFragment();
+        fragobj.setArguments(bundle);
+
 
     }
+
+    public String getUID() {
+        return UID;
+    }
+
+    public boolean getStatus() {
+        return isCheckedin;
+    }
+
+
 }

@@ -50,7 +50,8 @@ public class DirectionService extends android.app.Service{
     public void onCreate(){
         Log.d(TAG, "running service");
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
-        manager.cancel(23);  //remove the inform notification from Location Service
+        manager.cancel(23);  //remove the inform notification from Checkin Fragment
+        manager.cancel(29);  //remove notification from Location Service
 
 
         initializeLocationManager();
@@ -116,8 +117,8 @@ public class DirectionService extends android.app.Service{
         super.onStartCommand(intent, flags, startId);
         if(intent!=null) {
             origin = (String) intent.getExtras().get("started_from");
-            if(origin.equals("LS")){ //this was started from location service
-                Log.d(TAG,"entered LS");
+            if(origin.equals("LS") || origin.equals("navigation")){ //this was started from location service
+                Log.d(TAG,"entered LS or navigation");
                 Intent cancelaction = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);

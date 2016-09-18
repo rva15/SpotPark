@@ -208,7 +208,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         latitude = currentLocation.getLatitude();       //get the latitude
         longitude = currentLocation.getLongitude();     //get the longitude
-        //sendLocation();
+        sendLocation();
         place = new LatLng(latitude, longitude);  //initiate LatLng object
         if(marker!=null){
             marker.remove();                      //remove previous marker
@@ -221,7 +221,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 @Override
                 public void run() {
                     finder = new SpotFinder(latitude,longitude,searchmap,UID); //declare the SpotFinder and pass it user's location and searchmap
-                    //finder.addListener();   //call its addListener method
+                    finder.addListener();   //call its addListener method
                     Log.d(TAG,"timer called");
                 }
 
