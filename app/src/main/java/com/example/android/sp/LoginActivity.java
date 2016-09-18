@@ -160,7 +160,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         SignInButton signInButton = (SignInButton)findViewById(R.id.google_login);
         setGooglePlusButtonText(signInButton);
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        login_button        = (LoginButton) findViewById(R.id.login_button);  //find facebook's login button
+        login_button = (LoginButton) findViewById(R.id.login_button);  //find facebook's login button
         username = (EditText) findViewById(R.id.username);                    //find username textbox
         username.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);       //turn off its auto correct
         password = (EditText) findViewById(R.id.password);                    //find password textbox
