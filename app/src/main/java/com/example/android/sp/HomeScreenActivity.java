@@ -48,7 +48,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 .addConnectionCallbacks(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
-        tabLayout.getTabAt(2).setIcon(R.drawable.report);
     }
 
     @Override
