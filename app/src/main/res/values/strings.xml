@@ -25,6 +25,16 @@
     <string name="action_help">"Action Help"</string>
     <string name="logout">Logout</string>
 
+    <!-- Login screen text-->
+    <string name="login_button_text">"Login"</string>
+    <string name="signup_button_text">"Sign Up"</string>
+    <string name="forgot_pass_text">"Forgot password?"</string>
+    <string name="email">"Email"</string>
+    <string name="password">"Password"</string>
+
+    <string name="fb_login_text">"Facebook"</string>
+    <string name="google_login_text">"Google"</string>
+
     <string name="navigation_view_item_1">Search</string>
     <string name="navigation_view_item_2">Checkin</string>
     <string name="navigation_view_item_3">Report</string>

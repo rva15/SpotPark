@@ -95,7 +95,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onStop() {
         i=0;                            //set counter for UpdateUI back to 0
         ApiClient.disconnect();         //disconnect apiclient on stop
-        t.cancel();                     //cancel timer for SpotFinder
+        if (t != null) {
+            t.cancel();                     //cancel timer for SpotFinder
+        }
         String LatLngCode = getLatLngCode(latitude,longitude);
         database = FirebaseDatabase.getInstance().getReference();
         String key = database.child("CheckInKeys/"+LatLngCode).push().getKey(); //delete entry from Searcher database

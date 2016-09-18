@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/login_background"
     android:gravity="center"
     android:orientation="vertical" >
 
@@ -29,10 +29,12 @@
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="40dp"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_launcher"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:src="@drawable/spotpark_logo_orange"
             android:layout_gravity="center"/>
         <TextView
             android:layout_width="match_parent"
@@ -40,11 +42,11 @@
             android:layout_marginTop="-40dp"
             android:layout_weight="1"
             android:textSize="24dp"
-            android:textColor="@color/white"
+            android:textColor="@color/colorPrimaryDark"
             android:gravity="center"
             android:paddingTop="0px"
 
-            android:text="SpotPark"/>
+            android:text="@string/app_name"/>
 
     </LinearLayout>
 
@@ -54,55 +56,6 @@
         android:layout_weight="2"
         android:orientation="vertical">
 
-        <com.facebook.login.widget.LoginButton
-            android:id="@+id/login_button"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_weight="1"
-            />
-
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/google_login"
-            android:layout_width="match_parent"
-            android:layout_marginTop="16dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="16dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <View
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:layout_gravity="center"
-                android:layout_height="1dp"
-                android:background="@color/white"/>
-            <TextView
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:textColor="@color/white"
-                android:text="OR"/>
-            <View
-                android:layout_width="0dp"
-                android:layout_weight="5"
-                android:layout_height="1dp"
-                android:layout_gravity="center"
-                android:background="@color/white"/>
-
-        </LinearLayout>
-
-
 
         <EditText
             android:id="@+id/username"
@@ -111,10 +64,10 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:textColor="@color/white"
-            android:hint="Email"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:hint="@string/email"
             />
 
         <EditText
@@ -123,10 +76,10 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:inputType="textPassword"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:textColor="@color/white"
-            android:hint="Password"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:hint="@string/password"
             />
 
 
@@ -141,18 +94,26 @@
                 android:id="@+id/login"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="5dp"
                 android:layout_height="wrap_content"
                 android:onClick="login"
-                android:text="Login"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:text="@string/login_button_text"
                 />
 
             <Button
                 android:id="@+id/account"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="20dp"
                 android:layout_height="wrap_content"
                 android:onClick="showNoticeDialog"
-                android:text="Sign Up"
+                android:background="@color/colorPrimary"
+                android:textColor="@color/white"
+                android:text="@string/signup_button_text"
                 />
 
         </LinearLayout>
@@ -161,8 +122,60 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Forgot Password?"/>
+            android:text="@string/forgot_pass_text"/>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_weight="5"
+                android:layout_gravity="center"
+                android:layout_height="1dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="10dp"
+                android:background="@color/colorPrimaryDark"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textColor="@color/colorPrimaryDark"
+                android:text="OR"/>
+            <View
+                android:layout_width="0dp"
+                android:layout_weight="5"
+                android:layout_height="1dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="20dp"
+                android:layout_gravity="center"
+                android:background="@color/colorPrimaryDark"/>
+
+        </LinearLayout>
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_weight="1"
+            />
+
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/google_login"
+            android:layout_width="match_parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="16dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
 
     </LinearLayout>
 
