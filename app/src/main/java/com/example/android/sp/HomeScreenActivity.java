@@ -39,10 +39,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         }
         setContentView(R.layout.activity_home_screen);
 
-        // Get the ViewPager and set it's PagerAdapter so that it can display items
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPager.setAdapter(new SampleFragmentPagerAdapter(getSupportFragmentManager(),
-                HomeScreenActivity.this,UID,isCheckedin));
 
         GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options
                 .requestIdToken("283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com")
@@ -52,12 +48,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 .addConnectionCallbacks(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
-
-        // Give the TabLayout the ViewPager
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
-        tabLayout.getTabAt(1).setIcon(R.drawable.search);
         tabLayout.getTabAt(2).setIcon(R.drawable.report);
     }
 
