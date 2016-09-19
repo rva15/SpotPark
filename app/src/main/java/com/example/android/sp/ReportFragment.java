@@ -97,7 +97,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onPause() {
         super.onPause();
-        stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        //stopLocationUpdates();       //stop location updates when activity pauses as defined below
         if (null != sMapView){
             sMapView.onPause();}
     }

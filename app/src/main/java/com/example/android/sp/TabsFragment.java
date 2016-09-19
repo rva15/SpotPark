@@ -3,7 +3,10 @@ package com.example.android.sp;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -25,19 +28,32 @@ public class TabsFragment extends Fragment {
     static String UID;
     boolean status;
     static boolean isCheckedin;
+    ViewPager viewPager;
+    TabLayout tabLayout;
 
-    private void setupViewPager(ViewPager viewPager) {
+    public void setupViewPager(ViewPager viewPager) {
         ///Here we have to pass ChildFragmentManager instead of FragmentManager.
         adapter = new Adapter(getChildFragmentManager());
-        if(!isCheckedin){
+        if (!isCheckedin) {
             adapter.addFragment(new CheckInFragment(), "CHECKIN");
         }
-        if(isCheckedin){
+        if (isCheckedin) {
             adapter.addFragment(new NavigationFragment(), "LOCATE CAR");
         }
         adapter.addFragment(new SearchFragment(), "SEARCH");
         adapter.addFragment(new ReportFragment(), "REPORT");
         viewPager.setAdapter(adapter);
+    }
+
+    public void reload() {
+
+        isCheckedin = false;
+        adapter.removeFragment(0);
+        adapter.addFragment(new CheckInFragment(), "CHECKIN");
+        viewPager.getAdapter().notifyDataSetChanged();
+        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
+        tabLayout.getTabAt(1).setIcon(R.drawable.search);
+        tabLayout.getTabAt(2).setIcon(R.drawable.report);
     }
 
     @Override
@@ -47,15 +63,15 @@ public class TabsFragment extends Fragment {
         HomeScreenActivity activity = (HomeScreenActivity) getActivity();
         UID = activity.getUID();
         isCheckedin = activity.getStatus();
-        Log.d(TAG,"user id passed :" +UID);
-        ViewPager viewPager = (ViewPager) view.findViewById(R.id.viewpager);
+        Log.d(TAG, "user id passed :" + UID);
+        viewPager = (ViewPager) view.findViewById(R.id.viewpager);
         setupViewPager(viewPager);
-        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tabs);
+        tabLayout = (TabLayout) view.findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
-        if(!isCheckedin) {
+        if (!isCheckedin) {
             tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
         }
-        if(isCheckedin){
+        if (isCheckedin) {
             tabLayout.getTabAt(0).setIcon(R.drawable.navigate);
         }
         tabLayout.getTabAt(1).setIcon(R.drawable.search);
@@ -69,12 +85,14 @@ public class TabsFragment extends Fragment {
 
     }
 
-    static class Adapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragments = new ArrayList<>();
-        private final List<String> mFragmentTitles = new ArrayList<>();
+    static class Adapter extends FragmentStatePagerAdapter {
+        private FragmentManager mManager;
+        public final List<Fragment> mFragments = new ArrayList<>();
+        public final List<String> mFragmentTitles = new ArrayList<>();
 
         public Adapter(android.support.v4.app.FragmentManager fm) {
             super(fm);
+            this.mManager = fm;
         }
 
         public void addFragment(Fragment fragment, String title) {
@@ -84,21 +102,19 @@ public class TabsFragment extends Fragment {
 
         @Override
         public Fragment getItem(int position) {
-            if(position==0){
-                if(isCheckedin){
-                    Log.d(TAG,"going to navigation");
-                    return NavigationFragment.newInstance(position+1,UID);
-                }
-                else {
-                    Log.d(TAG,"user id passed "+UID);
+            if (position == 0) {
+                if (isCheckedin) {
+                    Log.d(TAG, "going to navigation");
+                    return NavigationFragment.newInstance(position + 1, UID);
+                } else {
+                    Log.d(TAG, "user id passed " + UID);
                     return CheckInFragment.newInstance(position + 1, UID);
                 }
             }
-            if(position==1) {
-                return SearchFragment.newInstance(position + 1,UID);
-            }
-            else{
-                return ReportFragment.newInstance(position+1,UID);
+            if (position == 1) {
+                return SearchFragment.newInstance(position + 1, UID);
+            } else {
+                return ReportFragment.newInstance(position + 1, UID);
             }
         }
 
@@ -111,5 +127,25 @@ public class TabsFragment extends Fragment {
         public CharSequence getPageTitle(int position) {
             return mFragmentTitles.get(position);
         }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
+        }
+
+        public void removeFragment(int position) {
+
+            mFragmentTitles.remove(position);
+            mFragmentTitles.remove(position);
+            mFragmentTitles.remove(position);
+            mFragmentTitles.add("CHECKIN");
+            mFragmentTitles.add("SEARCH");
+            mFragmentTitles.add("REPORT");
+            mManager.beginTransaction().remove(mFragments.get(position)).commit();
+            mFragments.remove(position);
+
+        }
+
+
     }
-    }
+}

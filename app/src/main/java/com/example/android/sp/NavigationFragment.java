@@ -107,14 +107,16 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     @Override
     public void onStop() {
         i=0;                            //set counter for UpdateUI back to 0
-        mGoogleApiClient.disconnect();  //disconnect apiclient on stop
+        if(mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();  //disconnect apiclient on stop
+        }
         super.onStop();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        //stopLocationUpdates();       //stop location updates when activity pauses as defined below
         if (null != nMapView){
             nMapView.onPause();}
     }
@@ -193,8 +195,10 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        if(mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }
     }
 
     protected void startLocationUpdates() {

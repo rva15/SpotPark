@@ -24,6 +24,7 @@
 
     <string name="action_help">"Action Help"</string>
     <string name="logout">Logout</string>
+    <string name="delete">Delete Checkin</string>
 
     <!-- Login screen text-->
     <string name="login_button_text">"Login"</string>
