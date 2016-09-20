@@ -42,6 +42,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     String latlngcode,key;
     TabsFragment tabsFragment;
 
+    //-------------------------------Activity LifeCycle Functions--------------------------------//
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,38 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
 
     }
+
+    @Override
+    public void onStart () {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    @Override
+    public void onStop () {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onPause () {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume () {
+        super.onResume();
+    }
+
+    @Override
+    public void onConnected (Bundle connectionHint) {
+    }
+
+    @Override
+    public void onConnectionSuspended (int x) {
+    }
+
+    //---------------------------Menu Functions--------------------------------//
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -167,35 +201,9 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     }
 
-    @Override
-    public void onStart () {
-        mGoogleApiClient.connect();
-        super.onStart();
-    }
 
-    @Override
-    public void onStop () {
-        mGoogleApiClient.disconnect();
-        super.onStop();
-    }
 
-    @Override
-    public void onPause () {
-        super.onPause();
-    }
-
-    @Override
-    public void onResume () {
-        super.onResume();
-    }
-
-    @Override
-    public void onConnected (Bundle connectionHint) {
-    }
-
-    @Override
-    public void onConnectionSuspended (int x) {
-    }
+    //--------------------------------Helper Functions----------------------------------------//
 
     public String getUID() {
         return UID;

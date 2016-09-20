@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -25,7 +26,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import java.util.ArrayList;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -34,7 +35,20 @@ import java.util.TimerTask;
 /**
  * Created by ruturaj on 9/15/16.
  */
-public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
+public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener {
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //This MUST be done before saving any of your own or your base class's variables
+        final Bundle mapViewSaveState = new Bundle(outState);
+        gMapView.onSaveInstanceState(mapViewSaveState);
+        outState.putBundle("mapViewSaveState", mapViewSaveState);
+        //Add any other variables here.
+        super.onSaveInstanceState(outState);
+    }
+
+
     //declare required variables
     private GoogleMap searchmap;
     GoogleApiClient ApiClient;
@@ -56,6 +70,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public DatabaseReference database;
     SpotFinder finder;
     MapView gMapView;
+    Button button;
+    private SlidingUpPanelLayout mLayout;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -71,6 +87,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setRetainInstance(true);
         //mPage = getArguments().getInt(ARG_PAGE);
 
@@ -123,13 +140,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (null != gMapView)
-            gMapView.onSaveInstanceState(outState);
-    }
-
-    @Override
     public void onLowMemory() {
         super.onLowMemory();
         if (null != gMapView)
@@ -152,10 +162,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false); //inflate the view
         gMapView = (MapView) view.findViewById(R.id.smap);
-        gMapView.onCreate(savedInstanceState);
+        final Bundle mapViewSavedInstanceState = savedInstanceState != null ? savedInstanceState.getBundle("mapViewSaveState") : null;
+        gMapView.onCreate(mapViewSavedInstanceState);
         gMapView.onResume();                                                      //get mapView and initialize it
         MapsInitializer.initialize(getActivity());
         gMapView.getMapAsync(this);
+        mLayout = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
+
 
         return view;
     }
@@ -182,6 +195,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onMapReady(GoogleMap googleMap) {
         searchmap = googleMap;                    //when GoogleMap is ready, put it into the existing map object
+        searchmap.setOnMarkerClickListener(this);
         searchmap.getUiSettings().setMyLocationButtonEnabled(true);
     }
 
@@ -266,6 +280,49 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         return (lons+lats);
     }
+
+    @Override
+    public boolean onMarkerClick(Marker marker){
+        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+        return false;
+    }
+
+    public void panelListener(){
+
+        mLayout.setPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+
+            // During the transition of expand and collapse onPanelSlide function will be called.
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                Log.e(TAG, "onPanelSlide, offset " + slideOffset);
+            }
+
+            // This method will be call after slide up layout
+            @Override
+            public void onPanelExpanded(View panel) {
+                Log.e(TAG, "onPanelExpanded");
+
+            }
+
+            // This method will be call after slide down layout.
+            @Override
+            public void onPanelCollapsed(View panel) {
+                Log.e(TAG, "onPanelCollapsed");
+
+            }
+
+            @Override
+            public void onPanelAnchored(View panel) {
+                Log.e(TAG, "onPanelAnchored");
+            }
+
+            @Override
+            public void onPanelHidden(View panel) {
+                Log.e(TAG, "onPanelHidden");
+            }
+        });
+    }
+
 
     /*public void found(android.view.View v){
         String code = getLatLngCode(latitude,longitude);       //delete nearest checkin when user says found parking

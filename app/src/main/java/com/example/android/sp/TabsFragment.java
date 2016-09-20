@@ -1,18 +1,14 @@
 package com.example.android.sp;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.support.v7.widget.RecyclerView.Adapter;
 import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,30 +27,7 @@ public class TabsFragment extends Fragment {
     ViewPager viewPager;
     TabLayout tabLayout;
 
-    public void setupViewPager(ViewPager viewPager) {
-        ///Here we have to pass ChildFragmentManager instead of FragmentManager.
-        adapter = new Adapter(getChildFragmentManager());
-        if (!isCheckedin) {
-            adapter.addFragment(new CheckInFragment(), "CHECKIN");
-        }
-        if (isCheckedin) {
-            adapter.addFragment(new NavigationFragment(), "LOCATE CAR");
-        }
-        adapter.addFragment(new SearchFragment(), "SEARCH");
-        adapter.addFragment(new ReportFragment(), "REPORT");
-        viewPager.setAdapter(adapter);
-    }
-
-    public void reload() {
-
-        isCheckedin = false;
-        adapter.removeFragment(0);
-        adapter.addFragment(new CheckInFragment(), "CHECKIN");
-        viewPager.getAdapter().notifyDataSetChanged();
-        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
-        tabLayout.getTabAt(1).setIcon(R.drawable.search);
-        tabLayout.getTabAt(2).setIcon(R.drawable.report);
-    }
+    //-------------------------Fragment LifeCycle Methods--------------------------//
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -84,6 +57,40 @@ public class TabsFragment extends Fragment {
         super.onDestroyView();
 
     }
+
+    //-----------------------------View Pager Functions----------------------------//
+
+    public void setupViewPager(ViewPager viewPager) {
+        ///Here we have to pass ChildFragmentManager instead of FragmentManager.
+        adapter = new Adapter(getChildFragmentManager());
+        if (!isCheckedin) {
+            adapter.addFragment(new CheckInFragment(), "CHECKIN");
+        }
+        if (isCheckedin) {
+            adapter.addFragment(new NavigationFragment(), "LOCATE CAR");
+        }
+        adapter.addFragment(new SearchFragment(), "SEARCH");
+        adapter.addFragment(new ReportFragment(), "REPORT");
+        viewPager.setAdapter(adapter);
+    }
+
+
+    //----------------------------Helper Functions------------------------------//
+
+    public void reload() {
+
+        isCheckedin = false;
+        adapter.removeFragment(0);
+        adapter.addFragment(new CheckInFragment(), "CHECKIN");
+        viewPager.getAdapter().notifyDataSetChanged();
+        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
+        tabLayout.getTabAt(1).setIcon(R.drawable.search);
+        tabLayout.getTabAt(2).setIcon(R.drawable.report);
+    }
+
+
+    //----------------------FragmentStatePagerAdapter Class----------------------//
+
 
     static class Adapter extends FragmentStatePagerAdapter {
         private FragmentManager mManager;
@@ -145,7 +152,6 @@ public class TabsFragment extends Fragment {
             mFragments.remove(position);
 
         }
-
 
     }
 }

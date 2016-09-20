@@ -41,6 +41,7 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:9.4.0'
     compile 'com.google.android.gms:play-services-gcm:9.4.0'
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
+    compile 'com.sothree.slidinguppanel:library:3.2.1'
 }
 
 
