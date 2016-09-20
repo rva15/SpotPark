@@ -1,6 +1,7 @@
 package com.example.android.sp;
 
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -28,6 +30,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,7 +40,7 @@ import java.util.TimerTask;
  */
 public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener {
 
-
+    //This function SHOULD NOT be moved from this position
     @Override
     public void onSaveInstanceState(Bundle outState) {
         //This MUST be done before saving any of your own or your base class's variables
@@ -72,6 +75,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     MapView gMapView;
     Button button;
     private SlidingUpPanelLayout mLayout;
+    SearchHelperDB helperDB;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -99,6 +103,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         locationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         locationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        helperDB = new SearchHelperDB(SPApplication.getContext());
 
     }
 
@@ -168,6 +173,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         MapsInitializer.initialize(getActivity());
         gMapView.getMapAsync(this);
         mLayout = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
+        TextView tv = (TextView) view.findViewById(R.id.slidertext);
+        tv.setText("Custom text set");
 
 
         return view;
@@ -283,6 +290,22 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     @Override
     public boolean onMarkerClick(Marker marker){
+        LatLng l = marker.getPosition();
+        Log.d(TAG,"marker lat "+Double.toString(l.latitude));
+        Log.d(TAG,"marker lat "+Double.toString(l.longitude));
+        Map Keys = finder.getKeys();
+        String key = (String)Keys.get(l);
+        Log.d(TAG,"marker lat "+key);
+        Cursor res = helperDB.getInfo(key);
+        if(res.getCount() <= 0) {
+            res.close();
+        }
+        res.moveToFirst();
+        int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));
+        int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
+        Log.d(TAG,"marker lat "+Integer.toString(dollars));
+        Log.d(TAG,"marker lat "+Integer.toString(cents));
+
         mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
         return false;
     }

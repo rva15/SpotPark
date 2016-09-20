@@ -18,6 +18,8 @@ public class SearchHelperDB extends SQLiteOpenHelper {
     public static final String key = "key";
     public static final String time1 = "Time";
     public static final String status = "Status";
+    public static final String dollars = "Dollars";
+    public static final String cents = "Cents";
 
 
 
@@ -29,7 +31,7 @@ public class SearchHelperDB extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + rownum + " INTEGER PRIMARY KEY, " +
-                key + " TEXT , " + time1 + " INTEGER , " + status + " INTEGER)"
+                key + " TEXT , " + time1 + " INTEGER , " + status + " INTEGER , "+dollars+" INTEGER , "+cents+" INTEGER)"
 
         );
         
@@ -42,12 +44,14 @@ public class SearchHelperDB extends SQLiteOpenHelper {
         return res;
     }
 
-    public void insertEntry(String keys,int times1,int state){
+    public void insertEntry(String keys,int times1,int state,int dollar,int cent){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(key,keys);
         contentValues.put(time1,times1);
         contentValues.put(status,state);
+        contentValues.put(dollars,dollar);
+        contentValues.put(cents,cent);
 
         db.insert(TABLE_NAME,null,contentValues);
         close();

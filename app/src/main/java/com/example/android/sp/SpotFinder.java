@@ -94,6 +94,8 @@ public class SpotFinder {
             Log.d(TAG,"added listener " + Double.toString(details.getlongitude()));
             spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //get location of spot
             int time = details.getminstoleave();                                   //and the mins to leave
+            int dollars = details.getdollars();
+            int cents = details.getcents();
             chintimes.put(spotplace,time);                                         //map the time to the place
             chinkeys.put(spotplace,dataSnapshot.getKey());                         //map the checkinkey to the place
             if (time>10){
@@ -101,7 +103,7 @@ public class SpotFinder {
                 //do nothing
             }
             if(time<=2){
-                insertdata(dataSnapshot.getKey(),time,1);                             //insert entry in local db and make it active
+                insertdata(dataSnapshot.getKey(),time,1,dollars,cents);                             //insert entry in local db and make it active
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
 
                 Marker marker = (Marker) markers.get(spotplace);
@@ -129,7 +131,7 @@ public class SpotFinder {
 
                 }
                 else {
-                    insertdata(dataSnapshot.getKey(), time, 0);         //make an entry in local db and mark it inactive
+                    insertdata(dataSnapshot.getKey(), time, 0,dollars,cents);         //make an entry in local db and mark it inactive
 
                 }
             }
@@ -142,8 +144,10 @@ public class SpotFinder {
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);      //get value of the changed spot detail
             spotplace = new LatLng(details.getlatitude(),details.getlongitude());
             int time = details.getminstoleave();
+            int dollars = details.getdollars();
+            int cents = details.getcents();
             chintimes.put(spotplace,time);                                            //update the new time in the map
-            if(makedecision(dataSnapshot.getKey(),details.getminstoleave())){         //make a decision if that spot is now active
+            if(makedecision(dataSnapshot.getKey(),details.getminstoleave(),dollars,cents)){         //make a decision if that spot is now active
                 Log.d(TAG,"decision positive");
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
 
@@ -241,18 +245,21 @@ public class SpotFinder {
     };
 
 
-
-    public void insertdata(String unique, int mins,int status){
-        helperDB.insertEntry(unique,mins,status);                   //insert entry into localdb
+    public Map getKeys(){
+        return chinkeys;
     }
 
-    public boolean makedecision(String unique, int mins){
+    public void insertdata(String unique, int mins,int status,int dollar,int cent){
+        helperDB.insertEntry(unique,mins,status,dollar,cent);                   //insert entry into localdb
+    }
+
+    public boolean makedecision(String unique, int mins,int dollar,int cent){
         Log.d(TAG,"making decision");
         Log.d(TAG,"making decision "+unique+Integer.toString(mins));
         Cursor res = helperDB.getInfo(unique);
         if(res.getCount() <= 0){
             res.close();
-            insertdata(unique, mins, 0);  //if there is no such entry in db, add one and mark it inactive
+            insertdata(unique, mins, 0,dollar,cent);  //if there is no such entry in db, add one and mark it inactive
             return false;
         }
         res.moveToFirst();

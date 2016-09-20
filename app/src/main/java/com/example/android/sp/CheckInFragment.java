@@ -293,7 +293,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             return;
         }
         scheduleNotification(getAlertNotification(),delay,1);       //schedule notification 15mins prior to ticket expiring
-        scheduleNotification(getInformNotification(),delay + 60000 ,23);    //ask user if he wants to inform others by this notification
+        scheduleNotification(getInformNotification(),delay + 15000 ,23);    //ask user if he wants to inform others by this notification
 
         //Put in checkin information into phone local storage
         dbHelper = new CheckInHelperDB(this.getActivity());
