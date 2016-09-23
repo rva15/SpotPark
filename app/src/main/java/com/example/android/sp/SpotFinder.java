@@ -3,6 +3,8 @@ package com.example.android.sp;
 import android.database.Cursor;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.gms.drive.query.Query;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -14,10 +16,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -28,7 +33,8 @@ import java.util.Map;
 public class SpotFinder {
     //Necassary variable declaration
     double latitude=0.0,longitude=0.0;
-    String UID="";
+    String UID="",currtime;
+    int currhour,currmin;
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
     ArrayList<String> array = new ArrayList<String>();
@@ -38,9 +44,12 @@ public class SpotFinder {
     int i=0;
     SearchHelperDB helperDB;
     Map markers = new HashMap();
+    Map reportcat = new HashMap();
     Map searchers = new HashMap();
     Map chintimes = new HashMap();
     Map chinkeys = new HashMap();
+    SimpleDateFormat dayFormat;
+    SimpleDateFormat simpleDateFormat;
 
     public SpotFinder(){};  //empty constructor
 
@@ -50,6 +59,8 @@ public class SpotFinder {
         this.searchmap=searchmap;
         this.UID = id;
         helperDB = new SearchHelperDB(SPApplication.getContext());
+        dayFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
+        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
 
     }
 
@@ -78,6 +89,7 @@ public class SpotFinder {
         for(int k=0;k<9;k++){
             database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
             database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
+            database.child("ReportedDetails").child(array.get(k)).addChildEventListener(listener3);//add listener3 for reported spots
             Log.d(TAG,"adding listener to "+array.get(k));
         }
 
@@ -180,6 +192,89 @@ public class SpotFinder {
     };
 
     //define the ChildEventListener
+    ChildEventListener listener3 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG, "somesh : " + dataSnapshot.getKey() );
+            String key = dataSnapshot.getKey();  //retrieve a snapshot from the node and store it in CheckInDetails.class
+            Log.d(TAG,"reported key "+key);
+            com.google.firebase.database.Query getReported = database.child("ReportedTimes").orderByKey().equalTo(key);
+            getReported.addChildEventListener(listener4);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {    //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
+    ChildEventListener listener4 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG, "reported spot exists");
+            ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
+            if (analyzeReported(times)) {
+                Log.d(TAG, "reported spot valid " + dataSnapshot.getKey());
+                spotplace = new LatLng(times.getlatitude(),times.getlongitude());
+                Marker marker = (Marker) markers.get(spotplace);
+                if (marker != null) {
+                    Log.d(TAG, "marker exists");
+                } else {
+                    Log.d(TAG, "adding marker");
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+                    markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
+                    if (times.getverification() > 1) {
+                        reportcat.put(spotplace, true);
+                    } else {
+                        reportcat.put(spotplace, false);
+                    }
+                }
+
+            }
+            if (!analyzeReported(times)) {
+                Log.d(TAG, "reported spot invalid " + dataSnapshot.getKey());
+            }
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {    //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
     ChildEventListener listener2 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -248,6 +343,8 @@ public class SpotFinder {
     public Map getKeys(){
         return chinkeys;
     }
+    public Map getTimes(){return chintimes;}
+    public Map getCats(){return reportcat;}
 
     public void insertdata(String unique, int mins,int status,int dollar,int cent){
         helperDB.insertEntry(unique,mins,status,dollar,cent);                   //insert entry into localdb
@@ -341,6 +438,255 @@ public class SpotFinder {
         }
         Log.d(TAG,"delete nearest c "+Integer.toString(c));
 
+    }
+
+    public boolean analyzeReported(ReportedTimes reportedTimes){
+        Calendar calendar = Calendar.getInstance();
+        currtime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
+        String[] timearray = currtime.split(":");               //split the time into hours and mins
+        currhour = Integer.parseInt(timearray[0]);
+        currmin = Integer.parseInt(timearray[1]);
+        String weekDay = dayFormat.format(calendar.getTime());
+        Log.d(TAG,"weekday is "+weekDay);
+        if(reportedTimes.getfullweek()==true && reportedTimes.getfullday()==true){
+            return true;
+        }
+        if(reportedTimes.getfullweek()==true && reportedTimes.getfullday()==false){
+            int starthours = reportedTimes.getstarthours();
+            int startmins  = reportedTimes.getstartmins();
+            int endhours   = reportedTimes.getendhours();
+            int endmins    = reportedTimes.getendmins();
+            int realstart = starthours*60+startmins;
+            int realend   = endhours*60+endmins;
+            int curr      = currhour*60+currmin;
+            if(realstart<realend){
+                if(curr>realstart && curr<realend){
+                    return true;
+                }
+            }
+            if(realstart>realend){
+                if(curr<realstart && curr>realend){
+                    return false;
+                }
+                else{
+                    return true;
+                }
+            }
+
+        }
+        if(reportedTimes.getfullweek()==false){
+            if(weekDay=="Monday"){
+                if(reportedTimes.getmon()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Tuesday"){
+                if(reportedTimes.gettue()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Wednesday"){
+                if(reportedTimes.getwed()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Thursday"){
+                if(reportedTimes.getthu()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Friday"){
+                if(reportedTimes.getfri()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Saturday"){
+                if(reportedTimes.getsat()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+            if(weekDay=="Sunday"){
+                if(reportedTimes.getsun()==true){
+                    if(reportedTimes.getfullday()==true){
+                        return true;
+                    }
+                    else if(reportedTimes.getfullday()==false){
+                        int starthours = reportedTimes.getstarthours();
+                        int startmins  = reportedTimes.getstartmins();
+                        int endhours   = reportedTimes.getendhours();
+                        int endmins    = reportedTimes.getendmins();
+                        int realstart = starthours*60+startmins;
+                        int realend   = endhours*60+endmins;
+                        int curr      = currhour*60+currmin;
+                        if(realstart<realend){
+                            if(curr>realstart && curr<realend){
+                                return true;
+                            }
+                        }
+                        if(realstart>realend){
+                            if(curr<realstart && curr>realend){
+                                return false;
+                            }
+                            else{
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
     }
 
 

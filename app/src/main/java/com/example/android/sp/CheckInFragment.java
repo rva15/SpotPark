@@ -79,7 +79,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     public static CheckInFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG,"user id passed :"+UID);
+        Log.d(TAG," id passed :"+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         CheckInFragment fragment = new CheckInFragment();
@@ -274,7 +274,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
         String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails object
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,10031);
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method

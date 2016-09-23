@@ -39,7 +39,8 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     private static final String TAG = "Debugger ";
     Location mCurrentLocation;
     LatLng place;
-    static String UID="",ID="";
+    String tid,ID;
+    static String UID="";
     public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -55,7 +56,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
     public static ReportFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG,"passed id : "+UID);
+        Log.d(TAG,"report passed id : "+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         ReportFragment fragment = new ReportFragment();
@@ -97,7 +98,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onPause() {
         super.onPause();
-        //stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        stopLocationUpdates();       //stop location updates when activity pauses as defined below
         if (null != sMapView){
             sMapView.onPause();}
     }
@@ -205,13 +206,18 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public void showForm(){
         position = reportmap.getCameraPosition();
         cameracenter = position.target;
-        Intent intent = new Intent(this.getActivity(), ReportForm.class); //send Intent
-        intent.putExtra(ID,UID);
-        intent.putExtra("lats",Double.toString(cameracenter.latitude));   //attach marker location to the intent
-        intent.putExtra("lons",Double.toString(cameracenter.longitude));
-        startActivity(intent);
+        HomeScreenActivity activity = (HomeScreenActivity) getActivity();
+        activity.test(UID,Double.toString(cameracenter.latitude),Double.toString(cameracenter.longitude));
+        //Intent intent = new Intent(this.getActivity(), ReportForm.class); //send Intent
+        //intent.putExtra("user_id",ID);
+        //Log.d(TAG,"reportform "+UID);
+        //intent.putExtra("lats",Double.toString(cameracenter.latitude));   //attach marker location to the intent
+        //intent.putExtra("lons",Double.toString(cameracenter.longitude));
+        //startActivity(intent);
 
     }
+
+
 
     private void updateUI() {
         Log.d(TAG, "yayy location updated !!!");

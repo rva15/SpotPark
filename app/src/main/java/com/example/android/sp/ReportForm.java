@@ -28,10 +28,10 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
     RadioGroup radioGroup1,radioGroup2;
     int starthour=99,startmin=99,endhour=99,endmin=99;
     boolean mond=false,tues=false,wedn=false,thur=false,frid=false,satu=false,sund=false;
-    boolean fullday=false,fullweek=false;
+    boolean fullday=false,fullweek=false,radioflag;
     double latitude=0.0,longitude=0.0;
     String UID="";
-    CheckBox mon,tue,wed,thu,fri,sat,sun;
+    CheckBox mon,tue,wed,thu,fri,sat,sun,choosetime;
     public DatabaseReference database;
     String x,y;
 
@@ -41,7 +41,8 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_report_form);
         Intent intentfromreport = getIntent();
-        UID     = intentfromreport.getStringExtra(ReportFragment.UID);
+        UID     = intentfromreport.getStringExtra("user_id");
+        Log.d(TAG,"user id reportform "+UID);
         x = intentfromreport.getStringExtra("lats");
         y = intentfromreport.getStringExtra("lons");
         latitude = Double.parseDouble(x);
@@ -52,10 +53,12 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
             public void onCheckedChanged(RadioGroup group, int checkedId) {
 
                 if(checkedId == R.id.allday) {
+                    radioflag=false;
                     fullday = true;
                 }
                 else if(checkedId == R.id.choosetime) {
                     fullday = false;
+                    radioflag=true;
                     if(starthour==99 || startmin==99 || endhour==99 || endmin==99){
                         Toast.makeText(ReportForm.this,"Please choose a time",Toast.LENGTH_LONG).show();
                     }
@@ -86,6 +89,11 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
             }
 
         });
+    }
+
+    public void setid(String s){
+        String id = s;
+        Log.d(TAG,"user id reportform "+s);
     }
 
     public void showStartDialog(View v) {
@@ -145,34 +153,33 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
     }
 
     public void getdays(){
-         mon = (CheckBox) findViewById(R.id.mon);
-         tue = (CheckBox) findViewById(R.id.tue);
-         wed = (CheckBox) findViewById(R.id.wed);
-         thu = (CheckBox) findViewById(R.id.thu);
-         fri = (CheckBox) findViewById(R.id.fri);
-         sat = (CheckBox) findViewById(R.id.sat);
-         sun = (CheckBox) findViewById(R.id.sun);
-
-
+        mon = (CheckBox) findViewById(R.id.mon);
+        tue = (CheckBox) findViewById(R.id.tue);
+        wed = (CheckBox) findViewById(R.id.wed);
+        thu = (CheckBox) findViewById(R.id.thu);
+        fri = (CheckBox) findViewById(R.id.fri);
+        sat = (CheckBox) findViewById(R.id.sat);
+        sun = (CheckBox) findViewById(R.id.sun);
     }
 
     public void reportspot(View v){
-        if(starthour==99 || startmin==99 || endhour==99 || endmin==99){
-            Toast.makeText(ReportForm.this,"Please choose a time",Toast.LENGTH_LONG).show();
-            return;
+        if(radioflag==true) {
+            if (starthour == 99 || startmin == 99 || endhour == 99 || endmin == 99) {
+                Toast.makeText(ReportForm.this, "Please choose a time", Toast.LENGTH_LONG).show();
+                return;
+            }
         }
         getdays();
         database = FirebaseDatabase.getInstance().getReference();
-        ReportedDetails reportedDetails = new ReportedDetails(latitude,longitude,0,UID);
-        Map<String,Object> reportedDetailsMap = reportedDetails.toMap();
-        ReportedTimes reportedTimes = new ReportedTimes(fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
+        //ReportedDetails reportedDetails = new ReportedDetails(latitude,longitude,0,UID);
+        //Map<String,Object> reportedDetailsMap = reportedDetails.toMap();
+        ReportedTimes reportedTimes = new ReportedTimes(latitude,longitude,0,fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
                 thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked());
         Map<String,Object> reportedTimesMap = reportedTimes.toMap();
         String LatLngCode = getLatLngCode(latitude,longitude);
-
         String key = database.child("ReportedDetails/"+LatLngCode).push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/ReportedDetails/"+LatLngCode+"/"+key, reportedDetailsMap);
+        childUpdates.put("/ReportedDetails/"+LatLngCode+"/"+key,UID);
         childUpdates.put("/ReportedTimes/"+key,reportedTimesMap);
         database.updateChildren(childUpdates);
     }

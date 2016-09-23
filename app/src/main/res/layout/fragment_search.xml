@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="3">
 
             <com.google.android.gms.maps.MapView
                 android:id="@+id/smap"
@@ -40,17 +40,75 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="64dp"
+            android:layout_height="160dp"
             android:background="#ffffff"
             android:clickable="true"
             android:orientation="vertical"
             android:focusable="false">
 
             <TextView
-                android:id="@+id/slidertext"
+                android:id="@+id/category"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="animation"/>
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:background="@color/tab_background_unselected"
+                android:textColor="#ffffff"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:text="Cost per Hour"
+                        android:gravity="center"/>
+                    <TextView
+                        android:id="@+id/rate"
+                        android:layout_width="match_parent"
+                        android:layout_height="58dp"
+                        android:textSize="48dp"
+                        android:gravity="center"
+                        android:textColor="@color/tab_background_selected"/>
+                    <TextView
+                        android:id="@+id/complain"
+                        android:layout_width="match_parent"
+                        android:layout_height="32dp"
+                        android:gravity="center"
+                        android:text="Complain"/>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/navigatebutton"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Navigate"/>
+
+                    <Button
+                        android:id="@+id/parked"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="I Parked Here"/>
+
+                </LinearLayout>
+
+
+            </LinearLayout>
 
         </LinearLayout>
 

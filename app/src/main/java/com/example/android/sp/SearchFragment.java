@@ -76,6 +76,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     Button button;
     private SlidingUpPanelLayout mLayout;
     SearchHelperDB helperDB;
+    TextView category,rate;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -173,8 +174,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         MapsInitializer.initialize(getActivity());
         gMapView.getMapAsync(this);
         mLayout = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
-        TextView tv = (TextView) view.findViewById(R.id.slidertext);
-        tv.setText("Custom text set");
+        category = (TextView) view.findViewById(R.id.category);
+        rate = (TextView) view.findViewById(R.id.rate);
 
 
         return view;
@@ -294,19 +295,43 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Log.d(TAG,"marker lat "+Double.toString(l.latitude));
         Log.d(TAG,"marker lat "+Double.toString(l.longitude));
         Map Keys = finder.getKeys();
-        String key = (String)Keys.get(l);
-        Log.d(TAG,"marker lat "+key);
-        Cursor res = helperDB.getInfo(key);
-        if(res.getCount() <= 0) {
-            res.close();
+        Map Times = finder.getTimes();
+        Map Cats = finder.getCats();
+        if(Cats.get(l)!=null){
+            if((boolean)Cats.get(l)==true){
+                category.setText("Category : Verified free parking spot");
+                rate.setText("$ 0.0");
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                return true;
+            }
+            else{
+                category.setText("Category : Unverified free parking spot");
+                rate.setText("$ 0.0");
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                return true;
+            }
         }
-        res.moveToFirst();
-        int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));
-        int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
-        Log.d(TAG,"marker lat "+Integer.toString(dollars));
-        Log.d(TAG,"marker lat "+Integer.toString(cents));
+        if(Keys.get(l)!=null) {
+            String key = (String) Keys.get(l);
+            int time = (int) Times.get(l);
+            if (key != null) {
+                Log.d(TAG, "marker lat " + key);
+                Cursor res = helperDB.getInfo(key);
+                if (res.getCount() <= 0) {
+                    res.close();
+                }
+                res.moveToFirst();
+                int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));
+                int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
+                Log.d(TAG, "marker lat " + Integer.toString(dollars));
+                Log.d(TAG, "marker lat " + Integer.toString(cents));
 
-        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+
+                category.setText("Category : Possibly empty in " + Integer.toString(time) + " mins");
+                rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+            }
+        }
         return false;
     }
 

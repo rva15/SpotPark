@@ -11,10 +11,15 @@ import java.util.Map;
 public class ReportedTimes {
     boolean fullday,fullweek,mon,tue,wed,thu,fri,sat,sun;
     int starthours,startmins,endhours,endmins;
+    double latitude,longitude;
+    int verification;
 
     public ReportedTimes(){}
 
-    public ReportedTimes(boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun){
+    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun){
+        this.latitude=latitude;
+        this.longitude=longitude;
+        this.verification=verification;
         this.fullday = fullday;
         this.starthours=starthours;
         this.startmins=startmins;
@@ -30,6 +35,9 @@ public class ReportedTimes {
         this.sun=sun;
     }
 
+    public double getlatitude(){return this.latitude;}
+    public double getlongitude(){return this.longitude;}
+    public int getverification(){return this.verification;}
     public boolean getfullday(){return this.fullday;}
     public int getstarthours(){return this.starthours;}
     public int getstartmins(){return this.startmins;}
@@ -47,6 +55,9 @@ public class ReportedTimes {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
+        result.put("latitude",this.latitude);
+        result.put("longitude",this.longitude);
+        result.put("verification",this.verification);
         result.put("fullday",this.fullday);
         result.put("starthours",this.starthours);
         result.put("startmins",this.startmins);

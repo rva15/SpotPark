@@ -214,5 +214,15 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         return isCheckedin;
     }
 
+    public void test(String s,String lat,String lon){
+        Log.d(TAG,"reportform string "+s);
+        Intent intent = new Intent(this, ReportForm.class); //send Intent
+        intent.putExtra("user_id",s);
+        intent.putExtra("lats",lat);
+        intent.putExtra("lons",lon);
+        startActivity(intent);
+        this.finish();
+    }
+
 
 }
