@@ -4,18 +4,73 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
-    <EditText
-        android:id="@+id/rate"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="numberDecimal"/>
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:gravity="fill"
+            android:textStyle="bold"
+            android:text="Cost/hr "/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="fill"
+            android:text="for this parking : "/>
+
+        <EditText
+            android:id="@+id/rate"
+            android:layout_width="48dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <CheckBox
+            android:id="@+id/remind"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:checked="true"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Remind me "
+            android:gravity="fill"/>
+        <Spinner
+            android:id="@+id/spinner1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="fill"
+            android:layout_marginBottom="8dp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="  mins before :"
+            android:gravity="fill"/>
+    </LinearLayout>
+
 
     <TimePicker
         android:id="@+id/time"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:timePickerMode="clock">
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:timePickerMode="clock"
+        android:headerBackground="@color/tab_background_unselected"
+        >
     </TimePicker>
 
 

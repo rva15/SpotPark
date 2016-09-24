@@ -8,13 +8,20 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.support.v4.app.DialogFragment;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.view.View;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ruturaj on 8/26/16.
@@ -44,6 +51,23 @@ public class CheckInDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout. checkindialog, null);
 
+        final Spinner spin;
+        spin = (Spinner)view.findViewById(R.id.spinner1);
+        final CheckBox remind = (CheckBox)view.findViewById(R.id.remind);
+        final String TAG="debugger";
+        List<String> list = new ArrayList<String>();
+        list.add("15");
+        list.add("30");
+        list.add("45");
+        list.add("60");
+
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getActivity(),
+                android.R.layout.simple_spinner_item, list);
+
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spin.setAdapter(dataAdapter);
+
+
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
@@ -52,7 +76,12 @@ public class CheckInDialog extends DialogFragment {
                 .setPositiveButton("CheckIn", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        //rph = (EditText) getView().findViewById(R.id.rate);
+                        String checked="1";
+                        if(!remind.isChecked()){
+                            checked = "0";
+                        }
+                        String text = spin.getSelectedItem().toString();
+                        Log.d(TAG,"selected option "+text);
                         rph = (EditText) view.findViewById(R.id.rate);
                         timePicker = (TimePicker) view.findViewById(R.id.time);
                         hourlyrate = rph.getText().toString();
@@ -63,6 +92,8 @@ public class CheckInDialog extends DialogFragment {
                         Intent i = new Intent().putExtra("rates",hourlyrate);
                         i.putExtra("hours",hour);
                         i.putExtra("mins",min);
+                        i.putExtra("option",text);
+                        i.putExtra("checked",checked);
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                     }
                 })

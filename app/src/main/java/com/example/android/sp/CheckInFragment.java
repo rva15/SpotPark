@@ -73,7 +73,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private int mPage;
     ImageView pin;
     private static final int REQ_CODE = 1;
-    String rph,h,m;
+    String rph,h,m,o,c;
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
@@ -244,15 +244,18 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             String rate = bundle.getString("rates", rph);
             String hour = bundle.getString("hours",h);
             String min  = bundle.getString("mins",m);
+            String option = bundle.getString("option",o);
+            String checked = bundle.getString("option",c);
+
             Log.d(TAG,"rate per hour : "+ rate);
             Log.d(TAG,"rate per hour : "+ hour);
             Log.d(TAG,"rate per hour : "+ min);
-            checkIn(rate,hour,min);
+            checkIn(rate,hour,min,option,checked);
         }
     }
 
 
-    public void checkIn(String parkrate,String parkhour,String parkmin) {
+    public void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked) {
 
         position = map.getCameraPosition();                 //get the camera position
         cameracenter = position.target;                     //and get the center of the map
@@ -285,16 +288,30 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
 
         //Proceed towards starting NotificationBroadcast
-        hours = Double.parseDouble(parkhour);
-        mins = Double.parseDouble(parkmin);
-        int delay = (int)getDelay(checkinhour,checkinmin,hours,mins) - 900000;            //get the delay for notification
-        if (delay<0){
-            Toast.makeText(this.getActivity(),"Cannot set notification",Toast.LENGTH_LONG).show();  //cant set notification if time is too less
-            return;
+        if(parkchecked.equals("1")) {
+            hours = Double.parseDouble(parkhour);
+            mins = Double.parseDouble(parkmin);
+            int sub = 900000;
+            if (parkoption.equals("15")) {
+                sub = 900000;
+            }
+            if (parkoption.equals("30")) {
+                sub = 1800000;
+            }
+            if (parkoption.equals("45")) {
+                sub = 2700000;
+            }
+            if (parkoption.equals("60")) {
+                sub = 3600000;
+            }
+            int delay = (int) getDelay(checkinhour, checkinmin, hours, mins) - sub;            //get the delay for notification
+            if (delay < 0) {
+                Toast.makeText(this.getActivity(), "Cannot set notification", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
+                return;
+            }
+            scheduleNotification(getAlertNotification(), delay, 1);       //schedule notification 15mins prior to ticket expiring
+            scheduleNotification(getInformNotification(), delay + 15000, 23);    //ask user if he wants to inform others by this notification
         }
-        scheduleNotification(getAlertNotification(),delay,1);       //schedule notification 15mins prior to ticket expiring
-        scheduleNotification(getInformNotification(),delay + 15000 ,23);    //ask user if he wants to inform others by this notification
-
         //Put in checkin information into phone local storage
         dbHelper = new CheckInHelperDB(this.getActivity());
         dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
