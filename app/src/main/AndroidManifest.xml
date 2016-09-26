@@ -75,7 +75,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <activity android:name=".NavigationActivity" />
         <activity android:name=".ReportForm" />
         <activity android:name=".HomeScreenActivity" />
     </application>

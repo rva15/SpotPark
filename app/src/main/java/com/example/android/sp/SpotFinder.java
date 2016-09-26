@@ -48,6 +48,7 @@ public class SpotFinder {
     Map searchers = new HashMap();
     Map chintimes = new HashMap();
     Map chinkeys = new HashMap();
+    Map chinlatlns = new HashMap();
     SimpleDateFormat dayFormat;
     SimpleDateFormat simpleDateFormat;
 

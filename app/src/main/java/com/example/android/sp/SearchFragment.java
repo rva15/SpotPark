@@ -1,8 +1,10 @@
 package com.example.android.sp;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -26,11 +28,25 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -38,7 +54,7 @@ import java.util.TimerTask;
 /**
  * Created by ruturaj on 9/15/16.
  */
-public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener {
+public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener,View.OnClickListener {
 
     //This function SHOULD NOT be moved from this position
     @Override
@@ -61,7 +77,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     Location currentLocation;
     double latitude,longitude;
-    LatLng place;
+    LatLng place,currentmarker;
     Marker marker;
     float zoom = 16;
     private int mPage;
@@ -77,6 +93,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private SlidingUpPanelLayout mLayout;
     SearchHelperDB helperDB;
     TextView category,rate;
+    boolean isReported = false;
+    String key="",latlngcode;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -176,6 +194,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         mLayout = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
         category = (TextView) view.findViewById(R.id.category);
         rate = (TextView) view.findViewById(R.id.rate);
+        Button button = (Button) view.findViewById(R.id.navigatebutton);
+        button.setOnClickListener(this);
+        Button button2 = (Button) view.findViewById(R.id.parkedbutton);
+        button2.setOnClickListener(this);
 
 
         return view;
@@ -227,6 +249,62 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
     //--------------------------------Other helper functions-------------------------//
+
+    @Override
+    public void onClick(View v) {
+        Log.d(TAG,"clicked it");
+        if(v.getId()==R.id.navigatebutton) {
+            if (currentmarker != null && place != null) {
+                String url = getUrl(place, currentmarker);
+                FetchUrl FetchUrl = new FetchUrl();
+                FetchUrl.execute(url);
+            }
+        }
+        if(v.getId()==R.id.parkedbutton){
+            if(!isReported) {
+                Log.d(TAG,"I parked checkin");
+                latlngcode = getCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
+                Log.d(TAG,"I parked checkin "+latlngcode + key);
+                com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
+                getcheckin.addChildEventListener(listener1);
+            }
+        }
+    }
+
+    //define the ChildEventListener
+    ChildEventListener listener1 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG,"got the I parked checkin");
+            String mycode = getCode((int)Math.round(place.latitude*100),(int)Math.round(place.longitude*100));
+            Log.d(TAG,"I parked checkin " +mycode);
+            if(mycode.equals(latlngcode)){
+                Map<String, Object> childUpdates = new HashMap<>();
+                childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key, null);
+                database.updateChildren(childUpdates);
+            }
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     private void updateUI() {
 
@@ -292,12 +370,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public boolean onMarkerClick(Marker marker){
         LatLng l = marker.getPosition();
+        currentmarker = l;
         Log.d(TAG,"marker lat "+Double.toString(l.latitude));
         Log.d(TAG,"marker lat "+Double.toString(l.longitude));
         Map Keys = finder.getKeys();
         Map Times = finder.getTimes();
         Map Cats = finder.getCats();
         if(Cats.get(l)!=null){
+            isReported=true;
             if((boolean)Cats.get(l)==true){
                 category.setText("Category : Verified free parking spot");
                 rate.setText("$ 0.0");
@@ -312,7 +392,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
         if(Keys.get(l)!=null) {
-            String key = (String) Keys.get(l);
+            isReported=false;
+            key = (String) Keys.get(l);
             int time = (int) Times.get(l);
             if (key != null) {
                 Log.d(TAG, "marker lat " + key);
@@ -371,12 +452,190 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         });
     }
 
+    //the getCode method that returns LatLngCodes
+    public String getCode(int i,int j){
+        String lats = Integer.toString(i);
+        String lons = Integer.toString(j);
+        if(i>=0){
+            lats = "+" + lats;
+        }
+        if(j>=0){
+            lons = "+" + lons;
+        }
 
-    /*public void found(android.view.View v){
-        String code = getLatLngCode(latitude,longitude);       //delete nearest checkin when user says found parking
-        finder.deletenearest(latitude,longitude,code);
+        return (lons+lats);
+    }
 
-    }*/
+
+    //--------------------Method that communicates with Directions API----------------------------//
+
+
+    private class FetchUrl extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try {
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+                Log.d("Background Task data", data.toString());
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+
+        }
+    }
+
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        java.io.InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+            data = sb.toString();
+            Log.d("downloadUrl", data.toString());
+            br.close();
+
+        } catch (Exception e) {
+            Log.d("Exception", e.toString());
+        } finally {
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                Log.d("ParserTask",jsonData[0].toString());
+                DataParser parser = new DataParser();
+                Log.d("ParserTask", parser.toString());
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+                Log.d("ParserTask","Executing routes");
+                Log.d("ParserTask",routes.toString());
+
+            } catch (Exception e) {
+                Log.d("ParserTask",e.toString());
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points;
+            PolylineOptions lineOptions = null;
+
+            // Traversing through all the routes
+            for (int i = 0; i < result.size(); i++) {
+                points = new ArrayList<>();
+                lineOptions = new PolylineOptions();
+
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for (int j = 0; j < path.size(); j++) {
+                    HashMap<String, String> point = path.get(j);
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+
+                    points.add(position);
+                }
+
+                // Adding all the points in the route to LineOptions
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(android.graphics.Color.RED);
+
+                Log.d("onPostExecute","onPostExecute lineoptions decoded");
+
+            }
+
+            // Drawing polyline in the Google Map for the i-th route
+            if(lineOptions != null) {
+                searchmap.addPolyline(lineOptions);
+            }
+            else {
+                Log.d("onPostExecute","without Polylines drawn");
+            }
+        }
+    }
+
+    private String getUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        //Api key
+        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&key=";
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +key;
+
+
+        return url;
+    }
 
 
 
