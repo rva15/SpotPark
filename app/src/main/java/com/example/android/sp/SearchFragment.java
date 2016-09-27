@@ -83,7 +83,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private int mPage;
     static String UID="";
     private static final String TAG = "Debugger ";
-    int i=0;
+    int i=0,verification=0;
     Timer t;
     public static final String ARG_PAGE = "ARG_PAGE";
     public DatabaseReference database;
@@ -268,6 +268,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
             }
+            if(isReported){
+                Log.d(TAG,"I parked key" + key);
+                com.google.firebase.database.Query getreported = database.child("ReportedTimes").orderByKey().equalTo(key);
+                getreported.addChildEventListener(listener2);
+            }
         }
     }
 
@@ -305,6 +310,43 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         }
     };
+
+    //define the ChildEventListener
+    ChildEventListener listener2 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
+            verification = times.getverification();
+            updateVerification(verification);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    public void updateVerification(int v){
+        v = v+1;
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/ReportedTimes/"+key+"/verification", v);
+        database.updateChildren(childUpdates);
+    }
 
     private void updateUI() {
 
@@ -381,12 +423,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             if((boolean)Cats.get(l)==true){
                 category.setText("Category : Verified free parking spot");
                 rate.setText("$ 0.0");
+                key = (String) Keys.get(l);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                 return true;
             }
             else{
                 category.setText("Category : Unverified free parking spot");
                 rate.setText("$ 0.0");
+                key = (String) Keys.get(l);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                 return true;
             }

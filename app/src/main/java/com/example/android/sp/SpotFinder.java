@@ -240,6 +240,8 @@ public class SpotFinder {
                     Log.d(TAG, "adding marker");
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
                     markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
+                    Log.d(TAG, "reported spot exists "+dataSnapshot.getKey());
+                    chinkeys.put(spotplace,dataSnapshot.getKey());
                     if (times.getverification() > 1) {
                         reportcat.put(spotplace, true);
                     } else {
