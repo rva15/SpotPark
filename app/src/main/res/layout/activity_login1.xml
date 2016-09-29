@@ -34,12 +34,12 @@
             android:layout_weight="1"
             android:scaleX="1.5"
             android:scaleY="1.5"
-            android:src="@drawable/spotpark_logo_orange"
+            android:src="@drawable/ic_launcher"
             android:layout_gravity="center"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="-40dp"
+            android:layout_marginTop="40dp"
             android:layout_weight="1"
             android:textSize="24dp"
             android:textColor="@color/colorPrimaryDark"
