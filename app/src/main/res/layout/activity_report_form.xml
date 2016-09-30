@@ -1,208 +1,276 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:orientation="vertical"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.android.sp.ReportForm">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16dp"
-        android:textStyle="bold"
-        android:text="We need just a couple more details from you"
-        android:gravity="center"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:gravity="left"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="\u25CF On what days of the week is this spot free of cost?"/>
-
-    <RadioGroup
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/daysgroup">
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="24dp"
-            android:id="@+id/allweek"
-            android:text="All week"
-            android:buttonTint="@color/tab_background_selected"
-            android:onClick="deactivateDays"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/choosedays"
-            android:buttonTint="@color/tab_background_selected"
-            android:text="Select days"
-            android:onClick="activateDays"/>
-    </RadioGroup>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content" >
 
     <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#D1D0CE"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp">
-        <CheckBox android:id="@+id/mon"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Mon"
-            />
-        <CheckBox android:id="@+id/tue"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Tue"
-            />
-        <CheckBox android:id="@+id/wed"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Wed"
-            />
+        android:orientation="vertical"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.example.android.sp.ReportForm">
 
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#D1D0CE"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp">
-        <CheckBox android:id="@+id/thu"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Thu"
-            />
-        <CheckBox android:id="@+id/fri"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Fri"
-            />
-        <CheckBox android:id="@+id/sat"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Sat"
-            />
-        <CheckBox android:id="@+id/sun"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_height="wrap_content"
-            android:text="Sun"
-            />
-    </LinearLayout>
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:gravity="left"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="\u25CF On the above selected days, at what time is this "/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:gravity="left"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:text="spot free of cost?"/>
-
-
-
-    <RadioGroup
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/timesgroup">
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/allday"
-            android:buttonTint="@color/tab_background_selected"
-            android:layout_marginLeft="24dp"
-            android:text="All day"
-            android:onClick="deactivateButtons"/>
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:id="@+id/choosetime"
-            android:layout_marginLeft="12dp"
-            android:buttonTint="@color/tab_background_selected"
-            android:text="Select time"
-            android:onClick="activateButtons"/>
-    </RadioGroup>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp">
-        <Button
-            android:id="@+id/chooseStart"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="Starts At"
-            android:onClick="showStartDialog"/>
-        <Button
-            android:id="@+id/chooseEnd"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:text="Ends At"
-            android:onClick="showEndDialog"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp">
         <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:id="@+id/starttime"/>
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:layout_height="match_parent"
-            android:id="@+id/endtime"/>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:textStyle="bold"
+            android:text="We need just a couple more details from you"
+            android:gravity="center"/>
+        <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/card1"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            card_view:cardCornerRadius="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:gravity="top|center_horizontal"
+                        android:layout_height="wrap_content"
+                        android:text="\u25CF "/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:gravity="left"
+                        android:layout_height="wrap_content"
+                        android:text="What days of the week is this spot free of cost?"/>
+
+
+                </LinearLayout>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:id="@+id/daysgroup">
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="24dp"
+                        android:id="@+id/allweek"
+                        android:text="All week"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:onClick="deactivateDays"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginLeft="16dp"
+                        android:id="@+id/choosedays"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:text="Select days"
+                        android:onClick="activateDays"/>
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:padding="8dp"
+                    android:orientation="horizontal"
+                    android:background="#D1D0CE"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp">
+                    <CheckBox android:id="@+id/mon"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Mon"
+                        />
+                    <CheckBox android:id="@+id/tue"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Tue"
+                        />
+                    <CheckBox android:id="@+id/wed"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Wed"
+                        />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="8dp"
+                    android:background="#D1D0CE"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp">
+                    <CheckBox android:id="@+id/thu"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Thu"
+                        />
+                    <CheckBox android:id="@+id/fri"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Fri"
+                        />
+                    <CheckBox android:id="@+id/sat"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Sat"
+                        />
+                    <CheckBox android:id="@+id/sun"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_height="wrap_content"
+                        android:text="Sun"
+                        />
+                </LinearLayout>
+
+
+
+            </LinearLayout>
+
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/card2"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            card_view:cardCornerRadius="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:gravity="top|center_horizontal"
+                        android:layout_height="wrap_content"
+                        android:text="\u25CF "/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:gravity="left"
+                        android:layout_height="wrap_content"
+                        android:text="On the above selected days, at what time is this spot free of cost?"/>
+
+
+                </LinearLayout>
+
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:id="@+id/timesgroup">
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:id="@+id/allday"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:layout_marginLeft="24dp"
+                        android:text="All day"
+                        android:onClick="deactivateButtons"/>
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:id="@+id/choosetime"
+                        android:layout_marginLeft="24dp"
+                        android:buttonTint="@color/tab_background_selected"
+                        android:text="Select time"
+                        android:onClick="activateButtons"/>
+                </RadioGroup>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp">
+                    <Button
+                        android:id="@+id/chooseStart"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:text="Starts At"
+                        android:onClick="showStartDialog"/>
+                    <Button
+                        android:id="@+id/chooseEnd"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:text="Ends At"
+                        android:onClick="showEndDialog"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginLeft="24dp"
+                    android:layout_marginRight="24dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:id="@+id/starttime"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:layout_height="match_parent"
+                        android:id="@+id/endtime"/>
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Report this Spot"
+            android:onClick="reportspot"/>
+
     </LinearLayout>
 
+</ScrollView>
 
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Report this Spot"
-        android:onClick="reportspot"/>
-
-
-
-
-
-</LinearLayout>
