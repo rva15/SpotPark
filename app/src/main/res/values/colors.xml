@@ -10,4 +10,5 @@
     <color name="greyBg">#F3F3F3</color>
     <color name="spotpark_bg">#F87520</color>
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
 </resources>

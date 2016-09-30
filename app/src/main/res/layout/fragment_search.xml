@@ -20,7 +20,7 @@
 
         <!-- MAIN CONTENT -->
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -29,12 +29,38 @@
             <com.google.android.gms.maps.MapView
                 android:id="@+id/smap"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="4"
+                android:layout_height="match_parent"
                 android:layout_centerInParent="true"
                 />
 
-        </LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|center_horizontal"
+                android:orientation="horizontal"
+                android:clickable="true"
+                android:id="@+id/recenter"
+                android:background="@color/white"
+                android:layout_marginTop="24dp">
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_recenter"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:text="RECENTER"
+                    android:gravity="center"
+                    android:textSize="12dp"
+                    android:textColor="@color/black"/>
+
+            </LinearLayout>
+
+        </FrameLayout>
 
         <!-- SLIDING LAYOUT -->
 

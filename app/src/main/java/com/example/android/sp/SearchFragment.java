@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -54,7 +56,7 @@ import java.util.TimerTask;
 /**
  * Created by ruturaj on 9/15/16.
  */
-public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener,View.OnClickListener {
+public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener,View.OnClickListener,GoogleMap.OnMapClickListener,GoogleMap.OnCameraMoveStartedListener {
 
     //This function SHOULD NOT be moved from this position
     @Override
@@ -93,8 +95,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private SlidingUpPanelLayout mLayout;
     SearchHelperDB helperDB;
     TextView category,rate;
-    boolean isReported = false;
+    boolean isReported = false,isAutoMode=true;
     String key="",latlngcode;
+    LinearLayout recenter;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -198,6 +201,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         button.setOnClickListener(this);
         Button button2 = (Button) view.findViewById(R.id.parkedbutton);
         button2.setOnClickListener(this);
+        gMapView.setOnClickListener(this);
+        recenter = (LinearLayout) view.findViewById(R.id.recenter);
+        recenter.setVisibility(View.GONE);
+        recenter.setOnClickListener(this);
 
 
         return view;
@@ -226,6 +233,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onMapReady(GoogleMap googleMap) {
         searchmap = googleMap;                    //when GoogleMap is ready, put it into the existing map object
         searchmap.setOnMarkerClickListener(this);
+        searchmap.setOnMapClickListener(this);
+        searchmap.setOnCameraMoveStartedListener(this);
         searchmap.getUiSettings().setMyLocationButtonEnabled(true);
     }
 
@@ -258,6 +267,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 String url = getUrl(place, currentmarker);
                 FetchUrl FetchUrl = new FetchUrl();
                 FetchUrl.execute(url);
+                return;
             }
         }
         if(v.getId()==R.id.parkedbutton){
@@ -267,12 +277,38 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 Log.d(TAG,"I parked checkin "+latlngcode + key);
                 com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
+                return;
             }
             if(isReported){
                 Log.d(TAG,"I parked key" + key);
                 com.google.firebase.database.Query getreported = database.child("ReportedTimes").orderByKey().equalTo(key);
                 getreported.addChildEventListener(listener2);
+                return;
             }
+        }
+        if(v.getId()==R.id.recenter){
+            recenter.setVisibility(View.GONE);
+            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            isAutoMode=true;
+            Log.d(TAG,"recenter");
+        }
+
+
+    }
+
+    @Override
+    public void onMapClick(LatLng point) {
+        Log.d(TAG,"clicked on the map");
+        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+    }
+
+    @Override
+    public void onCameraMoveStarted(int reason){
+        Log.d(TAG,"camera move started "+Integer.toString(reason));
+        if(reason==REASON_GESTURE) {
+            Log.d(TAG,"camera move started reason gesture "+Integer.toString(reason));
+            recenter.setVisibility(View.VISIBLE);
+            isAutoMode = false;
         }
     }
 
@@ -357,9 +393,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         if(marker!=null){
             marker.remove();                      //remove previous marker
         }
-        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here"));  //set marker at current location
+        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));  //set marker at current location
+        if(isAutoMode) {
+            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
+        }
         if(i==0){
-            searchmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
+
             t = new Timer();
             t.scheduleAtFixedRate(new TimerTask() {
                 @Override
@@ -390,6 +429,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         database.updateChildren(childUpdates);
         Log.d(TAG,"reached sendLocation");
     }
+
 
     public String getLatLngCode(double lat, double lon){
 
