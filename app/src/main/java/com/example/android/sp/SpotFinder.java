@@ -125,7 +125,7 @@ public class SpotFinder {
 
                 }
                 else {
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.checkinmarker)));
                     markers.put(spotplace,spotmarker);    //else put a marker and map it to the place
 
                 }
