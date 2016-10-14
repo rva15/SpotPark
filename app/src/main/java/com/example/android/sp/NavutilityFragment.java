@@ -1,6 +1,5 @@
 package com.example.android.sp;
 
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
@@ -17,7 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
+
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,30 +37,27 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.android.gms.location.LocationListener;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by ruturaj on 9/16/16.
+ * Created by ruturaj on 10/10/16.
  */
-public class NavigationFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener{
+public class NavutilityFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener{
     //Necessary variable declarations
     static String UID="";
     GoogleApiClient mGoogleApiClient;
@@ -82,22 +80,14 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
-    public static NavigationFragment newInstance(int page,String id) {
-        UID = id;
-        Log.d(TAG,"passed id : "+UID);
-        Bundle args = new Bundle();
-        args.putInt(ARG_PAGE, page);
-        NavigationFragment fragment = new NavigationFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
+
 
     //onCreate of fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mPage = getArguments().getInt(ARG_PAGE);
+
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
@@ -107,6 +97,10 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        Bundle extras = getArguments();
+        carlatitude = extras.getDouble("latitude");
+        carlongitude = extras.getDouble("longitude");
 
     }
 
@@ -168,10 +162,8 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_navigation, container, false); //inflate the view
-        Button button = (Button) view.findViewById(R.id.informbutton);
-        button.setOnClickListener(this);
-        nMapView = (MapView) view.findViewById(R.id.nmap);
+        View view = inflater.inflate(R.layout.fragment_navutility, container, false); //inflate the view
+        nMapView = (MapView) view.findViewById(R.id.numap);
         nMapView.onCreate(savedInstanceState);
         nMapView.onResume();                                                      //get mapView and initialize it
         MapsInitializer.initialize(getActivity());
@@ -243,18 +235,15 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
         if(i==0) {
             navigationmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
-            getcarLocation(UID);
+            LatLng carlocation = new LatLng(carlatitude,carlongitude);
+            navigationmap.addMarker(new MarkerOptions().position(carlocation).title("You're here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+            drawroute(carlatitude,carlongitude);
         }
         i=i+1;
 
     }
 
-    public void getcarLocation(String id){
-        Log.d(TAG,"user id is :"+id);
-        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
-        com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
-        getcheckin.addChildEventListener(listener1);
-    }
+
 
     public void drawroute(double carlatitude,double carlongitude){
         LatLng origin = new LatLng(latitude, longitude);
@@ -266,47 +255,6 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
     }
 
-    //define the ChildEventListener
-    ChildEventListener listener1 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            Log.d(TAG,"detected something");
-            CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-            carlatitude = user.getcarlatitude();
-            carlongitude = user.getcarlongitude();
-            drawroute(carlatitude,carlongitude);
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-    @Override
-    public void onClick(View v) {
-
-
-        Log.d(TAG,"clicked inform");          //get the dialog when user clicks marker
-        Intent servIntent = new Intent(this.getActivity(),DirectionService.class);     //start the DirectionService
-        servIntent.putExtra("started_from","navigation");
-        this.getActivity().startService(servIntent);
-    }
 
 
 
@@ -483,3 +431,4 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
 
 }
+

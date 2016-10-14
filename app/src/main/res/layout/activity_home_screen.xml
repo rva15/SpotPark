@@ -4,9 +4,12 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <fragment android:name="com.example.android.sp.TabsFragment"
-        android:id="@+id/headlines_fragment"
+    <LinearLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+    </LinearLayout>
 
 </LinearLayout>

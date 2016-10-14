@@ -277,6 +277,8 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         String[] timearray = checkinTime.split(":");               //split the time into hours and mins
         checkinhour = Double.parseDouble(timearray[0]);
         checkinmin = Double.parseDouble(timearray[1]);
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd ");
+        String strDate = mdformat.format(calendar.getTime());
         double d = toDouble(parkrate);
         if(d==12345.){
             Toast.makeText(this.getActivity(),"Invalid parking rate!",Toast.LENGTH_SHORT).show();
@@ -293,7 +295,8 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
-        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude);
+
+        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]));
         Map<String, Object> historyMap = historyPlace.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
@@ -438,6 +441,23 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
         }
         i=i+1;
+
+    }
+
+    public String gettimeformat(String hour,String min){
+        if(Integer.parseInt(hour)<=11){
+            return (hour+":"+min+" am");
+        }
+        if(Integer.parseInt(hour)>11){
+            if(Integer.parseInt(hour)==12){
+                return (hour+":"+min+" pm");
+            }
+            else{
+                return (Integer.toString(Integer.parseInt(hour)-12)+":"+min+" pm");
+            }
+        }
+
+        return "";
 
     }
 

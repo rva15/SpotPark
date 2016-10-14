@@ -1,6 +1,7 @@
 package com.example.android.sp;
 
 import android.app.AlarmManager;
+import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.provider.ContactsContract;
@@ -61,6 +62,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
 
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        TabsFragment tabsFragment = new TabsFragment();
+        fragmentTransaction.add(R.id.fragment_container, tabsFragment, "HELLO");
+        fragmentTransaction.commit();
+
 
     }
 
@@ -117,6 +124,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 delete();
                 return true;
 
+            case R.id.history:
+                Log.d(TAG,"pressed delete");                           //logout button in menu
+                getHistory();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -137,6 +149,20 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
         getcheckin.addChildEventListener(listener1);
     }
+
+    public void getHistory(){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        HistoryFragment historyFragment = new HistoryFragment();
+        historyFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, historyFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
 
     //define the ChildEventListener
     ChildEventListener listener1 = new ChildEventListener() {
@@ -180,9 +206,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         database.updateChildren(childUpdates);
         Toast.makeText(this,"Previous checkin deleted",Toast.LENGTH_LONG).show();
         isCheckedin=false;
-        tabsFragment = null;
-        tabsFragment = (TabsFragment)getSupportFragmentManager().findFragmentById(R.id.headlines_fragment);
-        tabsFragment.reload();
+        TabsFragment tabsFragment = new TabsFragment();
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, tabsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     public void backToLogin(){
