@@ -129,6 +129,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 getHistory();
                 return true;
 
+            case R.id.favorite:
+                Log.d(TAG,"pressed delete");                           //logout button in menu
+                getFavorite();
+                return true;
+
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -158,6 +164,18 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, historyFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void getFavorite(){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        FavoriteFragment favoriteFragment = new FavoriteFragment();
+        favoriteFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, favoriteFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }

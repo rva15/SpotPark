@@ -85,7 +85,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private int mPage;
     ImageView pin;
     private static final int REQ_CODE = 1;
-    String rph,h,m,o,c;
+    String rph,h,m,o,c,t;
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
@@ -258,16 +258,17 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             String min  = bundle.getString("mins",m);
             String option = bundle.getString("option",o);
             String checked = bundle.getString("option",c);
+            String tag = bundle.getString("tag",t);
 
             Log.d(TAG,"rate per hour : "+ rate);
             Log.d(TAG,"rate per hour : "+ hour);
             Log.d(TAG,"rate per hour : "+ min);
-            checkIn(rate,hour,min,option,checked);
+            checkIn(rate,hour,min,option,checked,tag);
         }
     }
 
 
-    public void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked) {
+    public void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked,final String tag) {
 
         position = map.getCameraPosition();                 //get the camera position
         cameracenter = position.target;                     //and get the center of the map
@@ -303,7 +304,15 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
         childUpdates.put("/CheckInUsers/"+UID,userMap);
         childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
+        if(tag.equals("1")){
+            FavoritePlace favoritePlace = new FavoritePlace(cameracenter.latitude,cameracenter.longitude,"Untitled");
+            Map<String, Object> favoriteMap = favoritePlace.toMap();
+            childUpdates.put("/FavoriteKeys/"+UID+"/"+key,favoriteMap);
+            Toast.makeText(this.getContext(),"Spot added to Favorites",Toast.LENGTH_SHORT).show();
+        }
         database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
+
+
 
         //Put the screenshot of map into FileStorage
         final String userid = UID;
@@ -337,8 +346,28 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                     }
                 });
 
+                if(tag.equals("1")){
+                    StorageReference favoriteRef = storageRef.child(userid+"/Favorites/"+cikey+".jpg");
+                    UploadTask uploadTask2 = favoriteRef.putBytes(data);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                            Log.d(TAG,"image upload failed");
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                            Log.d(TAG,"image upload success");
+                        }
+                    });
+                }
+
             }
         };
+
         pin.setVisibility(View.GONE);
         map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         map.snapshot(callback);

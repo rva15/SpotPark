@@ -26,6 +26,7 @@
     <string name="logout">Logout</string>
     <string name="delete">Delete Checkin</string>
     <string name="history">Checkin History</string>
+    <string name="favorite">Favorite Spots</string>
 
     <!-- Login screen text-->
     <string name="login_button_text">"Login"</string>

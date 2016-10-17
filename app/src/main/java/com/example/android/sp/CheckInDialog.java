@@ -54,6 +54,7 @@ public class CheckInDialog extends DialogFragment {
         final Spinner spin;
         spin = (Spinner)view.findViewById(R.id.spinner1);
         final CheckBox remind = (CheckBox)view.findViewById(R.id.remind);
+        final CheckBox tagfavorite = (CheckBox) view.findViewById(R.id.fav);
         final String TAG="debugger";
         List<String> list = new ArrayList<String>();
         list.add("15");
@@ -77,8 +78,12 @@ public class CheckInDialog extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         String checked="1";
+                        String favorite="0";
                         if(!remind.isChecked()){
                             checked = "0";
+                        }
+                        if(tagfavorite.isChecked()){
+                            favorite="1";
                         }
                         String text = spin.getSelectedItem().toString();
                         Log.d(TAG,"selected option "+text);
@@ -94,6 +99,7 @@ public class CheckInDialog extends DialogFragment {
                         i.putExtra("mins",min);
                         i.putExtra("option",text);
                         i.putExtra("checked",checked);
+                        i.putExtra("tag",favorite);
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                     }
                 })
