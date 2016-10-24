@@ -220,6 +220,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public void deletedata(){
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
         childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key, null);
+        //childUpdates.put("/CheckInUsers/"+UID+"/"+key,"deleting");
         childUpdates.put("/CheckInUsers/"+UID,null);
         database.updateChildren(childUpdates);
         Toast.makeText(this,"Previous checkin deleted",Toast.LENGTH_LONG).show();
@@ -270,6 +271,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         startActivity(intent);
         this.finish();
     }
+
+
 
 
 }

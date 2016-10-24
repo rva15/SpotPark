@@ -24,6 +24,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 /**
  * Created by ruturaj on 8/28/16.
@@ -34,7 +35,7 @@ public class WalkTime {
     public final static String TAG="";
     public DatabaseReference database;
     String latlngcode="",key="",UID="";
-    int totalmins=0;
+    int totalmins=0,count=0;
 
     public WalkTime(){} //empty constructor
 
@@ -159,47 +160,47 @@ public class WalkTime {
 
         public void updatedata(){
             database = FirebaseDatabase.getInstance().getReference();
-            com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);
-            getcheckin.addChildEventListener(listener1);   //add this listener to entry in CheckInUsers that equals this UID
+            updatewalktime();
         }
 
-        //define the ChildEventListener
-        ChildEventListener listener1 = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG,"detected something");
-                CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-                latlngcode = user.getlatlngcode();
-                key = user.getkey();
+        public void updatewalktime() {
+            ValueEventListener valuelistener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Get Post object and use the values to update the UI
+                    if (count == 0) {
+                        if (dataSnapshot.exists()) {
+                            Log.d(TAG, "exists");
+                            CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
+                            latlngcode = user.getlatlngcode();
+                            key = user.getkey();
 
-                Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/minstoleave", totalmins); //update the total mins required
-                database.updateChildren(childUpdates);
+                            Map<String, Object> childUpdates = new HashMap<>();
+                            childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/minstoleave", totalmins); //update the total mins required
+                            database.updateChildren(childUpdates);
 
 
+                        } else if (!dataSnapshot.exists()) {
+                            Log.d(TAG, "not exists");
 
-            }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                        }
 
-            }
+                    }
+                    count = count + 1;
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+                }
 
-            }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // Getting Post failed, log a message
+                    Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
 
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+            };
+            database.child("CheckInUsers").child(UID).addListenerForSingleValueEvent(valuelistener);
+        }
 
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
 
         // Executes in UI thread, after the parsing process
         @Override

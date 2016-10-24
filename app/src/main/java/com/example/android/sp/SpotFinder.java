@@ -51,6 +51,9 @@ public class SpotFinder {
     Map chinlatlns = new HashMap();
     SimpleDateFormat dayFormat;
     SimpleDateFormat simpleDateFormat;
+    ArrayList<Integer> markerimage = new ArrayList<Integer>();
+
+
 
     public SpotFinder(){};  //empty constructor
 
@@ -62,6 +65,18 @@ public class SpotFinder {
         helperDB = new SearchHelperDB(SPApplication.getContext());
         dayFormat = new SimpleDateFormat("EEEE", Locale.getDefault());
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
+
+        markerimage.add(R.drawable.marker0);
+        markerimage.add(R.drawable.marker1);
+        markerimage.add(R.drawable.marker2);
+        markerimage.add(R.drawable.marker3);
+        markerimage.add(R.drawable.marker4);
+        markerimage.add(R.drawable.marker5);
+        markerimage.add(R.drawable.marker6);
+        markerimage.add(R.drawable.marker7);
+        markerimage.add(R.drawable.marker8);
+        markerimage.add(R.drawable.marker9);
+        markerimage.add(R.drawable.marker10);
 
     }
 
@@ -116,16 +131,19 @@ public class SpotFinder {
                 //do nothing
             }
             if(time<=2){
+                Log.d(TAG,"time to leave "+Integer.toString(time));
                 insertdata(dataSnapshot.getKey(),time,1,dollars,cents);                             //insert entry in local db and make it active
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
 
                 Marker marker = (Marker) markers.get(spotplace);
                 if(marker!=null){
                     Log.d(TAG,"marker exists");                             //check if marker already exists at the place
-
+                    marker.remove();
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    markers.put(spotplace,spotmarker);
                 }
                 else {
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.checkinmarker)));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
                     markers.put(spotplace,spotmarker);    //else put a marker and map it to the place
 
                 }
@@ -137,9 +155,11 @@ public class SpotFinder {
                     Marker marker = (Marker) markers.get(spotplace);
                     if(marker!=null){
                         Log.d(TAG,"marker exists");                                        //then check if there is a marker at the spot
-
+                        marker.remove();
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                        markers.put(spotplace,spotmarker);
                     }
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
                     markers.put(spotplace,spotmarker);          //else put a marker and map it to spot
 
                 }
@@ -167,10 +187,13 @@ public class SpotFinder {
                 Marker marker = (Marker) markers.get(spotplace);
                 if(marker!=null){
                     Log.d(TAG,"marker exists");
+                    marker.remove();
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    markers.put(spotplace,spotmarker);
                 }
                 else {
                     Log.d(TAG,"adding marker");
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
                     markers.put(spotplace,spotmarker);    //add a marker and map it if it doesn't exist already
                 }
             }
@@ -238,13 +261,15 @@ public class SpotFinder {
                     Log.d(TAG, "marker exists");
                 } else {
                     Log.d(TAG, "adding marker");
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-                    markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
                     Log.d(TAG, "reported spot exists "+dataSnapshot.getKey());
                     chinkeys.put(spotplace,dataSnapshot.getKey());
                     if (times.getverification() > 1) {
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repver)));
+                        markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
                         reportcat.put(spotplace, true);
                     } else {
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repunver)));
+                        markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
                         reportcat.put(spotplace, false);
                     }
                 }

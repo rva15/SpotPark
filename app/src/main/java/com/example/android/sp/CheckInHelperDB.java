@@ -30,6 +30,7 @@ public class CheckInHelperDB extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + rownum + " INTEGER PRIMARY KEY, " +
                 ID + " TEXT , " + carlat + " REAL , " +
                 carlon + " REAL, "+ cih + " REAL , " +

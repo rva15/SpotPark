@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -75,7 +76,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     LocationRequest mLocationRequest;
     boolean inputerror= false;
-    int i=0;
+    int i=0,test;
     double hours,mins,checkinhour,checkinmin;
     int dollars,cents;
     CameraPosition position;
@@ -113,7 +114,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
+        test=8;
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
 
     }
@@ -257,7 +258,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             String hour = bundle.getString("hours",h);
             String min  = bundle.getString("mins",m);
             String option = bundle.getString("option",o);
-            String checked = bundle.getString("option",c);
+            String checked = bundle.getString("checked",c);
             String tag = bundle.getString("tag",t);
 
             Log.d(TAG,"rate per hour : "+ rate);
@@ -292,7 +293,8 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
         String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails object
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,1);
+        Log.d(TAG,"test is "+Integer.toString(test));
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,test);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
@@ -371,6 +373,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         pin.setVisibility(View.GONE);
         map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         map.snapshot(callback);
+        Log.d(TAG,"parkchecked "+parkchecked);
 
         //Proceed towards starting NotificationBroadcast
         if(parkchecked.equals("1")) {
@@ -394,6 +397,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 Toast.makeText(this.getActivity(), "Cannot set notification", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
                 return;
             }
+            Log.d(TAG,"notification delay "+Integer.toString(delay));
             scheduleNotification(getAlertNotification(), delay, 1);       //schedule notification 15mins prior to ticket expiring
             scheduleNotification(getInformNotification(), delay + 15000, 23);    //ask user if he wants to inform others by this notification
         }
@@ -430,11 +434,14 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         PendingIntent pIntent = PendingIntent.getActivity(this.getActivity(), 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
-        builder.setSmallIcon(R.drawable.ic_launcher);
+        builder.setSmallIcon(R.drawable.logowhite2);
+        builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Parking Ticket expires in 15min !");
         builder.addAction(accept);
         builder.setAutoCancel(true);
+        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(uri);
 
         return builder.build();
     }
@@ -448,11 +455,14 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
-        builder.setSmallIcon(R.drawable.icon);
+        builder.setSmallIcon(R.drawable.logowhite2);
+        builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform other users that you're leaving?");
         builder.addAction(accept);
         builder.setAutoCancel(true);
+        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(uri);
 
 
         return builder.build();

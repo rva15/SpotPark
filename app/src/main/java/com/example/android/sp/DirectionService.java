@@ -48,7 +48,7 @@ public class DirectionService extends android.app.Service{
     //onCreate method
     @Override
     public void onCreate(){
-        Log.d(TAG, "running service");
+        Log.d(TAG, "running direction service");
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
         manager.cancel(23);  //remove the inform notification from Checkin Fragment
         manager.cancel(29);  //remove notification from Location Service
@@ -141,9 +141,9 @@ public class DirectionService extends android.app.Service{
         carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
         carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
 
-        Log.d(TAG,"Location Service params " + key);
-        Log.d(TAG,"Location Service params " + carlat.toString());
-        Log.d(TAG,"Location Service params" + carlon.toString());
+        Log.d(TAG,"direction service params " + key);
+        Log.d(TAG,"direction params " + carlat.toString());
+        Log.d(TAG,"direction params" + carlon.toString());
         return START_STICKY;
     }
 
@@ -181,6 +181,7 @@ public class DirectionService extends android.app.Service{
             double lon = location.getLongitude();
 
             if (count < 10) {
+                Log.d(TAG,"direction service getting walktime");
                 WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
                 walkTime.getWalkTime(); //get estimated time of walk to the car
             }
