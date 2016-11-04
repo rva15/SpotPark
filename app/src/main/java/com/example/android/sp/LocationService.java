@@ -168,7 +168,7 @@ public class LocationService extends android.app.Service{
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
         NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.drawable.icon);
+        builder.setSmallIcon(R.drawable.logowhite);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform others that you're leaving?");
         builder.addAction(accept);

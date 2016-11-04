@@ -259,7 +259,7 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     public void drawroute(double carlatitude,double carlongitude){
         LatLng origin = new LatLng(latitude, longitude);
         LatLng dest = new LatLng(carlatitude, carlongitude);
-        navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
         String url = getUrl(origin, dest);
         FetchUrl FetchUrl = new FetchUrl();
         FetchUrl.execute(url);

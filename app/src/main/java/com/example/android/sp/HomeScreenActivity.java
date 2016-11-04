@@ -2,7 +2,9 @@ package com.example.android.sp;
 
 import android.app.AlarmManager;
 import android.app.FragmentManager;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.provider.ContactsContract;
 import android.support.design.widget.TabLayout;
@@ -33,7 +35,7 @@ import java.util.Map;
 
 public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks {
 
-    String UID="";
+    String UID="",starter="";
     Boolean isCheckedin;
     public String TAG="debugger";
     private GoogleApiClient mGoogleApiClient;
@@ -49,8 +51,15 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent1 = getIntent();           //Receive intent
-        UID     = intent1.getStringExtra(LoginActivity.UID); //Receive logged in user's unique ID
+        UID     = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
         isCheckedin = intent1.getExtras().getBoolean("sendstatus");
+        starter=intent1.getStringExtra("startedfrom");
+        Log.d(TAG,"startedfrom "+starter);
+        if(starter.equals("notification")){
+            Log.d(TAG,"startedfrom notification");
+            NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            nMgr.cancel(1);
+        }
         setContentView(R.layout.activity_home_screen);
 
         GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options

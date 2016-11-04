@@ -430,11 +430,13 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
         Intent navigate = new Intent(this.getActivity(), HomeScreenActivity.class);
         navigate.putExtra("user_id",UID);
-        navigate.putExtra("started_from","notification");
+        navigate.putExtra("startedfrom","notification");
+        navigate.putExtra("sendstatus",true);
+        navigate.putExtra("userid",UID);
         PendingIntent pIntent = PendingIntent.getActivity(this.getActivity(), 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
-        builder.setSmallIcon(R.drawable.logowhite2);
+        builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Parking Ticket expires in 15min !");
@@ -455,7 +457,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
-        builder.setSmallIcon(R.drawable.logowhite2);
+        builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform other users that you're leaving?");

@@ -264,8 +264,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void goAhead(String ID){
         checkStatus(ID);
         Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
-        intent.putExtra(UID, ID);
+        intent.putExtra("userid", ID);
         intent.putExtra("sendstatus",isCheckedIn);
+        intent.putExtra("startedfrom","login");
         startActivity(intent);
     }
 
