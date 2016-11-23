@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.provider.ContactsContract;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentTransaction;
@@ -143,6 +144,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 getFavorite();
                 return true;
 
+            case R.id.contri:
+                Log.d(TAG,"pressed contri");                           //logout button in menu
+                getContri();
+                return true;
+
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -185,6 +191,18 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, favoriteFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void getContri(){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        ContRepFragment contRepFragment = new ContRepFragment();
+        contRepFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, contRepFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -271,12 +289,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         return isCheckedin;
     }
 
-    public void test(String s,String lat,String lon){
+    public void test(String s, String lat, String lon, byte[] bytearray){
         Log.d(TAG,"reportform string "+s);
         Intent intent = new Intent(this, ReportForm.class); //send Intent
         intent.putExtra("user_id",s);
         intent.putExtra("lats",lat);
         intent.putExtra("lons",lon);
+        intent.putExtra("image",bytearray);
+
         startActivity(intent);
         this.finish();
     }

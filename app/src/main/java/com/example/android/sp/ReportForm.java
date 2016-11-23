@@ -2,6 +2,8 @@ package com.example.android.sp;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,8 +18,13 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +43,8 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
     public DatabaseReference database;
     String x,y;
     Button start,end;
+    byte[] bytearray;
+    EditText description;
 
     TimePicker timePicker;
     @Override
@@ -47,6 +56,8 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         Log.d(TAG,"user id reportform "+UID);
         x = intentfromreport.getStringExtra("lats");
         y = intentfromreport.getStringExtra("lons");
+        description = (EditText) findViewById(R.id.description);
+        bytearray = intentfromreport.getByteArrayExtra("image");
         latitude = Double.parseDouble(x);
         longitude = Double.parseDouble(y);
         radioGroup1 = (RadioGroup) findViewById(R.id.timesgroup);
@@ -260,15 +271,36 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         database = FirebaseDatabase.getInstance().getReference();
         //ReportedDetails reportedDetails = new ReportedDetails(latitude,longitude,0,UID);
         //Map<String,Object> reportedDetailsMap = reportedDetails.toMap();
+        Log.d(TAG,"description "+description.getText().toString());
         ReportedTimes reportedTimes = new ReportedTimes(latitude,longitude,0,fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
-                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked());
+                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),description.getText().toString());
         Map<String,Object> reportedTimesMap = reportedTimes.toMap();
         String LatLngCode = getLatLngCode(latitude,longitude);
         String key = database.child("ReportedDetails/"+LatLngCode).push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/ReportedDetails/"+LatLngCode+"/"+key,UID);
-        childUpdates.put("/ReportedTimes/"+key,reportedTimesMap);
+        childUpdates.put("/ReportedTimes/"+UID+"/"+key,reportedTimesMap);
         database.updateChildren(childUpdates);
+
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+        StorageReference historyRef = storageRef.child(UID+"/Reported/"+key+".jpg");
+
+        UploadTask uploadTask = historyRef.putBytes(bytearray);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                Log.d(TAG,"image upload failed");
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                Log.d(TAG,"image upload success");
+            }
+        });
     }
 
     public String getLatLngCode(double lat, double lon){

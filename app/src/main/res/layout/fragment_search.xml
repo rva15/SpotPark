@@ -94,6 +94,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="30dp"
+                        android:id="@+id/heading"
                         android:text="Cost per Hour"
                         android:gravity="center"/>
                     <TextView

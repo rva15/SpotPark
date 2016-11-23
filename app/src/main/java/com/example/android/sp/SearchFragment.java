@@ -9,7 +9,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -94,7 +96,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     Button button;
     private SlidingUpPanelLayout mLayout;
     SearchHelperDB helperDB;
-    TextView category,rate;
+    TextView category,rate,heading;
     boolean isReported = false,isAutoMode=true;
     String key="",latlngcode;
     LinearLayout recenter;
@@ -197,6 +199,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         mLayout = (SlidingUpPanelLayout) view.findViewById(R.id.sliding_layout);
         category = (TextView) view.findViewById(R.id.category);
         rate = (TextView) view.findViewById(R.id.rate);
+        heading = (TextView) view.findViewById(R.id.heading);
         Button button = (Button) view.findViewById(R.id.navigatebutton);
         button.setOnClickListener(this);
         Button button2 = (Button) view.findViewById(R.id.parkedbutton);
@@ -458,18 +461,25 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Map Keys = finder.getKeys();
         Map Times = finder.getTimes();
         Map Cats = finder.getCats();
+        Map Desc = finder.getDesc();
         if(Cats.get(l)!=null){
             isReported=true;
+            heading.setText("Reporter's Description");
+            Log.d(TAG,"reportdesc "+(String)Desc.get(l));
             if((boolean)Cats.get(l)==true){
                 category.setText("Category : Verified free parking spot");
-                rate.setText("$ 0.0");
+                float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
+                rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
+                rate.setText((String)Desc.get(l));
                 key = (String) Keys.get(l);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                 return true;
             }
             else{
                 category.setText("Category : Unverified free parking spot");
-                rate.setText("$ 0.0");
+                float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
+                rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
+                rate.setText((String)Desc.get(l));
                 key = (String) Keys.get(l);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                 return true;

@@ -13,10 +13,11 @@ public class ReportedTimes {
     int starthours,startmins,endhours,endmins;
     double latitude,longitude;
     int verification;
+    String description;
 
     public ReportedTimes(){}
 
-    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun){
+    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun,String description){
         this.latitude=latitude;
         this.longitude=longitude;
         this.verification=verification;
@@ -33,6 +34,7 @@ public class ReportedTimes {
         this.fri=fri;
         this.sat=sat;
         this.sun=sun;
+        this.description = description;
     }
 
     public double getlatitude(){return this.latitude;}
@@ -51,6 +53,7 @@ public class ReportedTimes {
     public boolean getfri(){return this.fri;}
     public boolean getsat(){return this.sat;}
     public boolean getsun(){return this.sun;}
+    public String getdescription(){return this.description;}
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -71,6 +74,7 @@ public class ReportedTimes {
         result.put("fri",this.fri);
         result.put("sat",this.sat);
         result.put("sun",this.sun);
+        result.put("description",this.description);
 
         return result;
     }

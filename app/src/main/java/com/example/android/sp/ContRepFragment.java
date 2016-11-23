@@ -1,11 +1,12 @@
 package com.example.android.sp;
 
-import android.content.Intent;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -26,21 +27,22 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Created by ruturaj on 10/14/16.
- */
-public class FavoriteFragment extends Fragment {
 
-    DatabaseReference database;
+public class ContRepFragment extends Fragment {
+
     String UID="";
-    static String TAG="debugger";
-    int width,i=0,max;
-    LinearLayout mv;
-    ArrayList<FavoriteInfo> result;
     RecyclerView recList;
-
+    LinearLayout mv;
+    static private ArrayList<Bitmap> crimage;
+    static private ArrayList<String> crkey;
+    static private ArrayList<String> crdes;
+    DatabaseReference database;
+    static String TAG="debugger";
+    int max,width,i=0;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,8 +50,7 @@ public class FavoriteFragment extends Fragment {
 
         Bundle extras = getArguments();
         UID = extras.getString("userid");
-        List<FavoriteInfo> result = new ArrayList<FavoriteInfo>();
-
+        Log.d(TAG,"cr uid "+UID);
 
     }
 
@@ -58,33 +59,26 @@ public class FavoriteFragment extends Fragment {
         super.onStop();
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorite, container, false); //inflate the view
-        recList = (RecyclerView) view.findViewById(R.id.cardList);
+        crimage = new ArrayList<>();
+        crkey = new ArrayList<>();
+        crdes = new ArrayList<>();
+        View view = inflater.inflate(R.layout.fragment_contrep, container, false); //inflate the view
+        recList = (RecyclerView) view.findViewById(R.id.contcardList);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
-        getFavoriteData();
-        mv = (LinearLayout) view.findViewById(R.id.favmv);
+        getcontrepdata();
+        mv = (LinearLayout) view.findViewById(R.id.contmv);
         return view;
     }
 
-    public void getFavoriteData(){
-        result = new ArrayList<FavoriteInfo>();
+    public void getcontrepdata(){
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
-        database.child("FavoriteKeys").child(UID).addValueEventListener(listener2);
-
-
-    }
-
-
-
-    public void getnumber(String number){
-        Log.d(TAG,"number is "+number);
+        database.child("ReportedTimes").child(UID).addValueEventListener(listener2);
     }
 
     ValueEventListener listener2 = new ValueEventListener() {
@@ -92,7 +86,7 @@ public class FavoriteFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
-            database.child("FavoriteKeys").child(UID).orderByKey().addChildEventListener(listener1);
+            database.child("ReportedTimes").child(UID).orderByKey().addChildEventListener(listener1);
 
         }
 
@@ -102,18 +96,17 @@ public class FavoriteFragment extends Fragment {
         }
     };
 
-    //define the ChildEventListener
     ChildEventListener listener1 = new ChildEventListener() {
         @Override
         public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
             width = mv.getWidth();
             Log.d(TAG,"main view width "+Integer.toString(width));
             Log.d(TAG,"download key "+dataSnapshot.getKey());
-            final FavoritePlace favoritePlace = dataSnapshot.getValue(FavoritePlace.class);
+            final ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
 
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-            StorageReference islandRef = storageRef.child(UID+"/Favorites/"+dataSnapshot.getKey()+".jpg");
+            StorageReference islandRef = storageRef.child(UID+"/Reported/"+dataSnapshot.getKey()+".jpg");
 
             final long ONE_MEGABYTE = 1024 * 1024;
             islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -123,16 +116,12 @@ public class FavoriteFragment extends Fragment {
                     Log.d(TAG, "download success "+Integer.toString(i));
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Bitmap cropped = Bitmap.createBitmap(bmp, (int)(bmp.getWidth()/2 - width/2),(int)(bmp.getHeight()/2 - width/4),width,(int)width/2);
-                    FavoriteInfo info = new FavoriteInfo();
-                    info.name = favoritePlace.spotname;
-                    info.spotimage = cropped;
-                    info.latitude = favoritePlace.getflatitude();
-                    info.longitude = favoritePlace.getflongitude();
-                    info.key = dataSnapshot.getKey();
-                    result.add(info);
+                    crimage.add(cropped);
+                    crkey.add(dataSnapshot.getKey());
+                    crdes.add(reportedTimes.getdescription());
                     i=i+1;
                     if(i==max){
-                        ContactAdapter ca = new ContactAdapter(getresult(),getActivity(),recList,UID);
+                        CRAdapter ca = new CRAdapter(crimage,crkey,crdes,getActivity(),recList,UID);
                         recList.setAdapter(ca);
                     }
 
@@ -147,9 +136,6 @@ public class FavoriteFragment extends Fragment {
             });
         }
 
-        public ArrayList<FavoriteInfo> getresult(){
-            return result;
-        }
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -171,6 +157,7 @@ public class FavoriteFragment extends Fragment {
 
         }
     };
+
 
 
 }

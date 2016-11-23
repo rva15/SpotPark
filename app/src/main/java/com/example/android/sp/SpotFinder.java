@@ -45,6 +45,7 @@ public class SpotFinder {
     SearchHelperDB helperDB;
     Map markers = new HashMap();
     Map reportcat = new HashMap();
+    Map reportdesc = new HashMap();
     Map searchers = new HashMap();
     Map chintimes = new HashMap();
     Map chinkeys = new HashMap();
@@ -220,9 +221,9 @@ public class SpotFinder {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG, "somesh : " + dataSnapshot.getKey() );
-            String key = dataSnapshot.getKey();  //retrieve a snapshot from the node and store it in CheckInDetails.class
-            Log.d(TAG,"reported key "+key);
-            com.google.firebase.database.Query getReported = database.child("ReportedTimes").orderByKey().equalTo(key);
+            String userid = dataSnapshot.getValue(String.class);
+            Log.d(TAG,"iterable is "+ userid);//retrieve a snapshot from the node and store it in CheckInDetails.class
+            com.google.firebase.database.Query getReported = database.child("ReportedTimes").child(userid).orderByKey().equalTo(dataSnapshot.getKey());
             getReported.addChildEventListener(listener4);
         }
 
@@ -267,10 +268,12 @@ public class SpotFinder {
                         spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repver)));
                         markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
                         reportcat.put(spotplace, true);
+                        reportdesc.put(spotplace,times.getdescription());
                     } else {
                         spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repunver)));
                         markers.put(spotplace, spotmarker);    //add a marker and map it if it doesn't exist already
                         reportcat.put(spotplace, false);
+                        reportdesc.put(spotplace,times.getdescription());
                     }
                 }
 
@@ -373,6 +376,7 @@ public class SpotFinder {
     }
     public Map getTimes(){return chintimes;}
     public Map getCats(){return reportcat;}
+    public Map getDesc(){return reportdesc;}
 
     public void insertdata(String unique, int mins,int status,int dollar,int cent){
         helperDB.insertEntry(unique,mins,status,dollar,cent);                   //insert entry into localdb

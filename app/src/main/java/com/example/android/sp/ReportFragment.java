@@ -2,9 +2,12 @@ package com.example.android.sp;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -22,8 +25,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Created by ruturaj on 9/16/16.
@@ -200,21 +212,32 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
     @Override
     public void onClick(View v) {
-        showForm();           //get next activity when user clicks marker
-    }
-
-    public void showForm(){
+        final GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+            Bitmap bitmap;
+            @Override
+            public void onSnapshotReady(Bitmap snapshot) {
+                bitmap = snapshot;
+                Log.d(TAG,"bitmap ready");
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                byte[] data = baos.toByteArray();
+                showForm(data,cameracenter.latitude,cameracenter.longitude);
+                Log.d(TAG,"showform called");
+            }
+        };
+        rpin.setVisibility(View.GONE);
         position = reportmap.getCameraPosition();
         cameracenter = position.target;
-        HomeScreenActivity activity = (HomeScreenActivity) getActivity();
-        activity.test(UID,Double.toString(cameracenter.latitude),Double.toString(cameracenter.longitude));
-        //Intent intent = new Intent(this.getActivity(), ReportForm.class); //send Intent
-        //intent.putExtra("user_id",ID);
-        //Log.d(TAG,"reportform "+UID);
-        //intent.putExtra("lats",Double.toString(cameracenter.latitude));   //attach marker location to the intent
-        //intent.putExtra("lons",Double.toString(cameracenter.longitude));
-        //startActivity(intent);
+        reportmap.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+        reportmap.snapshot(callback);
+                   //get next activity when user clicks marker
 
+    }
+
+    public void showForm(byte[] bytearray,double lat,double lon){
+
+        HomeScreenActivity activity = (HomeScreenActivity) getActivity();
+        activity.test(UID,Double.toString(lat),Double.toString(lon),bytearray);
     }
 
 
