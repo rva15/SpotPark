@@ -93,7 +93,7 @@ public class FavoriteFragment extends Fragment {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
             database.child("FavoriteKeys").child(UID).orderByKey().addChildEventListener(listener1);
-
+            database.child("FavoriteKeys").child(UID).removeEventListener(listener2);
         }
 
         @Override

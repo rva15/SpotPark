@@ -40,6 +40,8 @@ public class ContRepFragment extends Fragment {
     static private ArrayList<Bitmap> crimage;
     static private ArrayList<String> crkey;
     static private ArrayList<String> crdes;
+    static private ArrayList<String> crcode;
+    static private ArrayList<ReportedTimes> crtimes;
     DatabaseReference database;
     static String TAG="debugger";
     int max,width,i=0;
@@ -65,6 +67,8 @@ public class ContRepFragment extends Fragment {
         crimage = new ArrayList<>();
         crkey = new ArrayList<>();
         crdes = new ArrayList<>();
+        crcode = new ArrayList<>();
+        crtimes = new ArrayList<>();
         View view = inflater.inflate(R.layout.fragment_contrep, container, false); //inflate the view
         recList = (RecyclerView) view.findViewById(R.id.contcardList);
         recList.setHasFixedSize(true);
@@ -79,6 +83,7 @@ public class ContRepFragment extends Fragment {
     public void getcontrepdata(){
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("ReportedTimes").child(UID).addValueEventListener(listener2);
+        Log.d(TAG,"get contrep");
     }
 
     ValueEventListener listener2 = new ValueEventListener() {
@@ -87,6 +92,7 @@ public class ContRepFragment extends Fragment {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
             database.child("ReportedTimes").child(UID).orderByKey().addChildEventListener(listener1);
+            database.child("ReportedTimes").child(UID).removeEventListener(listener2);
 
         }
 
@@ -95,6 +101,8 @@ public class ContRepFragment extends Fragment {
 
         }
     };
+
+
 
     ChildEventListener listener1 = new ChildEventListener() {
         @Override
@@ -119,9 +127,11 @@ public class ContRepFragment extends Fragment {
                     crimage.add(cropped);
                     crkey.add(dataSnapshot.getKey());
                     crdes.add(reportedTimes.getdescription());
+                    crcode.add(reportedTimes.getlatlngcode());
+                    crtimes.add(reportedTimes);
                     i=i+1;
                     if(i==max){
-                        CRAdapter ca = new CRAdapter(crimage,crkey,crdes,getActivity(),recList,UID);
+                        CRAdapter ca = new CRAdapter(crimage,crtimes,crkey,getActivity(),recList,UID);
                         recList.setAdapter(ca);
                     }
 

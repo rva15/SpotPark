@@ -14,13 +14,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context="com.example.android.sp.ReportForm">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:textStyle="bold"
-            android:text="We need a few more details from you"
-            android:gravity="center"/>
+
         <android.support.v7.widget.CardView
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/card3"
@@ -49,14 +43,14 @@
                         android:layout_width="wrap_content"
                         android:gravity="left"
                         android:layout_height="wrap_content"
-                        android:text="Describe the spot in a few words (max 30 characters)"/>
+                        android:text="Description of this spot (max 30 characters)"/>
 
 
                 </LinearLayout>
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/description"
+                    android:id="@+id/editdescription"
                     android:maxLength="30"/>
             </LinearLayout>
 
@@ -91,7 +85,7 @@
                         android:layout_width="wrap_content"
                         android:gravity="left"
                         android:layout_height="wrap_content"
-                        android:text="What days of the week is this spot free of cost?"/>
+                        android:text="Days of the week when this spot is no cost"/>
 
 
                 </LinearLayout>
@@ -101,23 +95,22 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:orientation="horizontal"
-                    android:id="@+id/daysgroup">
+                    android:id="@+id/editdaysgroup">
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginLeft="24dp"
-                        android:id="@+id/allweek"
+                        android:id="@+id/editallweek"
                         android:text="All week"
-                        android:buttonTint="@color/tab_background_selected"
-                        android:onClick="deactivateDays"/>
+                        android:buttonTint="@color/tab_background_selected" />
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginLeft="16dp"
-                        android:id="@+id/choosedays"
+                        android:id="@+id/editchoosedays"
                         android:buttonTint="@color/tab_background_selected"
                         android:text="Select days"
-                        android:onClick="activateDays"/>
+                        />
                 </RadioGroup>
 
                 <LinearLayout
@@ -129,21 +122,21 @@
                     android:background="#D1D0CE"
                     android:layout_marginLeft="24dp"
                     android:layout_marginRight="24dp">
-                    <CheckBox android:id="@+id/mon"
+                    <CheckBox android:id="@+id/editmon"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_height="wrap_content"
                         android:text="Mon"
                         />
-                    <CheckBox android:id="@+id/tue"
+                    <CheckBox android:id="@+id/edittue"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_height="wrap_content"
                         android:text="Tue"
                         />
-                    <CheckBox android:id="@+id/wed"
+                    <CheckBox android:id="@+id/editwed"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
@@ -160,28 +153,28 @@
                     android:background="#D1D0CE"
                     android:layout_marginLeft="24dp"
                     android:layout_marginRight="24dp">
-                    <CheckBox android:id="@+id/thu"
+                    <CheckBox android:id="@+id/editthu"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_height="wrap_content"
                         android:text="Thu"
                         />
-                    <CheckBox android:id="@+id/fri"
+                    <CheckBox android:id="@+id/editfri"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_height="wrap_content"
                         android:text="Fri"
                         />
-                    <CheckBox android:id="@+id/sat"
+                    <CheckBox android:id="@+id/editsat"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_height="wrap_content"
                         android:text="Sat"
                         />
-                    <CheckBox android:id="@+id/sun"
+                    <CheckBox android:id="@+id/editsun"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:buttonTint="@color/tab_background_selected"
@@ -226,7 +219,7 @@
                         android:layout_width="wrap_content"
                         android:gravity="left"
                         android:layout_height="wrap_content"
-                        android:text="On the above selected days, at what time is this spot free of cost?"/>
+                        android:text="Time of the day this spot is no cost on the above selected days"/>
 
 
                 </LinearLayout>
@@ -237,23 +230,23 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginTop="8dp"
-                    android:id="@+id/timesgroup">
+                    android:id="@+id/edittimesgroup">
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:id="@+id/allday"
+                        android:id="@+id/editallday"
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_marginLeft="24dp"
                         android:text="All day"
-                        android:onClick="deactivateButtons"/>
+                        />
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:id="@+id/choosetime"
+                        android:id="@+id/editchoosetime"
                         android:layout_marginLeft="24dp"
                         android:buttonTint="@color/tab_background_selected"
                         android:text="Select time"
-                        android:onClick="activateButtons"/>
+                        />
                 </RadioGroup>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -262,19 +255,19 @@
                     android:layout_marginLeft="24dp"
                     android:layout_marginRight="24dp">
                     <Button
-                        android:id="@+id/chooseStart"
+                        android:id="@+id/editchooseStart"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="match_parent"
                         android:text="Starts At"
-                        android:onClick="showStartDialog"/>
+                       />
                     <Button
-                        android:id="@+id/chooseEnd"
+                        android:id="@+id/editchooseEnd"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="match_parent"
                         android:text="Ends At"
-                        android:onClick="showEndDialog"/>
+                        />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -287,13 +280,13 @@
                         android:layout_weight="1"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:id="@+id/starttime"/>
+                        android:id="@+id/editstarttime"/>
                     <TextView
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:gravity="center"
                         android:layout_height="match_parent"
-                        android:id="@+id/endtime"/>
+                        android:id="@+id/editendtime"/>
                 </LinearLayout>
 
 
@@ -302,18 +295,13 @@
         </android.support.v7.widget.CardView>
 
 
-
-
-
-    <Button
+        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Report this Spot"
-            android:onClick="reportspot"/>
+            android:text="Save Changes"
+            android:id="@+id/editsave"/>
 
     </LinearLayout>
 
 </ScrollView>
-
-

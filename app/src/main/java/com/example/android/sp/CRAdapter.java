@@ -35,6 +35,9 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
     static private ArrayList<Bitmap> crimage;
     static private ArrayList<String> crkey;
     static private ArrayList<String> crdes;
+    static private ArrayList<String> crcode;
+    static private ArrayList<Boolean> crver;
+    static private ArrayList<ReportedTimes> crtimes;
     static String TAG="debugger",UID="";
     static public FragmentActivity activity;
     ContactViewHolder contactViewHolder;
@@ -42,10 +45,12 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
     View itemView;
     static DatabaseReference database;
 
-    public CRAdapter(ArrayList crimage,ArrayList crkey,ArrayList crdes,FragmentActivity activity,RecyclerView recyclerView,String UID) {
+    public CRAdapter(ArrayList crimage,ArrayList crtimes,ArrayList crkey,FragmentActivity activity,RecyclerView recyclerView,String UID) {
         this.crimage = crimage;
+        this.crtimes = crtimes;
         this.crkey   = crkey;
         this.crdes  = crdes;
+        this.crcode = crcode;
         this.activity = activity;
         this.recyclerView = recyclerView;
         this.UID = UID;
@@ -61,7 +66,13 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
     @Override
     public void onBindViewHolder(ContactViewHolder contactViewHolder, int i) {
         this.contactViewHolder = contactViewHolder;
-        contactViewHolder.spotname.setText(crdes.get(i));
+        contactViewHolder.spotname.setText(crtimes.get(i).getdescription());
+        if(crtimes.get(i).getverification()<3) {
+            contactViewHolder.category.setImageResource(R.drawable.uver);
+        }
+        else{
+            contactViewHolder.category.setImageResource(R.drawable.ver);
+        }
         contactViewHolder.spotimage.setImageBitmap(crimage.get(i));
     }
 
@@ -83,15 +94,17 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
 
         protected TextView spotname;
         protected ImageView spotimage;
+        protected ImageView category;
 
 
         public ContactViewHolder(View v) {
             super(v);
             spotname = (TextView) v.findViewById(R.id.contrepname);
             spotimage = (ImageView) v.findViewById(R.id.contrepimage);
+            category = (ImageView) v.findViewById(R.id.crstatus);
             spotimage.setOnClickListener(this);
-            Button button = (Button) v.findViewById(R.id.crbutton);
-            button.setOnClickListener(this);
+            //Button button = (Button) v.findViewById(R.id.crbutton);
+            //button.setOnClickListener(this);
             ImageView deleteview = (ImageView) v.findViewById(R.id.crdeleteicon);
             ImageView editview = (ImageView) v.findViewById(R.id.crediticon);
             deleteview.setOnClickListener(this);
@@ -101,27 +114,24 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
 
         @Override
         public void onClick(View view) {
-          /*  if (view.getId() == R.id.favcardbutton) {
+            if (view.getId() == R.id.crediticon) {
                 int itemPosition = getAdapterPosition();
                 Bundle data = new Bundle();
-                //data.putDouble("latitude", favoriteList.get(itemPosition).latitude);
-                //data.putDouble("longitude", favoriteList.get(itemPosition).longitude);
-                NavutilityFragment navutilityFragment = new NavutilityFragment();
-                navutilityFragment.setArguments(data);
+                data.putString("UID",UID);
+                data.putString("key", crkey.get(itemPosition));
+                data.putParcelable("reportedtimes",crtimes.get(itemPosition));
+                ReportedEdit reportedEdit = new ReportedEdit();
+                reportedEdit.setArguments(data);
                 android.support.v4.app.FragmentManager fragmentManager = activity.getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, navutilityFragment);
+                fragmentTransaction.replace(R.id.fragment_container, reportedEdit);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
                 return;
 
             }
-            if (view.getId() == R.id.deleteicon) {
+            if (view.getId() == R.id.crdeleteicon) {
                 deletedialog();
-            }
-            if (view.getId() == R.id.editicon) {
-                editdialog();
-                Log.d(TAG, "favoriteList " + Integer.toString(view.getId()));
             }
 
         }
@@ -129,7 +139,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
         public void deletedialog() {
             Log.d(TAG, "entered deletedialog");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-            builder.setMessage("Are you sure you want to delete this spot?");
+            builder.setMessage("Are you sure you want to delete this reported spot?");
             builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     Log.d(TAG, "deletedialog yes");
@@ -147,7 +157,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             dialog.show();
         }
 
-        public void editdialog() {
+        /*public void editdialog() {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
             LinearLayout layout = new LinearLayout(activity);
             LinearLayout.LayoutParams parms = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -182,28 +192,29 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             });
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
-        }
+        }*/
 
 
 
         public void deletedata() {
-            Log.d(TAG,"deletedialog"+ favoriteList.get(getAdapterPosition()).key);
+            Log.d(TAG,"deletedialog"+ crkey.get(getAdapterPosition()));
             database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-            childUpdates.put("/FavoriteKeys/" + UID + "/" + favoriteList.get(getAdapterPosition()).key, null);
+            childUpdates.put("/ReportedDetails/" + crtimes.get(getAdapterPosition()).getlatlngcode()+ "/" + crkey.get(getAdapterPosition()), null);
+            childUpdates.put("/ReportedTimes/" + UID + "/" + crkey.get(getAdapterPosition()), null);
             database.updateChildren(childUpdates);
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-            StorageReference favoriteRef = storageRef.child(UID + "/Favorites/" + favoriteList.get(getAdapterPosition()).key + ".jpg");
+            StorageReference favoriteRef = storageRef.child(UID + "/Reported/" + crkey.get(getAdapterPosition()) + ".jpg");
             favoriteRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
                     Log.d(TAG,"deletedialog success");
                     notif();
-                    ((HomeScreenActivity) activity).getFavorite();
+                    ((HomeScreenActivity) activity).getContri();
                 }
             });
-**/
+
         }
     }
 }

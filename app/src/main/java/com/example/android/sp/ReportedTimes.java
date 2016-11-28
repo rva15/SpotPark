@@ -1,23 +1,29 @@
 package com.example.android.sp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.database.Exclude;
 
 import java.util.HashMap;
 import java.util.Map;
+import android.os.Parcelable;
 
 /**
  * Created by ruturaj on 9/8/16.
  */
-public class ReportedTimes {
+public class ReportedTimes implements Parcelable {
     boolean fullday,fullweek,mon,tue,wed,thu,fri,sat,sun;
     int starthours,startmins,endhours,endmins;
     double latitude,longitude;
     int verification;
-    String description;
+    String description,latlngcode;
+    private int mData;
+
 
     public ReportedTimes(){}
 
-    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun,String description){
+    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun,String description,String latlngcode){
         this.latitude=latitude;
         this.longitude=longitude;
         this.verification=verification;
@@ -35,6 +41,7 @@ public class ReportedTimes {
         this.sat=sat;
         this.sun=sun;
         this.description = description;
+        this.latlngcode = latlngcode;
     }
 
     public double getlatitude(){return this.latitude;}
@@ -54,6 +61,7 @@ public class ReportedTimes {
     public boolean getsat(){return this.sat;}
     public boolean getsun(){return this.sun;}
     public String getdescription(){return this.description;}
+    public String getlatlngcode(){return this.latlngcode;}
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -75,8 +83,32 @@ public class ReportedTimes {
         result.put("sat",this.sat);
         result.put("sun",this.sun);
         result.put("description",this.description);
+        result.put("latlngcode",this.latlngcode);
 
         return result;
+    }
+
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeInt(mData);
+    }
+
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<ReportedTimes> CREATOR
+            = new Parcelable.Creator<ReportedTimes>() {
+        public ReportedTimes createFromParcel(Parcel in) {
+            return new ReportedTimes(in);
+        }
+
+        public ReportedTimes[] newArray(int size) {
+            return new ReportedTimes[size];
+        }
+    };
+
+    private ReportedTimes(Parcel in) {
+        mData = in.readInt();
     }
 
 

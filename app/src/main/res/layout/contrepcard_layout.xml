@@ -32,15 +32,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Navigate"
-                android:layout_alignParentRight="true"
-                android:id="@+id/crbutton"/>
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:paddingRight="16dp"
+                android:paddingBottom="8dp"
+                android:layout_alignParentRight="true"
+                android:id="@+id/crstatus"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingBottom="8dp"
                 android:src="@drawable/delete"
                 android:id="@+id/crdeleteicon"
                 android:layout_alignParentLeft="true"/>

@@ -105,6 +105,8 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         });
     }
 
+
+
     public void setid(String s){
         String id = s;
         Log.d(TAG,"user id reportform "+s);
@@ -246,6 +248,7 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
 
     public void getButtons(){
         start = (Button) findViewById(R.id.chooseStart);
+
         start.setEnabled(false);
         end   = (Button) findViewById(R.id.chooseEnd);
         end.setEnabled(false);
@@ -272,10 +275,10 @@ public class ReportForm extends AppCompatActivity implements ReportFormDialog.Re
         //ReportedDetails reportedDetails = new ReportedDetails(latitude,longitude,0,UID);
         //Map<String,Object> reportedDetailsMap = reportedDetails.toMap();
         Log.d(TAG,"description "+description.getText().toString());
-        ReportedTimes reportedTimes = new ReportedTimes(latitude,longitude,0,fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
-                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),description.getText().toString());
-        Map<String,Object> reportedTimesMap = reportedTimes.toMap();
         String LatLngCode = getLatLngCode(latitude,longitude);
+        ReportedTimes reportedTimes = new ReportedTimes(latitude,longitude,0,fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
+                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),description.getText().toString(),LatLngCode);
+        Map<String,Object> reportedTimesMap = reportedTimes.toMap();
         String key = database.child("ReportedDetails/"+LatLngCode).push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/ReportedDetails/"+LatLngCode+"/"+key,UID);
