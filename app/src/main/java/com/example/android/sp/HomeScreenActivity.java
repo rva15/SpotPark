@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -45,6 +46,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     int count=0;
     String latlngcode,key;
     TabsFragment tabsFragment;
+    LinearLayout fragmentcontainer;
 
     //-------------------------------Activity LifeCycle Functions--------------------------------//
 
@@ -77,6 +79,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         TabsFragment tabsFragment = new TabsFragment();
         fragmentTransaction.add(R.id.fragment_container, tabsFragment, "HELLO");
         fragmentTransaction.commit();
+        fragmentcontainer = (LinearLayout) findViewById(R.id.fragment_container);
 
 
     }
@@ -198,11 +201,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public void getContri(){
         Bundle data = new Bundle();
         data.putString("userid",UID);
-        ContRepFragment contRepFragment = new ContRepFragment();
-        contRepFragment.setArguments(data);
+        data.putInt("width",fragmentcontainer.getWidth());
+        ContributionsFragment contributionsFragment = new ContributionsFragment();
+        contributionsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, contRepFragment);
+        fragmentTransaction.replace(R.id.fragment_container, contributionsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }

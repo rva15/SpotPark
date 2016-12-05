@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     String userid="";
     String logoutFlag = "0";
     GoogleApiClient mGoogleApiClient;
-    public String firstname="",email="",lastname="",platenumber="";
+    public String firstname="",email="",lastname="";
     int numberOfKeys=0,count=0;
     DatabaseReference database;
     boolean isCheckedIn=false;
@@ -285,7 +285,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Log.d(TAG, "onAuthStateChanged:addNewUser");
         mDatabase = FirebaseDatabase.getInstance().getReference();
         String key = mDatabase.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,numberOfKeys,platenumber);
+        UserDetails user = new UserDetails(firstname,lastname,email,0,0,0);
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);

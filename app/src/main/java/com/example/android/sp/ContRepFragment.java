@@ -34,7 +34,8 @@ import java.util.Map;
 
 public class ContRepFragment extends Fragment {
 
-    String UID="";
+    static String UID="";
+    public static final String ARG_PAGE = "ARG_PAGE";
     RecyclerView recList;
     LinearLayout mv;
     static private ArrayList<Bitmap> crimage;
@@ -50,9 +51,9 @@ public class ContRepFragment extends Fragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
-        Bundle extras = getArguments();
-        UID = extras.getString("userid");
-        Log.d(TAG,"cr uid "+UID);
+       // Bundle extras = getArguments();
+       // UID = extras.getString("userid");
+       // Log.d(TAG,"cr uid "+UID);
 
     }
 
@@ -80,11 +81,23 @@ public class ContRepFragment extends Fragment {
         return view;
     }
 
+    public static ContRepFragment newInstance(int page,String id) {
+        UID = id;
+        Log.d(TAG," id passed :"+UID);
+        Bundle args = new Bundle();
+        args.putInt(ARG_PAGE, page);
+        ContRepFragment fragment = new ContRepFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
     public void getcontrepdata(){
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("ReportedTimes").child(UID).addValueEventListener(listener2);
         Log.d(TAG,"get contrep");
     }
+
 
     ValueEventListener listener2 = new ValueEventListener() {
         @Override

@@ -13,16 +13,18 @@ public class UserDetails {
     public String lastname = "";
     public String email = "";
     public int numberofkeys = 0;
-    public String platenumber = "";
+    public int reportfeed =0;
+    public int checkinfeed=0;
 
     public UserDetails(){}
 
-    public UserDetails(String firstname,String lastname, String email, int numberofkeys, String platenumber){
+    public UserDetails(String firstname,String lastname, String email, int numberofkeys, int reportfeed,int checkinfeed){
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.numberofkeys = numberofkeys;
-        this.platenumber = platenumber;
+        this.reportfeed = reportfeed;
+        this.checkinfeed = checkinfeed;
     }
 
     public String getfirstname(){
@@ -41,8 +43,12 @@ public class UserDetails {
         return numberofkeys;
     }
 
-    public String getplatenumber(){
-        return this.platenumber;
+    public int getreportfeed(){
+        return this.reportfeed;
+    }
+
+    public int getcheckinfeed(){
+        return this.checkinfeed;
     }
 
     @Exclude
@@ -52,7 +58,8 @@ public class UserDetails {
         result.put("lastname", this.lastname);
         result.put("email", this.email);
         result.put("numberofkeys",this.numberofkeys);
-        result.put("platenumber",this.platenumber);
+        result.put("reportfeed",this.reportfeed);
+        result.put("checkinfeed",this.checkinfeed);
 
         return result;
     }

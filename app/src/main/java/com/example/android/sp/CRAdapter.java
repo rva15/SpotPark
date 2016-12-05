@@ -69,9 +69,11 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
         contactViewHolder.spotname.setText(crtimes.get(i).getdescription());
         if(crtimes.get(i).getverification()<3) {
             contactViewHolder.category.setImageResource(R.drawable.uver);
+            contactViewHolder.points.setText("2 points");
         }
         else{
             contactViewHolder.category.setImageResource(R.drawable.ver);
+            contactViewHolder.points.setText("5 points");
         }
         contactViewHolder.spotimage.setImageBitmap(crimage.get(i));
     }
@@ -92,7 +94,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
 
     public class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        protected TextView spotname;
+        protected TextView spotname,points;
         protected ImageView spotimage;
         protected ImageView category;
 
@@ -102,6 +104,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             spotname = (TextView) v.findViewById(R.id.contrepname);
             spotimage = (ImageView) v.findViewById(R.id.contrepimage);
             category = (ImageView) v.findViewById(R.id.crstatus);
+            points = (TextView) v.findViewById(R.id.points);
             spotimage.setOnClickListener(this);
             //Button button = (Button) v.findViewById(R.id.crbutton);
             //button.setOnClickListener(this);

@@ -81,13 +81,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     Location currentLocation;
     double latitude,longitude;
-    LatLng place,currentmarker;
+    LatLng place,currentmarker,l;
     Marker marker;
     float zoom = 16;
     private int mPage;
     static String UID="";
     private static final String TAG = "Debugger ";
-    int i=0,verification=0;
+    int i=0,verification=0,cinfeed=0,repfeed=0;
     Timer t;
     public static final String ARG_PAGE = "ARG_PAGE";
     public DatabaseReference database;
@@ -98,8 +98,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     SearchHelperDB helperDB;
     TextView category,rate,heading;
     boolean isReported = false,isAutoMode=true;
-    String key="",latlngcode;
+    String key="",latlngcode,uid;
     LinearLayout recenter;
+    com.google.firebase.database.Query getcifeed,getrepfeed;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -280,12 +281,18 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 Log.d(TAG,"I parked checkin "+latlngcode + key);
                 com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
+                getcifeed = database.child("UserInformation").orderByKey().equalTo(UID);
+                getcifeed.addChildEventListener(listener3);
                 return;
             }
             if(isReported){
                 Log.d(TAG,"I parked key" + key);
-                com.google.firebase.database.Query getreported = database.child("ReportedTimes").orderByKey().equalTo(key);
-                getreported.addChildEventListener(listener2);
+                String code = getLatLngCode(l.latitude,l.longitude);
+                Log.d(TAG,"entered code "+code);
+                com.google.firebase.database.Query getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
+                getreported.addChildEventListener(listener5);
+                getrepfeed = database.child("UserInformation").orderByKey().equalTo(UID);
+                getrepfeed.addChildEventListener(listener4);
                 return;
             }
         }
@@ -354,9 +361,105 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     ChildEventListener listener2 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG,"entered listener2");
             ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
             verification = times.getverification();
             updateVerification(verification);
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
+    ChildEventListener listener3 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
+            cinfeed = userDetails.getcheckinfeed();
+            updatecinfeed(cinfeed);
+            getcifeed.removeEventListener(listener3);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
+    ChildEventListener listener4 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
+            repfeed = userDetails.getreportfeed();
+            Log.d(TAG,"entered listener4");
+            updaterepfeed(repfeed);
+            getrepfeed.removeEventListener(listener4);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    //define the ChildEventListener
+    ChildEventListener listener5 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            Log.d(TAG,"entered listener5");
+            uid = dataSnapshot.getValue(String.class);
+            com.google.firebase.database.Query getverified = database.child("ReportedTimes").child(uid).orderByKey().equalTo(key);
+            getverified.addChildEventListener(listener2);
         }
 
         @Override
@@ -382,8 +485,24 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     public void updateVerification(int v){
         v = v+1;
+        Log.d(TAG,"entered updateVerification "+Integer.toString(v));
         Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/ReportedTimes/"+key+"/verification", v);
+        childUpdates.put("/ReportedTimes/"+uid+"/"+key+"/verification", v);
+        database.updateChildren(childUpdates);
+    }
+
+    public void updatecinfeed(int c){
+        c = c+1;
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/UserInformation/"+UID+"/checkinfeed", c);
+        database.updateChildren(childUpdates);
+    }
+
+    public void updaterepfeed(int r){
+        r = r+1;
+        Log.d(TAG,"entered updaterepfeed ");
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/UserInformation/"+UID+"/reportfeed", r);
         database.updateChildren(childUpdates);
     }
 
@@ -454,7 +573,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     @Override
     public boolean onMarkerClick(Marker marker){
-        LatLng l = marker.getPosition();
+        l = marker.getPosition();
         currentmarker = l;
         Log.d(TAG,"marker lat "+Double.toString(l.latitude));
         Log.d(TAG,"marker lat "+Double.toString(l.longitude));

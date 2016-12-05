@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+<TableLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <TableRow
+        android:gravity="center"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="Informed Parking At"
+            android:textStyle="bold"
+            android:layout_column="1"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:text=" # "
+            android:textStyle="bold"
+            android:layout_column="2"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:text="Points Earned"
+            android:textStyle="bold"
+            android:layout_column="3"
+            android:background="@drawable/customborder"/>
+    </TableRow>
+
+    <TableRow
+        android:gravity="center"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="Checkins"
+            android:layout_column="1"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:id="@+id/numcins"
+            android:layout_column="2"
+            android:gravity="center"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:layout_column="3"
+            android:textColor="@color/green"
+            android:id="@+id/cinpoints"
+            android:gravity="center"
+            android:background="@drawable/customborder"/>
+    </TableRow>
+
+    <TableRow
+        android:gravity="center"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="Reported Spots"
+            android:layout_column="1"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:layout_column="2"
+            android:gravity="center"
+            android:id="@+id/numreps"
+            android:background="@drawable/customborder"/>
+        <TextView
+            android:gravity="center"
+            android:textColor="@color/green"
+            android:layout_column="3"
+            android:id="@+id/reppoints"
+            android:background="@drawable/customborder"/>
+    </TableRow>
+
+</TableLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:gravity="top|center_horizontal"
+        android:layout_height="wrap_content"
+        android:text="\u25CF "/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:gravity="left"
+        android:layout_height="wrap_content"
+        android:text="Earn 1 point every time you press the 'I parked' button when you park at a spot declared by another user."/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:gravity="top|center_horizontal"
+            android:layout_height="wrap_content"
+            android:text="\u25CF "/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:gravity="left"
+            android:layout_height="wrap_content"
+            android:text="Earn 2 points every time you press the 'I parked' button when you park at a user reported no cost spot. This helps us verify the authenticity of such spots."/>
+
+
+    </LinearLayout>
+
+</LinearLayout>
+
+
