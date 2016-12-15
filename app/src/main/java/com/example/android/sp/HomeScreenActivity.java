@@ -152,6 +152,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 getContri();
                 return true;
 
+            case R.id.settings:
+                Log.d(TAG,"pressed settings");                           //logout button in menu
+                getSettings();
+                return true;
+
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -211,6 +216,17 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         fragmentTransaction.commit();
     }
 
+    public void getSettings(){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        SettingsFragment settingsFragment = new SettingsFragment();
+        settingsFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, settingsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
 
 
     //define the ChildEventListener
