@@ -39,6 +39,8 @@
 
     <string name="fb_login_text">"Facebook"</string>
     <string name="google_login_text">"Google"</string>
+    <string name="drawer_open">"drawer open"</string>
+    <string name="drawer_close">"drawer closed"</string>
 
     <string name="navigation_view_item_1">Search</string>
     <string name="navigation_view_item_2">Checkin</string>

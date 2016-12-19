@@ -6,32 +6,38 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.provider.ContactsContract;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
+import android.support.v7.widget.Toolbar;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
+import android.support.v7.app.ActionBarDrawerToggle;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +53,21 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     String latlngcode,key;
     TabsFragment tabsFragment;
     LinearLayout fragmentcontainer;
+    private DrawerLayout mDrawerLayout;
+    String TITLES[] = {"Home","Delete Checkin","History","Favorites","Contributions","Settings","Logout"};
+    int ICONS[] = {R.drawable.home,R.drawable.deletewhite,R.drawable.history,R.drawable.favorite,R.drawable.contri,R.drawable.settings,R.drawable.logout};
+    String NAME = "Ruturaj Apte";
+    String EMAIL = "ruturaj.iitb@gmail.com";
+    int PROFILE = R.drawable.user;
+
+    Toolbar toolbar;                              // Declaring the Toolbar Object
+
+    RecyclerView mRecyclerView;                           // Declaring RecyclerView
+    RecyclerView.Adapter mAdapter;                        // Declaring Adapter For Recycler View
+    RecyclerView.LayoutManager mLayoutManager;            // Declaring Layout Manager as a linear layout manager
+    DrawerLayout Drawer;                                  // Declaring DrawerLayout
+
+    ActionBarDrawerToggle mDrawerToggle;
 
     //-------------------------------Activity LifeCycle Functions--------------------------------//
 
@@ -81,7 +102,55 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         fragmentTransaction.commit();
         fragmentcontainer = (LinearLayout) findViewById(R.id.fragment_container);
 
+        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        setSupportActionBar(toolbar);
 
+        mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
+        mRecyclerView.setHasFixedSize(true);
+        Drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mAdapter = new MyAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE,this,Drawer);
+        mRecyclerView.setAdapter(mAdapter);
+
+        mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+
+        mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,toolbar,R.string.drawer_open,R.string.drawer_close){
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                // code here will execute once the drawer is opened( As I dont want anything happened whe drawer is
+                // open I am not going to put anything here)
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                // Code here will execute once drawer is closed
+            }
+
+        };
+
+
+        Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
+        mDrawerToggle.syncState();
+    }
+
+
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
     @Override
@@ -126,41 +195,20 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.logout:
-                Log.d(TAG,"pressed logout");                           //logout button in menu
-                backToLogin();
-                return true;
-
-            case R.id.delete:
-                Log.d(TAG,"pressed delete");                           //logout button in menu
-                delete();
-                return true;
-
-            case R.id.history:
-                Log.d(TAG,"pressed delete");                           //logout button in menu
-                getHistory();
-                return true;
-
-            case R.id.favorite:
-                Log.d(TAG,"pressed delete");                           //logout button in menu
-                getFavorite();
-                return true;
-
-            case R.id.contri:
-                Log.d(TAG,"pressed contri");                           //logout button in menu
-                getContri();
-                return true;
-
-            case R.id.settings:
-                Log.d(TAG,"pressed settings");                           //logout button in menu
-                getSettings();
-                return true;
-
-
-            default:
-                return super.onOptionsItemSelected(item);
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if(id == R.id.settings){
+            Log.d(TAG,"pressed settings");
         }
+
+        //noinspection SimplifiableIfStatement
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void delete(){
@@ -187,6 +235,18 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, historyFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void getHome(){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        TabsFragment tabsFragment = new TabsFragment();
+        tabsFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, tabsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
