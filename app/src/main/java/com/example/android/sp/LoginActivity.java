@@ -3,17 +3,22 @@
 package com.example.android.sp;
 
 //all imports
+import java.io.ByteArrayOutputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Target;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +26,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.*;
@@ -37,6 +43,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -53,6 +61,10 @@ import com.example.android.sp.SignupDialog;
 import org.json.JSONException;
 import org.json.JSONObject;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener,SignupDialog.SignupDialogListener
@@ -76,6 +88,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     boolean isCheckedIn=false;
     String sendstatus="";
     String logoutFlagString = "logoutflag";
+    Bitmap profilepic;
+    Uri googlepic;
 
     // -------------  Activity LifeCycle Functions -------------------------------//
 
@@ -291,6 +305,30 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         childUpdates.put("/UserInformation/"+userID, newUser);
         mDatabase.updateChildren(childUpdates);
 
+        if(profilepic!=null) {
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+            StorageReference dpRef = storageRef.child(userid + "/Profile/dp.jpg");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            profilepic.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] data = baos.toByteArray();
+            UploadTask uploadTask = dpRef.putBytes(data);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    Log.d(TAG, "image upload failed");
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    Log.d(TAG, "image upload success");
+                }
+            });
+        }
+
     }
 
     public void showNoticeDialog(View v) {
@@ -411,6 +449,48 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         parameters.putString("fields", "id,first_name,last_name,email");
         graphRequest.setParameters(parameters);
         graphRequest.executeAsync();
+        Bundle params = new Bundle();
+        params.putString("fields", "id,email,gender,cover,picture.type(large)");
+        GraphRequest graphRequest2 = new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "me",
+                params,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+            /* handle the result */
+                        if (response != null) {
+                            try {
+                                JSONObject data = response.getJSONObject();
+                                Log.d(TAG,"im here");
+                                String profilePicUrl = data.getJSONObject("picture").getJSONObject("data").getString("url");
+                                Log.d(TAG,"dp url "+profilePicUrl);
+                                Picasso.with(getApplicationContext()).load(profilePicUrl).into(new com.squareup.picasso.Target() {
+                                    @Override
+                                    public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
+                                        profilepic = bitmap;
+                                        Log.d(TAG,"profile pic loaded");
+                                    }
+                                    @Override
+                                    public void onBitmapFailed(Drawable errorDrawable) {
+                                    }
+
+                                    @Override
+                                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                                    }
+                                });
+                                Log.d(TAG,"setting profile");
+
+                            } catch (Exception e) {
+                                Log.d(TAG,"setting failed");
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+        );
+
+        graphRequest2.executeAsync();
         Log.d(TAG, "onAuthStateChanged:token"+token.getCurrentAccessToken());
         mAuthfb = FirebaseAuth.getInstance();       //get Firebase Instance
         mAuthfb.addAuthStateListener(newAccountListener);//add previously defined listener
@@ -489,6 +569,23 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             firstname = account.getGivenName();
             lastname = account.getFamilyName();
             email = account.getEmail();
+            googlepic = account.getPhotoUrl();
+
+            Log.d(TAG,"googlepic "+googlepic.toString());
+            Picasso.with(getApplicationContext()).load(googlepic).into(new com.squareup.picasso.Target() {
+                @Override
+                public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
+                    profilepic = bitmap;
+                    Log.d(TAG,"profile pic loaded");
+                }
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                }
+            });
 
             firebaseAuthWithGoogle(account);
             Log.d(TAG,"google sign in success");

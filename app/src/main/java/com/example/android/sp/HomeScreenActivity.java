@@ -1,5 +1,6 @@
 package com.example.android.sp;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.provider.ContactsContract;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentTransaction;
@@ -23,9 +25,17 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
+
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.Profile;
+import com.facebook.login.widget.ProfilePictureView;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -37,7 +47,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 import android.support.v7.app.ActionBarDrawerToggle;
+
+import org.json.JSONObject;
+
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +81,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     RecyclerView.Adapter mAdapter;                        // Declaring Adapter For Recycler View
     RecyclerView.LayoutManager mLayoutManager;            // Declaring Layout Manager as a linear layout manager
     DrawerLayout Drawer;                                  // Declaring DrawerLayout
-
+    Activity activity;
     ActionBarDrawerToggle mDrawerToggle;
 
     //-------------------------------Activity LifeCycle Functions--------------------------------//
@@ -107,14 +122,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
         mRecyclerView = (RecyclerView) findViewById(R.id.left_drawer);
         mRecyclerView.setHasFixedSize(true);
-        Drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mAdapter = new MyAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE,this,Drawer);
-        mRecyclerView.setAdapter(mAdapter);
 
         mLayoutManager = new LinearLayoutManager(this);                 // Creating a layout Manager
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-
+        Drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this,Drawer,toolbar,R.string.drawer_open,R.string.drawer_close){
 
             @Override
@@ -136,8 +148,15 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
         Drawer.setDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();
-    }
+        mAdapter = new MyAdapter(TITLES,ICONS,NAME,EMAIL,PROFILE,this,Drawer,UID);
+        mRecyclerView.setAdapter(mAdapter);
+        Profile profile = Profile.getCurrentProfile();
+        if(profile!=null) {
+            Log.d(TAG, "profile id " + profile.getId());
+        }
 
+        activity = this;
+    }
 
 
     @Override
@@ -287,6 +306,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
 
 
     //define the ChildEventListener

@@ -1,16 +1,29 @@
 package com.example.android.sp;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * Created by ruturaj on 12/15/16.
@@ -23,12 +36,13 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     private String mNavTitles[]; // String Array to store the passed titles Value from MainActivity.java
     private int mIcons[];       // Int Array to store the passed icons resource value from MainActivity.java
-
+    private static String TAG="debugger";
     private String name;        //String Resource for header View Name
     private int profile;        //int Resource for header view profile picture
-    private String email;       //String Resource for header view email
+    private String email,UID;       //String Resource for header view email
     public static Activity homeactivity;
     public static DrawerLayout drawer;
+
 
 
     // Creating a ViewHolder which extends the RecyclerView View Holder
@@ -64,6 +78,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                 email = (TextView) itemView.findViewById(R.id.email);       // Creating Text View object from header.xml for email
                 profile = (ImageView) itemView.findViewById(R.id.circleView);// Creating Image view object from header.xml for profile pic
                 Holderid = 0;                                                // Setting holder id = 0 as the object being populated are of type header view
+
+
             }
         }
 
@@ -112,7 +128,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
 
 
-    MyAdapter(String Titles[], int Icons[], String Name, String Email, int Profile, Activity activity, DrawerLayout drawerLayout){ // MyAdapter Constructor with titles and icons parameter
+    MyAdapter(String Titles[], int Icons[], String Name, String Email, int Profile, Activity activity, DrawerLayout drawerLayout,String uid){ // MyAdapter Constructor with titles and icons parameter
         // titles, icons, name, email, profile pic are passed from the main activity as we
         mNavTitles = Titles;                //have seen earlier
         mIcons = Icons;
@@ -121,6 +137,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         profile = Profile;                     //here we assign those passed values to the values we declared here
         homeactivity = activity;
         drawer = drawerLayout;
+        UID = uid;
 
 
     }
@@ -170,10 +187,64 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         }
         else{
 
-            holder.profile.setImageResource(profile);           // Similarly we set the resources for header view
+            //holder.profile.setImageBitmap(bitmap);           // Similarly we set the resources for header view
             holder.Name.setText(name);
             holder.email.setText(email);
+            getdp(holder);
         }
+    }
+
+    public void getdp(final MyAdapter.ViewHolder holdertemp){
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+        StorageReference islandRef = storageRef.child(UID+"/Profile/dp.jpg");
+        Log.d(TAG,"looking up "+islandRef.toString());
+        final long ONE_MEGABYTE = 1024 * 1024;
+        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Data for "images/island.jpg" is returns, use this as needed
+                Log.d(TAG, "download success");
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holdertemp.profile.setImageBitmap(getCroppedBitmap(bmp,holdertemp));
+                holdertemp.profile.getLayoutParams().height = dpToPx(80);
+                holdertemp.profile.getLayoutParams().width = dpToPx(80);
+
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                Log.d(TAG, "download failed");
+            }
+        });
+    }
+    public int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = homeactivity.getApplicationContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    public Bitmap getCroppedBitmap(Bitmap bitmap,final MyAdapter.ViewHolder holdertemp2) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        // canvas.drawRoundRect(rectF, roundPx, roundPx, paint);
+        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2,
+                bitmap.getHeight() / 2, paint);
+        paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        //Bitmap _bmp = Bitmap.createScaledBitmap(output, 60, 60, false);
+        //return _bmp;
+        return output;
     }
 
     // This method returns the number of items present in the list
