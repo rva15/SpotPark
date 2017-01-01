@@ -216,6 +216,7 @@ public class HistoryFragment extends Fragment implements View.OnClickListener {
             Bundle data = new Bundle();
             data.putDouble("latitude", lats.get(4));
             data.putDouble("longitude", lons.get(4));
+
             NavutilityFragment navutilityFragment = new NavutilityFragment();
             navutilityFragment.setArguments(data);
             android.support.v4.app.FragmentManager fragmentManager = getActivity().getSupportFragmentManager();

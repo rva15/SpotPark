@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -111,13 +112,18 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
                 Bundle data = new Bundle();
                 data.putDouble("latitude", favoriteList.get(itemPosition).latitude);
                 data.putDouble("longitude", favoriteList.get(itemPosition).longitude);
-                NavutilityFragment navutilityFragment = new NavutilityFragment();
-                navutilityFragment.setArguments(data);
-                android.support.v4.app.FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, navutilityFragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
+                double latitude = favoriteList.get(itemPosition).latitude;
+                double longitude = favoriteList.get(itemPosition).longitude;
+                String label = favoriteList.get(itemPosition).name;
+                String uriBegin = "geo:" + latitude + "," + longitude;
+                String query = latitude + "," + longitude + "(" + label + ")";
+                String encodedQuery = Uri.encode(query);
+                String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
+                Uri uri = Uri.parse(uriString);
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, uri);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.getApplicationContext().startActivity(intent);
+
                 return;
 
             }

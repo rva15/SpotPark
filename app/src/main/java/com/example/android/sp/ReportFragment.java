@@ -16,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -158,7 +161,11 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         sMapView.onResume();                                                      //get mapView and initialize it
         MapsInitializer.initialize(getActivity());
         sMapView.getMapAsync(this);
-
+        NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.repadView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice("266C3F7B130505999AFFA64AAA489FBD")
+                .build();
+        adView.loadAd(request);
         return view;
     }
 

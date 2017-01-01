@@ -41,7 +41,8 @@
     <string name="google_login_text">"Google"</string>
     <string name="drawer_open">"drawer open"</string>
     <string name="drawer_close">"drawer closed"</string>
-
+    <string name="checkin_ad_unit_id">ca-app-pub-6738316052917153/1081565822</string>
+    <string name="report_ad_unit_id">ca-app-pub-6738316052917153/7289549821</string>
     <string name="navigation_view_item_1">Search</string>
     <string name="navigation_view_item_2">Checkin</string>
     <string name="navigation_view_item_3">Report</string>
