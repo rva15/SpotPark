@@ -19,6 +19,7 @@
         completions."
     </string>
     <string name="could_not_login_signup">"Could not login/sign-up"</string>
+    <string name="web_client_id">283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com</string>
     <string name="account_successfully_created">"Account Successfully Created"</string>
     <string name="facebook_app_id">1088141281275611</string>
 
