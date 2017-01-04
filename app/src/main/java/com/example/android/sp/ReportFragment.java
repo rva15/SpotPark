@@ -244,7 +244,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public void showForm(byte[] bytearray,double lat,double lon){
 
         HomeScreenActivity activity = (HomeScreenActivity) getActivity();
-        activity.test(UID,Double.toString(lat),Double.toString(lon),bytearray);
+        activity.getReportForm(UID,Double.toString(lat),Double.toString(lon),bytearray);
     }
 
 

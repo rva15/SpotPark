@@ -9,6 +9,7 @@ import java.util.Map;
 import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -107,6 +108,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         //create an auth state listener allows already logged in users to proceed
         mAuthstart = FirebaseAuth.getInstance();            //get current state of login
+        mAuthfb = FirebaseAuth.getInstance();            //get Firebase Instances
+        mAuthgoogle = FirebaseAuth.getInstance();
+        mAuthsignup = FirebaseAuth.getInstance();
+        mAuthlogin = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -281,6 +286,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //go Ahead to HomeScreenActivity
     private void goAhead(String ID){
         checkStatus(ID);
+        mAuthstart.removeAuthStateListener(mAuthListener);
+        mAuthfb.removeAuthStateListener(newAccountListener);
+        mAuthlogin.removeAuthStateListener(mAuthListener);
+        mAuthsignup.removeAuthStateListener(newAccountListener);
+        mAuthgoogle.removeAuthStateListener(newAccountListener);
         Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
         intent.putExtra("userid", ID);
         intent.putExtra("sendstatus",isCheckedIn);
@@ -355,7 +365,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
 
-    private void showSignupDialog(View v) {
+    public void showSignupDialog(View v) {
         // Create an instance of the Signup Dialog fragment and show it
         DialogFragment dialog = new SignupDialog();
         dialog.show(getSupportFragmentManager(),"Signup fragment");
@@ -386,8 +396,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         firstname = fn.getText().toString();
         lastname = ln.getText().toString();
         email = user.getText().toString();
-        mAuthsignup = FirebaseAuth.getInstance();               //get Firebase instance
         //create a listener for signup process
+        profilepic = BitmapFactory.decodeResource(getResources(),R.drawable.user); //default profile pic
         mAuthsignup.addAuthStateListener(newAccountListener);        //add listener
         mAuthsignup.createUserWithEmailAndPassword(user.getText().toString(), pass.getText().toString()) //create the user
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -405,12 +415,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
                     }
                 });
+
+
     }
 
     //----------------------- Email Login -----------------------------------------------//
 
     //This function is triggered when you press the login button
-    private void login(View view) {
+    public void login(View view) {
 
         if(!username.getText().toString().contains(".com") || !username.getText().toString().contains("@"))
         {
@@ -418,7 +430,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             return;
         }
         showLoading();                                 //show loading
-        mAuthlogin = FirebaseAuth.getInstance();       //get Firebase instance
 
         mAuthlogin.addAuthStateListener(mAuthListener);//add listener to it
         mAuthlogin.signInWithEmailAndPassword(username.getText().toString(), password.getText().toString()) //sign in with email
@@ -514,7 +525,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         graphRequest2.executeAsync();
         Log.d(TAG, "onAuthStateChanged:token"+token.getCurrentAccessToken());
-        mAuthfb = FirebaseAuth.getInstance();            //get Firebase Instance
         mAuthfb.addAuthStateListener(newAccountListener);//add previously defined listener
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken()); //get the access token from fb
         mAuthfb.signInWithCredential(credential)    //sign in to firebase using that credential
@@ -614,7 +624,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         showLoading();
         Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
-        mAuthgoogle = FirebaseAuth.getInstance();
         mAuthgoogle.addAuthStateListener(newAccountListener);
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuthgoogle.signInWithCredential(credential)

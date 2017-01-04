@@ -6,8 +6,17 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:elevation="4dp"
     android:paddingTop="8dp"
-
-
     >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="SpotPark"
+        android:layout_gravity="center"
+        android:textColor="@color/white"
+        android:textSize="18dp"
+        android:id="@+id/toolbar_title" />
+
+
 
 </android.support.v7.widget.Toolbar>
