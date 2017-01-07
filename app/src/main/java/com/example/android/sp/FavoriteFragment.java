@@ -124,7 +124,7 @@ public class FavoriteFragment extends Fragment {
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Bitmap cropped = Bitmap.createBitmap(bmp, (int)(bmp.getWidth()/2 - width/2),(int)(bmp.getHeight()/2 - width/4),width,(int)width/2);
                     FavoriteInfo info = new FavoriteInfo();
-                    info.name = favoritePlace.spotname;
+                    info.name = favoritePlace.getspotname();
                     info.spotimage = cropped;
                     info.latitude = favoritePlace.getflatitude();
                     info.longitude = favoritePlace.getflongitude();

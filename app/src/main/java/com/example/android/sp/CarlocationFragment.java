@@ -1,22 +1,27 @@
 package com.example.android.sp;
-
+//All imports
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -30,28 +35,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.android.gms.location.LocationListener;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-
 import org.json.JSONObject;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,35 +54,43 @@ import java.util.List;
 /**
  * Created by ruturaj on 9/16/16.
  */
-public class NavigationFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener{
-    //Necessary variable declarations
-    static String UID="";
-    GoogleApiClient mGoogleApiClient;
-    LocationRequest mLocationRequest;
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    Location mCurrentLocation;
-    double latitude,longitude,carlatitude,carlongitude;
-    LatLng place;
-    int i = 0;
-    Marker marker;
-    GoogleMap navigationmap;
+public class CarlocationFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener,GoogleMap.OnCameraMoveStartedListener{
+
+    //Variable declarations
+    //--Utility Variables
+    private static String UID="";
+    private double latitude,longitude,carlatitude,carlongitude;
+    private LatLng place;
+    private int i = 0,couthours,coutmins;
     private DatabaseReference database;
+    private Boolean isAutoMode=true;
     public static final String ARG_PAGE = "ARG_PAGE";
-    private int mPage;
     private static final String TAG = "Debugger ";
-    public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
-    MapView nMapView;
+    private LinearLayout recenter;
+    private String time="";
+    private TextView timeview;
+    private Button informbutton;
+    private com.google.firebase.database.Query getcheckin;
+    //--Google API variables
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    private Location mCurrentLocation;
+    private Marker marker;
+    private GoogleMap navigationmap;
+    private MapView nMapView;
+    private Bitmap carMarker;
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
-    public static NavigationFragment newInstance(int page,String id) {
+    public static CarlocationFragment newInstance(int page, String id) {
         UID = id;
         Log.d(TAG,"passed id : "+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
-        NavigationFragment fragment = new NavigationFragment();
+        CarlocationFragment fragment = new CarlocationFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -97,28 +100,33 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mPage = getArguments().getInt(ARG_PAGE);
+
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
-        mLocationRequest = new LocationRequest();            // Create location request
+        mLocationRequest = new LocationRequest();                      // Create location request
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        //get the small sized car marker
+        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.car,null);
+        Bitmap b=bitmapdraw.getBitmap();
+        carMarker = Bitmap.createScaledBitmap(b, dpToPx(24), dpToPx(24), false);
 
     }
 
     @Override
     public void onStart(){
-        mGoogleApiClient.connect();      //onStart of the activity, connect apiclient
+        mGoogleApiClient.connect();          //onStart of the activity, connect apiclient
         super.onStart();
     }
 
     @Override
     public void onStop() {
-        i=0;                            //set counter for UpdateUI back to 0
+        i=0;                                //set counter for UpdateUI back to 0
         if(mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         }
@@ -128,7 +136,7 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     @Override
     public void onPause() {
         super.onPause();
-        //stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        stopLocationUpdates();       //stop location updates when activity pauses as defined below
         if (null != nMapView){
             nMapView.onPause();}
     }
@@ -168,14 +176,32 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_navigation, container, false); //inflate the view
-        Button button = (Button) view.findViewById(R.id.informbutton);
-        button.setOnClickListener(this);
+        View view = inflater.inflate(R.layout.fragment_carlocation, container, false); //inflate the view
+
         nMapView = (MapView) view.findViewById(R.id.nmap);
         nMapView.onCreate(savedInstanceState);
         nMapView.onResume();                                                      //get mapView and initialize it
         MapsInitializer.initialize(getActivity());
         nMapView.getMapAsync(this);
+
+        //get the recenter button and set visibility to gone
+        recenter = (LinearLayout) view.findViewById(R.id.recenter);
+        recenter.setVisibility(View.GONE);
+        recenter.setOnClickListener(this);
+
+        //Get the TextView and inform buttons
+        timeview = (TextView) view.findViewById(R.id.couttime);
+        informbutton = (Button) view.findViewById(R.id.informbutton);
+        informbutton.setOnClickListener(this);
+
+
+        // Initialize the Ad unit
+        NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.carlocadView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(getResources().getString(R.string.test_device_ID))
+                .build();
+        adView.loadAd(request);
+
 
         return view;
     }
@@ -204,12 +230,23 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
     public void onMapReady(GoogleMap googleMap) {
         navigationmap = googleMap;                    //when GoogleMap is ready, put it into the existing map object
         navigationmap.getUiSettings().setMyLocationButtonEnabled(true);
+        navigationmap.setOnCameraMoveStartedListener(this);
     }
 
     protected void stopLocationUpdates() {
         if(mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(
                     mGoogleApiClient, this);
+        }
+    }
+
+    @Override
+    public void onCameraMoveStarted(int reason){
+        Log.d(TAG,"camera move started "+Integer.toString(reason));
+        if(reason==REASON_GESTURE) {
+            Log.d(TAG,"camera move started reason gesture "+Integer.toString(reason));
+            recenter.setVisibility(View.VISIBLE);
+            isAutoMode = false;
         }
     }
 
@@ -239,27 +276,35 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
             marker.remove();    //remove previous marker
         }
 
-        marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here")); //and set it at new location
+        marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
 
         if(i==0) {
             navigationmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
             getcarLocation(UID);
         }
+        if(isAutoMode){
+            navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //smoothly animate camera
+        }
         i=i+1;
 
+    }
+
+    private int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     public void getcarLocation(String id){
         Log.d(TAG,"user id is :"+id);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
-        com.google.firebase.database.Query getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
+        getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
         getcheckin.addChildEventListener(listener1);
     }
 
     public void drawroute(double carlatitude,double carlongitude){
         LatLng origin = new LatLng(latitude, longitude);
         LatLng dest = new LatLng(carlatitude, carlongitude);
-        navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
+        navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.fromBitmap(carMarker)));
         String url = getUrl(origin, dest);
         FetchUrl FetchUrl = new FetchUrl();
         FetchUrl.execute(url);
@@ -274,7 +319,11 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
             carlatitude = user.getcarlatitude();
             carlongitude = user.getcarlongitude();
+            couthours = user.getcouthours();
+            coutmins  = user.getcoutmins();
+            timeview.setText(gettime(couthours,coutmins));
             drawroute(carlatitude,carlongitude);
+            getcheckin.removeEventListener(listener1);
         }
 
         @Override
@@ -298,14 +347,52 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
         }
     };
 
+    private String gettime(int hours,int mins){
+        if(hours==123 || mins==123){
+            time = "---";
+            return time;
+        }
+        if(hours>12){
+            if(mins <10) {
+                time = Integer.toString(hours - 12) + ":0" + Integer.toString(mins) + " pm";
+            }
+            else{
+                time = Integer.toString(hours - 12) + ":" + Integer.toString(mins) + " pm";
+            }
+        }
+        if(hours<12){
+            if(mins<10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " am";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " am";
+            }
+        }
+        if(hours==12){
+            if(mins <10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " pm";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " pm";
+            }
+        }
+        return time;
+    }
+
     @Override
     public void onClick(View v) {
-
-
-        Log.d(TAG,"clicked inform");          //get the dialog when user clicks marker
-        Intent servIntent = new Intent(this.getActivity(),DirectionService.class);     //start the DirectionService
-        servIntent.putExtra("started_from","navigation");
-        this.getActivity().startService(servIntent);
+        if(v.getId()==R.id.informbutton) {
+            Log.d(TAG, "clicked inform");
+            Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
+            servIntent.putExtra("started_from", "navigation");
+            this.getActivity().startService(servIntent);
+        }
+        if(v.getId()==R.id.recenter){
+            recenter.setVisibility(View.GONE);
+            navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            isAutoMode=true;
+            Log.d(TAG,"recenter");
+        }
     }
 
 
@@ -436,8 +523,8 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(android.graphics.Color.RED);
+                lineOptions.width(7);
+                lineOptions.color(Color.BLACK);
 
                 Log.d("onPostExecute","onPostExecute lineoptions decoded");
 
@@ -466,10 +553,13 @@ public class NavigationFragment extends Fragment implements OnMapReadyCallback, 
         String sensor = "sensor=false";
 
         //Api key
-        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+        String key = getResources().getString(R.string.googleAPI_serverkey);
+
+        //Mode of transport
+        String mode = "&mode=walking";
 
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&key=";
+        String parameters = str_origin + "&" + str_dest + mode + "&key=";
 
         // Output format
         String output = "json";

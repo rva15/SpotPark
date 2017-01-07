@@ -1,5 +1,5 @@
 package com.example.android.sp;
-
+//All imports
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -11,17 +11,17 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class CheckInHelperDB extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "NewCheckInInfo.db";
+    private static final String DATABASE_NAME = "CheckInInfo.db";
     private static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME = "NewCheckIns";
-    public static final String rownum = "Rownum";
-    public static final String ID = "_id";
-    public static final String carlat = "Carlatitude";
-    public static final String carlon = "Carlongitude";
-    public static final String cih = "CheckInHour";
-    public static final String cim = "CheckInMin";
-    public static final String lh = "LastHour";
-    public static final String lm = "LastMin";
+    private static final String TABLE_NAME = "CheckIns";
+    private static final String rownum = "Rownum";
+    private static final String ID = "_id";
+    private static final String carlat = "Carlatitude";
+    private static final String carlon = "Carlongitude";
+    private static final String cih = "CheckInHour";
+    private static final String cim = "CheckInMin";
+    private static final String lh = "LastHour";
+    private static final String lm = "LastMin";
 
 
     public CheckInHelperDB(Context context) {
@@ -30,6 +30,7 @@ public class CheckInHelperDB extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        //Drop previously existing table and create a new one
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + rownum + " INTEGER PRIMARY KEY, " +
                 ID + " TEXT , " + carlat + " REAL , " +
@@ -40,6 +41,7 @@ public class CheckInHelperDB extends SQLiteOpenHelper {
     }
 
     public Cursor getInfo() {
+        //Return the whole table row
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor res = db.rawQuery( "SELECT * FROM " + TABLE_NAME + " ORDER BY ROWID ASC LIMIT 1",null);
         return res;
@@ -47,6 +49,7 @@ public class CheckInHelperDB extends SQLiteOpenHelper {
 
 
     public boolean updateInfo(String key,double carlatitude, double carlongitude,double chkinhour,double chkinmin,double lsthour,double lstmin) {
+        //Update last hour and last min entries
         SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ID, key);
@@ -63,6 +66,7 @@ public class CheckInHelperDB extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        //updating actually drops the whole table and creates a new one
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
         onCreate(db);
     }

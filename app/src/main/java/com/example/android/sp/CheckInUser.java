@@ -1,5 +1,5 @@
 package com.example.android.sp;
-
+//All imports
 import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,18 +9,22 @@ import java.util.Map;
  */
 public class CheckInUser {
 
-    public double carlatitude;
-    public double carlongitude;
-    public String latlngcode;
-    public String key;
+    private double carlatitude;
+    private double carlongitude;
+    private String latlngcode;
+    private String key;
+    private int couthours,coutmins;
+
 
     public CheckInUser() {
         // Default constructor required for calls to DataSnapshot.getValue(com.example.android.sp.CheckInUser.class)
     }
 
-    public CheckInUser(double carlatitude, double carlongitude,String latlngcode,String key) {
+    public CheckInUser(double carlatitude, double carlongitude,int couthours,int coutmins,String latlngcode,String key) {
         this.carlatitude     = carlatitude;
         this.carlongitude    = carlongitude;
+        this.couthours       =couthours;
+        this.coutmins        =coutmins;
         this.latlngcode      = latlngcode;
         this.key             = key;
 
@@ -32,6 +36,8 @@ public class CheckInUser {
     public double getcarlongitude(){
         return this.carlongitude;
     }
+    public int    getcouthours(){return this.couthours;}
+    public int    getcoutmins(){return this.coutmins;}
     public String getlatlngcode(){return  this.latlngcode;}
     public String getkey(){return  this.key;}
 
@@ -41,6 +47,8 @@ public class CheckInUser {
         HashMap<String, Object> result = new HashMap<>();
         result.put("carlatitude", carlatitude);
         result.put("carlongitude", carlongitude);
+        result.put("couthours",this.couthours);
+        result.put("coutmins",this.coutmins);
         result.put("latlngcode",latlngcode);
         result.put("key",key);
 

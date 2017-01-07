@@ -44,11 +44,15 @@
     <string name="drawer_close">"drawer closed"</string>
     <string name="checkin_ad_unit_id">ca-app-pub-6738316052917153/1081565822</string>
     <string name="report_ad_unit_id">ca-app-pub-6738316052917153/7289549821</string>
+    <string name="carlocation_ad_unit_id">ca-app-pub-6738316052917153/3316361828</string>
+    <string name="postcheckin_ad_unit_id">ca-app-pub-6738316052917153/6069521826</string>
+    <string name="googleAPI_serverkey">AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I</string>
     <string name="navigation_view_item_1">Search</string>
     <string name="navigation_view_item_2">Checkin</string>
     <string name="navigation_view_item_3">Report</string>
     <string name="navigation_view_item_4">Account</string>
     <string name="navigation_view_item_5">Help</string>
     <string name="navigation_view_category_1">Sliding Menu</string>
+    <string name="test_device_ID">266C3F7B130505999AFFA64AAA489FBD</string>
 
 </resources>

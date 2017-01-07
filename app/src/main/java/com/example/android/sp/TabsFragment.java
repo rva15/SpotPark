@@ -1,8 +1,7 @@
 package com.example.android.sp;
-
+// All imports
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.Fragment;
@@ -18,31 +17,39 @@ import java.util.List;
  */
 public class TabsFragment extends Fragment {
 
-    View view;
-    Adapter adapter;
-    static String TAG = "debugger";
-    static String UID;
-    boolean status;
-    static boolean isCheckedin;
-    ViewPager viewPager;
-    TabLayout tabLayout;
+    // Variable Declarations
+    private View view;
+    private Adapter adapter;
+    private static String TAG = "debugger";
+    private static String UID;
+    private static boolean isCheckedin;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
 
     //-------------------------Fragment LifeCycle Methods--------------------------//
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.f_tabslayout, container, false);
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        HomeScreenActivity activity = (HomeScreenActivity) getActivity();
-        UID = activity.getUID();
-        isCheckedin = activity.getStatus();
-        Log.d(TAG, "user id passed :" + UID);
+        setRetainInstance(true);
+
+        Bundle extras = getArguments();                 //get userid and active CheckIn status
+        UID = extras.getString("userid");
+        isCheckedin = extras.getBoolean("isCheckedin");
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.fragment_tabslayout, container, false);  //inflate layout
+        super.onCreate(savedInstanceState);
+
         viewPager = (ViewPager) view.findViewById(R.id.viewpager);
         setupViewPager(viewPager);
         tabLayout = (TabLayout) view.findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         if (!isCheckedin) {
-            tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
+            tabLayout.getTabAt(0).setIcon(R.drawable.checkin);      //set the first tab as per CheckIn status
         }
         if (isCheckedin) {
             tabLayout.getTabAt(0).setIcon(R.drawable.navigate);
@@ -55,7 +62,6 @@ public class TabsFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
     }
 
     //-----------------------------View Pager Functions----------------------------//
@@ -64,10 +70,10 @@ public class TabsFragment extends Fragment {
         ///Here we have to pass ChildFragmentManager instead of FragmentManager.
         adapter = new Adapter(getChildFragmentManager());
         if (!isCheckedin) {
-            adapter.addFragment(new CheckInFragment(), "CHECKIN");
+            adapter.addFragment(new CheckInFragment(), "CHECK-IN");
         }
         if (isCheckedin) {
-            adapter.addFragment(new NavigationFragment(), "LOCATE CAR");
+            adapter.addFragment(new CarlocationFragment(), "LOCATE CAR");
         }
         adapter.addFragment(new SearchFragment(), "SEARCH");
         adapter.addFragment(new ReportFragment(), "REPORT");
@@ -75,31 +81,15 @@ public class TabsFragment extends Fragment {
     }
 
 
-    //----------------------------Helper Functions------------------------------//
-
-    public void reload() {
-
-        isCheckedin = false;
-        adapter.removeFragment(0);
-        adapter.addFragment(new CheckInFragment(), "CHECKIN");
-        viewPager.getAdapter().notifyDataSetChanged();
-        tabLayout.getTabAt(0).setIcon(R.drawable.checkin);
-        tabLayout.getTabAt(1).setIcon(R.drawable.search);
-        tabLayout.getTabAt(2).setIcon(R.drawable.report);
-    }
-
-
     //----------------------FragmentStatePagerAdapter Class----------------------//
 
 
     static class Adapter extends FragmentStatePagerAdapter {
-        private FragmentManager mManager;
         public final List<Fragment> mFragments = new ArrayList<>();
         public final List<String> mFragmentTitles = new ArrayList<>();
 
         public Adapter(android.support.v4.app.FragmentManager fm) {
             super(fm);
-            this.mManager = fm;
         }
 
         public void addFragment(Fragment fragment, String title) {
@@ -112,7 +102,7 @@ public class TabsFragment extends Fragment {
             if (position == 0) {
                 if (isCheckedin) {
                     Log.d(TAG, "going to navigation");
-                    return NavigationFragment.newInstance(position + 1, UID);
+                    return CarlocationFragment.newInstance(position + 1, UID);
                 } else {
                     Log.d(TAG, "user id passed " + UID);
                     return CheckInFragment.newInstance(position + 1, UID);
@@ -138,19 +128,6 @@ public class TabsFragment extends Fragment {
         @Override
         public int getItemPosition(Object object) {
             return POSITION_NONE;
-        }
-
-        public void removeFragment(int position) {
-
-            mFragmentTitles.remove(position);
-            mFragmentTitles.remove(position);
-            mFragmentTitles.remove(position);
-            mFragmentTitles.add("CHECKIN");
-            mFragmentTitles.add("SEARCH");
-            mFragmentTitles.add("REPORT");
-            mManager.beginTransaction().remove(mFragments.get(position)).commit();
-            mFragments.remove(position);
-
         }
 
     }

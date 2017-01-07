@@ -1,7 +1,6 @@
 package com.example.android.sp;
-
+//All imports
 import com.google.firebase.database.Exclude;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,10 +8,10 @@ import java.util.Map;
  * Created by ruturaj on 10/2/16.
  */
 public class HistoryPlace {
-    public double platitude;
-    public double plongitude;
-    public String date;
-    public String time;
+    private double platitude;
+    private double plongitude;
+    private String date;
+    private String time;
 
     public HistoryPlace() {
         // Default constructor required for calls to DataSnapshot.getValue(com.example.android.sp.CheckInUser.class)

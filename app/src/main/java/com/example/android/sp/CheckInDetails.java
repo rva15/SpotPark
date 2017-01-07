@@ -1,5 +1,5 @@
 package com.example.android.sp;
-
+//All imports
 import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,10 +8,10 @@ import java.util.Map;
  * Created by ruturaj on 8/18/16.
  */
 public class CheckInDetails {
-    int dollars=0,cents=0;
-    double longitude=0.0,latitude=0.0;
-    String id = "";
-    int minstoleave = 0;
+    private int dollars=0,cents=0;
+    private double longitude=0.0,latitude=0.0;
+    private String id = "";
+    private int minstoleave = 0;
 
 
 
@@ -26,6 +26,7 @@ public class CheckInDetails {
         this.cents=cents;
         this.id=id;
         this.minstoleave=minstoleave;
+
     }
 
 
@@ -34,7 +35,7 @@ public class CheckInDetails {
     public int      getdollars(){return this.dollars;}
     public int      getcents(){return this.cents;}
     public String   getid(){return this.id;}
-    public int  getminstoleave(){return this.minstoleave;}
+    public int      getminstoleave(){return this.minstoleave;}
 
     @Exclude
     public Map<String, Object> toMap() {

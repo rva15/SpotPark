@@ -1,4 +1,5 @@
 package com.example.android.sp;
+// All imports
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -24,7 +25,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.common.api.PendingResult;
@@ -54,7 +54,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
 import java.io.ByteArrayOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -68,36 +67,39 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     //variable declarations
 
-    private GoogleMap map;
-    private CheckInHelperDB dbHelper ;
-    private GoogleApiClient mGoogleApiClient;
-    public  double curlatitude;
-    public  double curlongitude;
-    float zoom = 16;
-    public String checkinTime;
+    //--General Utility--
+    private  double curlatitude,curlongitude;
+    private float zoom = 16;
+    private String checkinTime,deftitle="Untitled";
     private static final String TAG = "Debugger ";
-    Location mCurrentLocation;
-    Calendar calendar;
-    LatLng place;
-    SimpleDateFormat simpleDateFormat;
-    private DatabaseReference database;
-    static String UID="";
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    LocationRequest mLocationRequest;
-    boolean inputerror= false;
-    int i=0,test;
-    double hours,mins,checkinhour,checkinmin;
-    int dollars,cents;
-    CameraPosition position;
-    LatLng cameracenter;
-    public static final String ARG_PAGE = "ARG_PAGE";
-    MapView gMapView;
-    private int mPage;
-    ImageView pin;
+    private static String UID="";
+    private int i=0,walktimedef = 10031;
+    private double hours=123,mins=123,checkinhour,checkinmin;
+    private int dollars,cents;
+    private ImageView pin;
     private static final int REQ_CODE = 1;
-    String rph,h,m,o,c,t;
+    private String rph,h,m,o,c,t;
+    private static final String ARG_PAGE = "ARG_PAGE";
+    private CheckInHelperDB dbHelper ;
+    private boolean inputerror= false;
+
+    //--Google API variables--
+    private GoogleMap map;
+    private GoogleApiClient mGoogleApiClient;
+    private Location mCurrentLocation;
+    private Calendar calendar;
+    private LatLng place;
+    private SimpleDateFormat simpleDateFormat;
+    private DatabaseReference database;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    private LocationRequest mLocationRequest;
+    private CameraPosition position;
+    private LatLng cameracenter;
+    private MapView gMapView;
+    private Bitmap bitmap;
+
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
@@ -115,7 +117,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        //mPage = getArguments().getInt(ARG_PAGE);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
@@ -125,9 +126,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS); //periodically update location
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS); //fastest update interval
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        test=8;
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
 
+        // Check if gps is on, otherwise display message to user
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
         final PendingResult<LocationSettingsResult> result =
@@ -174,7 +175,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onPause() {
         super.onPause();
-        //stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        stopLocationUpdates();       //stop location updates when activity pauses as defined below
         if (null != gMapView){
             gMapView.onPause();}
     }
@@ -223,9 +224,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         MapsInitializer.initialize(getActivity());
         gMapView.getMapAsync(this);
 
+        // Initialize the Ad unit
         NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.cinadView);
         AdRequest request = new AdRequest.Builder()
-                .addTestDevice("266C3F7B130505999AFFA64AAA489FBD")
+                .addTestDevice(getResources().getString(R.string.test_device_ID))
                 .build();
         adView.loadAd(request);
         return view;
@@ -235,7 +237,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        //call this function
         startLocationUpdates();
     }
 
@@ -296,7 +297,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //fetch information from the dialog and call the checkIn function
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==-1){
+        if(requestCode== 1){
             Bundle bundle = data.getExtras();
             String rate = bundle.getString("rates", rph);
             String hour = bundle.getString("hours",h);
@@ -305,9 +306,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             String checked = bundle.getString("checked",c);
             String tag = bundle.getString("tag",t);
 
-            Log.d(TAG,"rate per hour : "+ rate);
-            Log.d(TAG,"rate per hour : "+ hour);
-            Log.d(TAG,"rate per hour : "+ min);
             checkIn(rate,hour,min,option,checked,tag);
         }
     }
@@ -315,6 +313,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     public void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked,final String tag) {
 
+        // Initialize all required data for checking in
         position = map.getCameraPosition();                 //get the camera position
         cameracenter = position.target;                     //and get the center of the map
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
@@ -323,52 +322,86 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         String[] timearray = checkinTime.split(":");               //split the time into hours and mins
         checkinhour = Double.parseDouble(timearray[0]);
         checkinmin = Double.parseDouble(timearray[1]);
-        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd ");
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
         String strDate = mdformat.format(calendar.getTime());
+
+        // Get the parking rate in dollars and cents
         double d = toDouble(parkrate);
         if(d==12345.){
-            Toast.makeText(this.getActivity(),"Invalid parking rate!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this.getActivity(),"Invalid parking rate!",Toast.LENGTH_SHORT).show(); //show a message if parking rate is invalid
             return;
         }
         dollars =  (int)Math.round(Math.floor(d));
         cents = (int)Math.round(100*(d - Math.floor(d)));
+
+        // Get the spot's LatLngCode
         String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
         Log.d(TAG, "LatLngCode : " + LatLngCode);
 
-        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
-        //construct the CheckInDetails object
-        Log.d(TAG,"test is "+Integer.toString(test));
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,test);
-        Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
-        CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,LatLngCode,key);  // construct the CheckInUser object
-        Map<String, Object> userMap = user.toMap();                    //call its toMap method
+        // Setup notifications and alert user if time entered is invalid
+        //Proceed towards starting NotificationBroadcast
+        if(parkchecked.equals("1")) {
+            hours = Double.parseDouble(parkhour);
+            mins = Double.parseDouble(parkmin);
+            //get the requested delay period
+            int sub = 900000;
+            if (parkoption.equals("15")) {
+                sub = 900000;
+            }
+            if (parkoption.equals("30")) {
+                sub = 1800000;
+            }
+            if (parkoption.equals("45")) {
+                sub = 2700000;
+            }
+            if (parkoption.equals("60")) {
+                sub = 3600000;
+            }
+            int delay = (int) getDelay(checkinhour, checkinmin, hours, mins) - sub;    //get the delay for notification
+            if (delay < 0) {
+                Toast.makeText(this.getActivity(), "Your requested alert time has already passed!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
+                return;
+            }
+            Log.d(TAG,"notification delay "+Integer.toString(delay));
+            scheduleNotification(getAlertNotification(), delay, 1);              //schedule alert notification for ticket expiring
+            scheduleNotification(getInformNotification(), delay + 12000, 23);    //ask user if he wants to inform others by this notification
+        }
 
+        // Proceed to make database entries
+        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
+        //construct the CheckInDetails  and CheckInUser objects
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef);
+        Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
+        CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,(int)hours,(int)mins,LatLngCode,key);  // construct the CheckInUser object
+        Map<String, Object> userMap = user.toMap();                    //call its toMap method
+        // Make an entry in user's history
         HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]));
         Map<String, Object> historyMap = historyPlace.toMap();
-
+        // Make the entries
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
         childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
         childUpdates.put("/CheckInUsers/"+UID,userMap);
         childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
         if(tag.equals("1")){
-            FavoritePlace favoritePlace = new FavoritePlace(cameracenter.latitude,cameracenter.longitude,"Untitled");
+            // If user asked to add the spot to favorites
+            FavoritePlace favoritePlace = new FavoritePlace(cameracenter.latitude,cameracenter.longitude,deftitle);
             Map<String, Object> favoriteMap = favoritePlace.toMap();
             childUpdates.put("/FavoriteKeys/"+UID+"/"+key,favoriteMap);
             Toast.makeText(this.getContext(),"Spot added to Favorites",Toast.LENGTH_SHORT).show();
         }
-        database.updateChildren(childUpdates);                        //simultaneously update the database at both locations
-
+        database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
 
 
         //Put the screenshot of map into FileStorage
         final String userid = UID;
         final String cikey  = key;
         GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
-            Bitmap bitmap;
+
             @Override
             public void onSnapshotReady(Bitmap snapshot) {
 
                 bitmap = snapshot;
+                showPostCheckin();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
@@ -386,16 +419,15 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
                         Log.d(TAG,"image upload success");
+
                     }
                 });
 
                 if(tag.equals("1")){
                     StorageReference favoriteRef = storageRef.child(userid+"/Favorites/"+cikey+".jpg");
                     UploadTask uploadTask2 = favoriteRef.putBytes(data);
-                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                    uploadTask2.addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception exception) {
                             // Handle unsuccessful uploads
@@ -417,42 +449,21 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         pin.setVisibility(View.GONE);
         map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         map.snapshot(callback);
-        Log.d(TAG,"parkchecked "+parkchecked);
 
-        //Proceed towards starting NotificationBroadcast
-        if(parkchecked.equals("1")) {
-            hours = Double.parseDouble(parkhour);
-            mins = Double.parseDouble(parkmin);
-            int sub = 900000;
-            if (parkoption.equals("15")) {
-                sub = 900000;
-            }
-            if (parkoption.equals("30")) {
-                sub = 1800000;
-            }
-            if (parkoption.equals("45")) {
-                sub = 2700000;
-            }
-            if (parkoption.equals("60")) {
-                sub = 3600000;
-            }
-            int delay = (int) getDelay(checkinhour, checkinmin, hours, mins) - sub;            //get the delay for notification
-            if (delay < 0) {
-                Toast.makeText(this.getActivity(), "Cannot set notification", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
-                return;
-            }
-            Log.d(TAG,"notification delay "+Integer.toString(delay));
-            scheduleNotification(getAlertNotification(), delay, 1);       //schedule notification 15mins prior to ticket expiring
-            scheduleNotification(getInformNotification(), delay + 15000, 23);    //ask user if he wants to inform others by this notification
-        }
+
+
         //Put in checkin information into phone local storage
         dbHelper = new CheckInHelperDB(this.getActivity());
         dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
         Intent servIntent = new Intent(this.getActivity(),LocationService.class);     //start the LocationService
         this.getActivity().startService(servIntent);
-        Intent intent = new Intent(this.getActivity(), CheckedIn.class);             //move on to the next activity
-        startActivity(intent);
 
+
+    }
+
+    public void showPostCheckin(){
+        HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //display post checkin message
+        homeScreenActivity.getCheckedin(bitmap,hours,mins);
     }
 
     //---------------------------Notifications Related Functions---------------------------//
@@ -473,7 +484,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private Notification getAlertNotification() {
 
         Intent navigate = new Intent(this.getActivity(), HomeScreenActivity.class);
-        navigate.putExtra("user_id",UID);
         navigate.putExtra("startedfrom","notification");
         navigate.putExtra("sendstatus",true);
         navigate.putExtra("userid",UID);
@@ -517,7 +527,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     //--------------------------------------Other Helper Functions------------------------------------//
 
     private void updateUI() {
-        Log.d(TAG, "yayy location updated !!!");
+        Log.d(TAG, "location updated");
         curlatitude = mCurrentLocation.getLatitude();       //get the latitude
         curlongitude = mCurrentLocation.getLongitude();     //get the longitude
         place = new LatLng(curlatitude, curlongitude);      //initiate LatLng object
@@ -530,19 +540,34 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     public String gettimeformat(String hour,String min){
-        if(Integer.parseInt(hour)<=11){
-            return (hour+":"+min+" am");
-        }
-        if(Integer.parseInt(hour)>11){
-            if(Integer.parseInt(hour)==12){
-                return (hour+":"+min+" pm");
+        int hours = Integer.parseInt(hour);
+        int mins  = Integer.parseInt(min);
+        String time="";
+        if(hours>12){
+            if(mins <10) {
+                time = Integer.toString(hours - 12) + ":0" + Integer.toString(mins) + " pm";
             }
             else{
-                return (Integer.toString(Integer.parseInt(hour)-12)+":"+min+" pm");
+                time = Integer.toString(hours - 12) + ":" + Integer.toString(mins) + " pm";
             }
         }
-
-        return "";
+        if(hours<12){
+            if(mins<10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " am";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " am";
+            }
+        }
+        if(hours==12){
+            if(mins <10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " pm";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " pm";
+            }
+        }
+        return time;
 
     }
 
@@ -562,7 +587,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     //function to generate the LatLngCode
     public String getLatLngCode(double lat, double lon){
 
-        lat = lat*100;     //get the centi latitudes and centi longitudes
+        lat = lat*100;                     //get the centi latitudes and centi longitudes
         lon = lon*100;
         int lat1 = (int)Math.round(lat);   //round them off
         int lon1 = (int)Math.round(lon);

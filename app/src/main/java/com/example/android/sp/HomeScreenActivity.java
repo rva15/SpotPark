@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +47,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     private LinearLayout fragmentcontainer;
     private String TAG="debugger";
     private final static String logoutFlagString = "logoutflag";
+
 
     // Google and Firebase
     private GoogleApiClient mGoogleApiClient;
@@ -98,11 +100,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 .build();
 
         // Load the TabsFragment
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        TabsFragment tabsFragment = new TabsFragment();
-        fragmentTransaction.add(R.id.fragment_container, tabsFragment, "HELLO");
-        fragmentTransaction.commit();
+        getHome();
         fragmentcontainer = (LinearLayout) findViewById(R.id.fragment_container);
 
         // Get the toolbar and remove it's default title
@@ -247,6 +245,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public void getHome(){
         Bundle data = new Bundle();
         data.putString("userid",UID);
+        data.putBoolean("isCheckedin",isCheckedin);
         TabsFragment tabsFragment = new TabsFragment();
         tabsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
@@ -292,6 +291,24 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, settingsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    // Get the checked in fragment
+    public void getCheckedin(Bitmap mapimage,double hours,double mins){
+        isCheckedin=true;
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        data.putParcelable("mapimage",mapimage);
+        data.putDouble("hours",hours);
+        data.putDouble("mins",mins);
+        data.putInt("width",fragmentcontainer.getWidth());
+        PostCheckinFragment postCheckinFragment = new PostCheckinFragment();
+        postCheckinFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -357,12 +374,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         database.updateChildren(childUpdates);
         Toast.makeText(this,"Previous checkin deleted",Toast.LENGTH_LONG).show(); //Show a message to user
         isCheckedin=false;
-        TabsFragment tabsFragment = new TabsFragment();                 //Reload the TabsFragment
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, tabsFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        getHome();
     }
 
     public void backToLogin(){
@@ -383,10 +395,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     public String getUID() {
         return UID;
-    }
-
-    public boolean getStatus() {
-        return isCheckedin;
     }
 
     public void getReportForm(String s, String lat, String lon, byte[] bytearray){
