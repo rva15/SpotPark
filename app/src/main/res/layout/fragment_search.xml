@@ -20,9 +20,14 @@
 
         <!-- MAIN CONTENT -->
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:orientation="vertical"
             android:layout_weight="3">
 
@@ -61,6 +66,90 @@
             </LinearLayout>
 
         </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="100dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:id="@+id/legend">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/black">
+                    </View>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginTop="8dp">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/markerx"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Street parking slot available in x mins"/>
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/repver"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="match_parent"
+                            android:text="Verified user reported spot"/>
+
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:id="@+id/custommarker"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="match_parent"
+                            android:text="ParkWhiz suggested paid parking lot"/>
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/repunver"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Unverified user reported spot"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Start Search"
+                android:id="@+id/startsearch" />
+
+            </FrameLayout>
+
+        </LinearLayout>
+
 
         <!-- SLIDING LAYOUT -->
 
@@ -109,7 +198,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="32dp"
                         android:gravity="center"
-                        android:text="Complain"/>
+                        android:textColor="@color/blue"
+                        android:text="@string/complain_string"/>
 
                 </LinearLayout>
                 <LinearLayout
@@ -117,6 +207,13 @@
                     android:layout_weight="2"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Draw Route"
+                        android:id="@+id/drawroute"/>
 
                     <Button
                         android:id="@+id/navigatebutton"

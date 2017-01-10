@@ -310,7 +310,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Log.d(TAG, "Adding new user");
         mDatabase = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
         String key = mDatabase.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,0,0,0); //make a new user object
+        UserDetails user = new UserDetails(firstname,lastname,email,0,0,0,0); //make a new user object
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);

@@ -38,7 +38,7 @@ public class CheckInDialog extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout. checkindialog, null);
+        final View view = inflater.inflate(R.layout.dialog_checkin, null);
 
         // Get views and declare UI components
         final Spinner spin;

@@ -7,17 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TimePicker;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ruturaj on 10/12/16.
@@ -39,7 +32,7 @@ public class NamesDialog extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.namesdialog, null);
+        final View view = inflater.inflate(R.layout.dialog_names, null);
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout

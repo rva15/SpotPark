@@ -31,7 +31,7 @@ public class EditProfileDialog extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.editprofiledialog, null);
+        final View view = inflater.inflate(R.layout.dialog_editprofile, null);
         Bundle mArgs = getArguments();
         final String firstname = mArgs.getString("fn");
         final String lastname = mArgs.getString("ln");

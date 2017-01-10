@@ -109,9 +109,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         public void onClick(View view) {
             if (view.getId() == R.id.favcardbutton) {
                 int itemPosition = getAdapterPosition();
-                Bundle data = new Bundle();
-                data.putDouble("latitude", favoriteList.get(itemPosition).latitude);
-                data.putDouble("longitude", favoriteList.get(itemPosition).longitude);
                 double latitude = favoriteList.get(itemPosition).latitude;
                 double longitude = favoriteList.get(itemPosition).longitude;
                 String label = favoriteList.get(itemPosition).name;

@@ -286,7 +286,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         showCheckInDialog();           //get the dialog when user clicks marker
     }
 
-    public void showCheckInDialog() {
+    private void showCheckInDialog() {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new CheckInDialog();
         dialog.setTargetFragment(CheckInFragment.this, REQ_CODE);       //set target fragment to this fragment
@@ -311,7 +311,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
 
-    public void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked,final String tag) {
+    private void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked,final String tag) {
 
         // Initialize all required data for checking in
         position = map.getCameraPosition();                 //get the camera position
@@ -461,7 +461,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    public void showPostCheckin(){
+    private void showPostCheckin(){
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //display post checkin message
         homeScreenActivity.getCheckedin(bitmap,hours,mins);
     }
@@ -539,7 +539,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    public String gettimeformat(String hour,String min){
+    private String gettimeformat(String hour,String min){
         int hours = Integer.parseInt(hour);
         int mins  = Integer.parseInt(min);
         String time="";
@@ -571,7 +571,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    public Double toDouble(String var){                                   //convert String to Double
+    private Double toDouble(String var){                                   //convert String to Double
         try{
             Double i = Double.parseDouble(var.trim());
             return i;
@@ -585,7 +585,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     //function to generate the LatLngCode
-    public String getLatLngCode(double lat, double lon){
+    private String getLatLngCode(double lat, double lon){
 
         lat = lat*100;                     //get the centi latitudes and centi longitudes
         lon = lon*100;
@@ -605,7 +605,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
     //function that calculates time difference between two times in milliseconds
-    public double getDelay(double checkinhour,double checkinmin,double checkouthour,double checkoutmin){
+    private double getDelay(double checkinhour,double checkinmin,double checkouthour,double checkoutmin){
         double comins;
         double cimins;
         double mindelay=0.;

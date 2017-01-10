@@ -41,6 +41,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.android.gms.location.LocationListener;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.maps.android.ui.IconGenerator;
+
 import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -114,7 +116,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         //get the small sized car marker
         BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.car,null);
         Bitmap b=bitmapdraw.getBitmap();
-        carMarker = Bitmap.createScaledBitmap(b, dpToPx(24), dpToPx(24), false);
+        carMarker = Bitmap.createScaledBitmap(b, dpToPx(32), dpToPx(32), false);
 
     }
 

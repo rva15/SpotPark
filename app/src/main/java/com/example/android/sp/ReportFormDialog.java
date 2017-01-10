@@ -23,7 +23,7 @@ public class ReportFormDialog extends DialogFragment {
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        builder.setView(inflater.inflate(R.layout.reportformdialog, null))
+        builder.setView(inflater.inflate(R.layout.dialog_reportform, null))
                 // Add action buttons
                 .setPositiveButton("Report", new DialogInterface.OnClickListener() {
                     @Override

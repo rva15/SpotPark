@@ -73,7 +73,7 @@ public class PostCheckinFragment extends Fragment {
 
     // This method required due to 'from html' syntax deprecation
     @SuppressWarnings("deprecation")
-    public static Spanned fromHtml(String html){
+    private static Spanned fromHtml(String html){
         Spanned result;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             result = Html.fromHtml(html,Html.FROM_HTML_MODE_LEGACY);

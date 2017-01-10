@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TimePicker;
 import android.support.v4.app.DialogFragment;
 
@@ -23,7 +22,7 @@ public class ReditDialog extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.reditdialog, null);
+        final View view = inflater.inflate(R.layout.dialog_redit, null);
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout

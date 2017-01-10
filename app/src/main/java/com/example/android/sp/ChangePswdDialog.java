@@ -11,14 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TimePicker;
-import android.widget.Toast;
 
 /**
  * Created by ruturaj on 12/10/16.
  */
 public class ChangePswdDialog extends DialogFragment {
-    Activity a;
     static String TAG="debugger";
 
 
@@ -31,7 +28,7 @@ public class ChangePswdDialog extends DialogFragment {
         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.changepswddialog, null);
+        final View view = inflater.inflate(R.layout.dialog_changepswd, null);
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout

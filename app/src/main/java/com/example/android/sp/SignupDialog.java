@@ -22,7 +22,7 @@ public class SignupDialog extends DialogFragment {
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
-        builder.setView(inflater.inflate(R.layout.signupdialog, null))
+        builder.setView(inflater.inflate(R.layout.dialog_signup, null))
                 // Add action buttons
                 .setPositiveButton("Signup", new DialogInterface.OnClickListener() {
                     @Override
