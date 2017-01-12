@@ -156,7 +156,9 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     @Override
     public void onStop () {
-        mGoogleApiClient.disconnect();
+        if(mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
         super.onStop();
     }
 
@@ -395,6 +397,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     public String getUID() {
         return UID;
+    }
+
+    public void refreshMainAdapter(){
+        mAdapter.notifyDataSetChanged();
     }
 
     public void getReportForm(String s, String lat, String lon, byte[] bytearray){

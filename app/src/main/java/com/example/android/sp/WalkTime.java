@@ -1,25 +1,17 @@
 package com.example.android.sp;
-
+//All imports
 import android.os.AsyncTask;
 import android.util.Log;
-
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.PolylineOptions;
-
 import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.example.android.sp.WalkTimeParser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,12 +22,12 @@ import com.google.firebase.database.ValueEventListener;
  * Created by ruturaj on 8/28/16.
  */
 public class WalkTime {
-    //Necessary variables
-    double carlatitude,carlongitude,userlatitude,userlongitude;
-    public final static String TAG="";
-    public DatabaseReference database;
-    String latlngcode="",key="",UID="";
-    int totalmins=0,count=0;
+    //Variable declaration
+    private double carlatitude,carlongitude,userlatitude,userlongitude;
+    private final static String TAG="";
+    private DatabaseReference database;
+    private String latlngcode="",key="",UID="";
+    private int totalmins=0,count=0;
 
     public WalkTime(){} //empty constructor
 
@@ -52,7 +44,7 @@ public class WalkTime {
         LatLng dest = new LatLng(carlatitude,carlongitude);
         String url = getUrl(origin, dest); //fetch url to connect to google maps
         FetchUrl FetchUrl = new FetchUrl();
-        FetchUrl.execute(url); //execure this asynctask
+        FetchUrl.execute(url);            //execute this asynctask
     }
 
     private class FetchUrl extends AsyncTask<String, Void, String> {
@@ -148,9 +140,6 @@ public class WalkTime {
                     updatedata(); //update entry in database if mins is less than 10
                 }
 
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask totalmins",Integer.toString(totalmins));
-
             } catch (Exception e) {
                 Log.d("ParserTask",e.toString());
                 e.printStackTrace();
@@ -182,20 +171,15 @@ public class WalkTime {
 
                         } else if (!dataSnapshot.exists()) {
                             Log.d(TAG, "not exists");
-
-
                         }
 
                     }
                     count = count + 1;
-
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    // Getting Post failed, log a message
                     Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
-
                 }
             };
             database.child("CheckInUsers").child(UID).addListenerForSingleValueEvent(valuelistener);
@@ -223,6 +207,7 @@ public class WalkTime {
 
         //Api key
         String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+
 
         String mode = "&mode=walking";
 

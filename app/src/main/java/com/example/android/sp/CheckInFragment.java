@@ -49,8 +49,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -168,7 +171,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onStop() {
         i=0;                            //set counter for UpdateUI back to 0
-        mGoogleApiClient.disconnect();  //disconnect apiclient on stop
+        if(mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }                              //disconnect apiclient on stop
         super.onStop();
     }
 
@@ -261,8 +266,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
+        if(mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }
     }
 
 
@@ -389,6 +396,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             childUpdates.put("/FavoriteKeys/"+UID+"/"+key,favoriteMap);
             Toast.makeText(this.getContext(),"Spot added to Favorites",Toast.LENGTH_SHORT).show();
         }
+        incrementKeys();                                              //award the user with 2 keys
+        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+        homeScreenActivity.refreshMainAdapter();
         database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
 
 
@@ -537,6 +547,23 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         }
         i=i+1;
 
+    }
+
+    //increment user's keys by 2
+    private void incrementKeys(){
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long keys = (long) dataSnapshot.getValue();
+                keys = keys+2;
+                dataSnapshot.getRef().setValue(keys);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private String gettimeformat(String hour,String min){

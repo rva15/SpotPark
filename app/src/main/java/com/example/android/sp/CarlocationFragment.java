@@ -41,6 +41,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.android.gms.location.LocationListener;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.maps.android.ui.IconGenerator;
 
 import org.json.JSONObject;
@@ -69,10 +70,10 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     public static final String ARG_PAGE = "ARG_PAGE";
     private static final String TAG = "Debugger ";
     private LinearLayout recenter;
-    private String time="";
+    private String time="",latlngcode,checkinkey;
     private TextView timeview;
     private Button informbutton;
-    private com.google.firebase.database.Query getcheckin;
+    private com.google.firebase.database.Query getcheckin,getminstoleave;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -132,6 +133,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         if(mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         }
+        getminstoleave.removeEventListener(listener2);
         super.onStop();
     }
 
@@ -296,14 +298,14 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
-    public void getcarLocation(String id){
+    private void getcarLocation(String id){
         Log.d(TAG,"user id is :"+id);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
         getcheckin.addChildEventListener(listener1);
     }
 
-    public void drawroute(double carlatitude,double carlongitude){
+    private void drawroute(double carlatitude,double carlongitude){
         LatLng origin = new LatLng(latitude, longitude);
         LatLng dest = new LatLng(carlatitude, carlongitude);
         navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.fromBitmap(carMarker)));
@@ -312,6 +314,14 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         FetchUrl.execute(url);
 
     }
+
+    private void checkInformed(){
+        Log.d(TAG,"entered checkinformed");
+        database = FirebaseDatabase.getInstance().getReference();
+        getminstoleave = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(checkinkey);
+        getminstoleave.addChildEventListener(listener2);
+    }
+
 
     //define the ChildEventListener
     ChildEventListener listener1 = new ChildEventListener() {
@@ -323,8 +333,11 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             carlongitude = user.getcarlongitude();
             couthours = user.getcouthours();
             coutmins  = user.getcoutmins();
+            latlngcode = user.getlatlngcode();
+            checkinkey = user.getkey();
             timeview.setText(gettime(couthours,coutmins));
             drawroute(carlatitude,carlongitude);
+            checkInformed();
             getcheckin.removeEventListener(listener1);
         }
 
@@ -335,6 +348,44 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    ChildEventListener listener2 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
+            Integer minstoleave =  checkInDetails.getminstoleave();
+            Log.d(TAG,"mins to leave "+Integer.toString(minstoleave));
+            if(minstoleave!=10031){
+                informbutton.setVisibility(View.GONE);
+            }
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
+            Integer minstoleave =  checkInDetails.getminstoleave();
+            if(minstoleave!=10031){
+                informbutton.setVisibility(View.GONE);
+            }
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
 
         }
 
@@ -385,9 +436,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     public void onClick(View v) {
         if(v.getId()==R.id.informbutton) {
             Log.d(TAG, "clicked inform");
+            informbutton.setVisibility(View.GONE);
             Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
             servIntent.putExtra("started_from", "navigation");
             this.getActivity().startService(servIntent);
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+            homeScreenActivity.refreshMainAdapter();
         }
         if(v.getId()==R.id.recenter){
             recenter.setVisibility(View.GONE);
@@ -526,7 +580,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(7);
-                lineOptions.color(Color.BLACK);
+                lineOptions.color(Color.BLUE);
 
                 Log.d("onPostExecute","onPostExecute lineoptions decoded");
 

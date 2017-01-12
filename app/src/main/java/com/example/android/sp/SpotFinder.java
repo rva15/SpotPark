@@ -1,14 +1,7 @@
 package com.example.android.sp;
 //All imports
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -19,20 +12,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -44,7 +26,7 @@ import java.util.Map;
 
 public class SpotFinder {
 
-    //Necassary variable declaration
+    //Variable Declaration
     private double latitude=0.0,longitude=0.0;
     private String UID="",currtime;
     private int currhour,currmin;
@@ -63,6 +45,7 @@ public class SpotFinder {
     private Map chinkeys = new HashMap();
     private SimpleDateFormat dayFormat,simpleDateFormat;
     private ArrayList<Integer> markerimage = new ArrayList<Integer>();
+    private com.google.firebase.database.Query getReported;
 
 
 
@@ -90,11 +73,6 @@ public class SpotFinder {
         markerimage.add(R.drawable.marker9);
         markerimage.add(R.drawable.marker10);
 
-
-
-
-
-
     }
 
     //addListener method
@@ -120,12 +98,9 @@ public class SpotFinder {
 
         for(int k=0;k<9;k++){
             database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
-            database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
+            //database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
             database.child("ReportedDetails").child(array.get(k)).addChildEventListener(listener3);//add listener3 for reported spots
         }
-        Log.d(TAG,"calling ParkWhiz task");
-
-
 
     }
 
@@ -208,8 +183,14 @@ public class SpotFinder {
         }
 
         @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {    //currently all these functions have been left empty
-            // Add lines to remove the marker from the map
+        public void onChildRemoved(DataSnapshot dataSnapshot) {    //remove marker from the map when a checkin is deleted
+            CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
+            spotplace = new LatLng(checkInDetails.getlatitude(),checkInDetails.getlongitude());
+            Marker marker = (Marker)markers.get(spotplace);
+            if(marker!=null){
+                marker.remove();
+            }
+
         }
 
         @Override
@@ -228,7 +209,7 @@ public class SpotFinder {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             String userid = dataSnapshot.getValue(String.class);
-            com.google.firebase.database.Query getReported = database.child("ReportedTimes").child(userid).orderByKey().equalTo(dataSnapshot.getKey());
+            getReported = database.child("ReportedTimes").child(userid).orderByKey().equalTo(dataSnapshot.getKey());
             getReported.addChildEventListener(listener4);
         }
 
@@ -380,6 +361,16 @@ public class SpotFinder {
     public Map getTimes(){return chintimes;}
     public Map getCats(){return reportcat;}
     public Map getDesc(){return reportdesc;}
+
+    //function to detach all listeners
+    public void detachListeners(){
+        for(int k=0;k<9;k++){
+            database.child("CheckInKeys").child(array.get(k)).removeEventListener(listener1); //remove listener1 for checkin spots
+            //database.child("Searchers").child(array.get(k)).removeEventListener(listener2);   //remove listener2 for other searchers
+            database.child("ReportedDetails").child(array.get(k)).removeEventListener(listener3);//remove listener3 for reported spots
+        }
+        getReported.removeEventListener(listener4);
+    }
 
     private void insertdata(String unique, int mins,int status,int dollar,int cent){
         helperDB.insertEntry(unique,mins,status,dollar,cent);                   //insert entry into localdb
@@ -683,7 +674,6 @@ public class SpotFinder {
         }
         return false;
     }
-
-     }
+ }
 
 

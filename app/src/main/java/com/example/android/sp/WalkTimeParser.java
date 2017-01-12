@@ -1,29 +1,23 @@
 package com.example.android.sp;
-
+//All imports
 import android.util.Log;
-
-import com.google.android.gms.maps.model.LatLng;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by ruturaj on 8/28/16.
  */
 public class WalkTimeParser {
-    /** Receives a JSONObject and returns a list of lists containing latitude and longitude */
+
     public int parse(JSONObject jObject){
 
-        List<List<HashMap<String, String>>> routes = new ArrayList<>() ;
         JSONArray jRoutes;
         JSONArray jLegs;
         JSONArray jSteps;
-        int seconds=0;
+        int mins=0;
         String textsec="";
         final String TAG="";
 
@@ -45,8 +39,8 @@ public class WalkTimeParser {
 
                         textsec = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
                         String[] output = textsec.split(" ");
-                        seconds = seconds+ Integer.parseInt(output[0]);
-                        Log.d(TAG,"seconds : "+seconds);
+                        mins = mins+ Integer.parseInt(output[0]);
+                        Log.d(TAG,"mins : "+mins);
                     }
 
                 }
@@ -58,7 +52,7 @@ public class WalkTimeParser {
         }
 
 
-        return seconds;
+        return mins;
     }
 
 

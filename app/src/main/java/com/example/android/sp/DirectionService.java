@@ -1,6 +1,5 @@
 package com.example.android.sp;
-
-
+// All imports
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -18,29 +17,30 @@ import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.lang.Math;
 
-import com.google.firebase.database.DatabaseReference;
 
 /**
  * Created by ruturaj on 8/21/16.
  */
 public class DirectionService extends android.app.Service{
 
-    //Necassary Variables
-
-    public final static int MINUTE = 1000 * 60;
+    //Variable Declaration
     private static final String TAG = "Debugger ";
-    public NotificationManager mNM;
-    private int NOTIFICATION = 1;
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 15000;
-    private static final float LOCATION_DISTANCE = 0;
-    int count = 0,i=0;
-    String UID ="",key="",origin="",origin2="";
-    public DatabaseReference database;
+    private static final int LOCATION_INTERVAL = 30000; //obtain new location every 30secs
+    private static final float LOCATION_DISTANCE = 5;   //but only if user has moved 5m
+    private int count = 0;
+    private String UID ="",key="",origin="";
     private CheckInHelperDB dbHelper;
-    Double carlat,carlon;
+    private Double carlat,carlon;
+    private DatabaseReference database;
 
     //---------------------------Service Lifecycle Methods---------------------------------//
 
@@ -50,6 +50,7 @@ public class DirectionService extends android.app.Service{
     public void onCreate(){
         Log.d(TAG, "running direction service");
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
+        manager.cancel(1);   //remove the alert notification from Checkin Fragment
         manager.cancel(23);  //remove the inform notification from Checkin Fragment
         manager.cancel(29);  //remove notification from Location Service
 
@@ -115,10 +116,25 @@ public class DirectionService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+
+        dbHelper = new CheckInHelperDB(this);
+        Cursor res = dbHelper.getInfo();
+        res.moveToFirst();
+        UID = res.getString(res.getColumnIndex("_id"));             //get location of the car, userID
+        carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
+        carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+
+        Log.d(TAG,"direction service params " + key);
+        Log.d(TAG,"direction params " + carlat.toString());
+        Log.d(TAG,"direction params" + carlon.toString());
+
         if(intent!=null) {
+            //possible duplication happening here but still harmless
+            incrementKeys();   //award user with 2 keys
+            Log.d(TAG,"running direction service with intent");
             origin = (String) intent.getExtras().get("started_from");
             if(origin.equals("LS") || origin.equals("navigation")){ //this was started from location service
-                Log.d(TAG,"entered LS or navigation");
+                Log.d(TAG,"started from LS or navigation");
                 Intent cancelaction = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -133,17 +149,8 @@ public class DirectionService extends android.app.Service{
                 stopService(new Intent(DirectionService.this,LocationService.class)); //stop the location service
             }
         }
-        Log.d(TAG,"origin is :"+origin);
-        dbHelper = new CheckInHelperDB(this);
-        Cursor res = dbHelper.getInfo();
-        res.moveToFirst();
-        UID = res.getString(res.getColumnIndex("_id"));             //get location of the car
-        carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
-        carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
 
-        Log.d(TAG,"direction service params " + key);
-        Log.d(TAG,"direction params " + carlat.toString());
-        Log.d(TAG,"direction params" + carlon.toString());
+
         return START_STICKY;
     }
 
@@ -157,6 +164,24 @@ public class DirectionService extends android.app.Service{
         }
         mLocationManager.removeUpdates(mLocationListeners[0]); //remove location listeners on service destroy
         mLocationManager.removeUpdates(mLocationListeners[1]);
+    }
+
+    //increment user's keys by 2
+    private void incrementKeys(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long keys = (long) dataSnapshot.getValue();
+                keys = keys+2;
+                dataSnapshot.getRef().setValue(keys);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 
@@ -180,19 +205,18 @@ public class DirectionService extends android.app.Service{
             double lat = location.getLatitude();    //get current location
             double lon = location.getLongitude();
 
-            if (count < 10) {
+            if (count < 30) {       //send a maximum of 30 calls to the Directions API
                 Log.d(TAG,"direction service getting walktime");
                 WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
                 walkTime.getWalkTime(); //get estimated time of walk to the car
             }
             count = count + 1;
-            Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
+
             mLastLocation.set(location);
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
-            if((deltalat<1)&&(deltalon<1)){
-
-                Log.d(TAG,"stopping directionservice"); //stop direction service once user is near car
+            if((deltalat<2)&&(deltalon<2)){
+                Log.d(TAG,"stopping directionservice");  //stop direction service once user is near car
                 stopSelf();
             }
 

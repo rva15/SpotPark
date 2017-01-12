@@ -1,7 +1,6 @@
 package com.example.android.sp;
-
+//All imports
 import com.google.firebase.database.Exclude;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,6 +8,7 @@ import java.util.Map;
  * Created by ruturaj on 8/25/16.
  */
 public class UserDetails {
+    //Variable Declaration
     private String firstname="";
     private String lastname = "";
     private String email = "";

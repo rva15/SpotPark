@@ -50,7 +50,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         int Holderid;
         static String TAG= "debugger";
-        TextView textView;
+        TextView textView,keys;
         ImageView imageView;
         ImageView profile;
         TextView Name;
@@ -74,6 +74,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                 Name = (TextView) itemView.findViewById(R.id.name);         // Creating Text View object from header.xml for name
                 email = (TextView) itemView.findViewById(R.id.email);       // Creating Text View object from header.xml for email
                 profile = (ImageView) itemView.findViewById(R.id.circleView);// Creating Image view object from header.xml for profile pic
+                keys = (TextView) itemView.findViewById(R.id.keys);
                 Holderid = 0;                                                // Setting holder id = 0 as the object being populated are of type header view
             }
         }
@@ -210,6 +211,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
             UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
             currholder.Name.setText(userDetails.getfirstname() + " "+userDetails.getlastname());
             currholder.email.setText(userDetails.getemail());
+            currholder.keys.setText("Keys: "+userDetails.getnumberofkeys());
         }
 
         @Override

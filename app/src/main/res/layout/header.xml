@@ -6,6 +6,14 @@
     android:weightSum="1">
 
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/keys"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:padding="8dp"
+        android:textColor="@color/tab_background_selected"/>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -1,8 +1,7 @@
 package com.example.android.sp;
-
+//All imports
 import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -18,33 +17,25 @@ import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-
 import java.lang.Math;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import com.google.firebase.database.DatabaseReference;
-
 /**
  * Created by ruturaj on 8/21/16.
  */
 public class LocationService extends android.app.Service{
 
     //-------------------------Necessary variable declarations--------------//
-    public final static int MINUTE = 1000 * 60;
     private static final String TAG = "Debugger ";
-    public NotificationManager mNM;
-    private int NOTIFICATION = 1;
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 15000;
-    private static final float LOCATION_DISTANCE = 0;
-    int count = 0,i=0;
-    String UID ="",key="",currTime="";
-    public DatabaseReference database;
+    private static final int LOCATION_INTERVAL = 15000;  //request updates every 15secs
+    private static final float LOCATION_DISTANCE = 5;    //but only if user has moved 5meters
+    private int count = 0,i=0;
+    private String UID ="",key="",currTime="";
     private CheckInHelperDB dbHelper;
-    Double carlat,carlon,checkinhour,checkinmin,lasthour,lastmin,diff,lastentry;
-    SimpleDateFormat simpleDateFormat;
-    Calendar calendar;
+    private Double carlat,carlon,checkinhour,checkinmin,lasthour,lastmin,diff,lastentry;
+    private SimpleDateFormat simpleDateFormat;
+    private Calendar calendar;
 
     //---------------------------Service LifeCycle Methods------------------------//
 
@@ -126,7 +117,7 @@ public class LocationService extends android.app.Service{
         lastentry = lasthour*60 + lastmin;
 
 
-        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        simpleDateFormat = new SimpleDateFormat("HH:mm:ss");    //initialize a date format
         Log.d(TAG,"Location Service params " + key);
         Log.d(TAG,"Location Service params " + carlat.toString());
         Log.d(TAG,"Location Service params" + carlon.toString());
@@ -148,7 +139,7 @@ public class LocationService extends android.app.Service{
 
     //-----------------------Notification Related Functions------------------------------//
 
-    private void scheduleNotification(Notification notification, int delay,int unique) {
+    private void scheduleNotification(Notification notification, int delay,int unique) { //schedules the inform notification immediately after the right conditions are met
 
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);
@@ -166,13 +157,12 @@ public class LocationService extends android.app.Service{
         serviceintent.putExtra("started_from","LS");            //inform that it was started from location service
         PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
-        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", pIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
+        builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Inform others that you're leaving?");
         builder.addAction(accept);
-        builder.addAction(cancel);
         builder.setAutoCancel(true);
 
 
@@ -186,7 +176,7 @@ public class LocationService extends android.app.Service{
 
         Location mLastLocation;
 
-        public LocationListener(String provider)
+        public LocationListener(String provider)       //constructor
         {
             Log.e(TAG, "LocationListener " + provider);
             mLastLocation = new Location(provider);
@@ -200,19 +190,15 @@ public class LocationService extends android.app.Service{
             double lon = location.getLongitude();
 
 
-            Log.e(TAG, "dinesh: " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
+            Log.e(TAG, "current location " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
             Log.d(TAG,"carpos "+carlat.toString());
             Log.d(TAG,"carpos "+carlon.toString());
-            Log.d(TAG,"carpos"+Double.toString(lat));
-            Log.d(TAG,"carpos"+Double.toString(lon));
             Log.d(TAG,"carpos"+Double.toString(lastentry));
 
-            mLastLocation.set(location);
-            calendar = Calendar.getInstance();
+            mLastLocation.set(location);         //set mLastLocation to latest location
+            calendar = Calendar.getInstance();   //get the current time
             currTime = simpleDateFormat.format(calendar.getTime());
             String[] timearray = currTime.split(":");
-            Log.d(TAG,"difference :"+timearray[0]);                     //get current time
-            Log.d(TAG,"difference :"+timearray[1]);
             double diff = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),checkinhour*60+checkinmin);
             if(diff>36000000){
                 stopSelf();         //stop this service if it has been running longer than 10 hours
@@ -220,12 +206,13 @@ public class LocationService extends android.app.Service{
 
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));   //get distance to car
-            if((deltalat<3)&&(deltalon<3)){
+
+            if((deltalat<2)&&(deltalon<2)){  //if you are approx 12mX12m within car's location
 
                 double difference = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),lastentry);
-                if(difference>15){
+                if(difference>15){  //and the difference between right now and last time you were in the zone is >15min
                     if(count==0) {
-                        scheduleNotification(getInformNotification(), 1000, 29);//if near car+time elapsed>15min, notify user
+                        scheduleNotification(getInformNotification(), 1000, 29);//notify user immediately
                         stopSelf(); //and then stopSelf
                     }
                     count=count+1;

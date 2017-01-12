@@ -40,6 +40,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.maps.android.ui.IconGenerator;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import org.json.JSONObject;
@@ -81,7 +82,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private double latitude,longitude;
     private static String UID="";
     private static final String TAG = "Debugger ";
-    private int i=0,verification=0,cinfeed=0,repfeed=0;
+    private int i=0;
     private Timer t;
     private static final String ARG_PAGE = "ARG_PAGE";
     private SpotFinder finder;
@@ -104,7 +105,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private Marker marker;
     private DatabaseReference database;
     private MapView gMapView;
-    private com.google.firebase.database.Query getcifeed,getrepfeed;
+    private com.google.firebase.database.Query getcheckin,getreported;
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
@@ -145,24 +146,28 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onStop() {
         i=0;                            //set counter for UpdateUI back to 0
-        ApiClient.disconnect();         //disconnect apiclient on stop
+        if(ApiClient.isConnected()) {
+            ApiClient.disconnect();         //disconnect apiclient on stop
+        }
         if (t != null) {
             t.cancel();                 //cancel timer for SpotFinder
         }
 
-        String LatLngCode = getLatLngCode(latitude,longitude);
+        /*String LatLngCode = getLatLngCode(latitude,longitude);
         database = FirebaseDatabase.getInstance().getReference();
         String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //delete entry from Searcher database
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, null);
-        database.updateChildren(childUpdates);
+        database.updateChildren(childUpdates);*/
         super.onStop();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        if(ApiClient.isConnected()) {
+            stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        }
         if (null != gMapView){
             gMapView.onPause();}
     }
@@ -225,7 +230,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         complain = (TextView)view.findViewById(R.id.complain);
         complain.setOnClickListener(this);
 
-        IconGenerator iconFactory = new IconGenerator(getContext());
+        IconGenerator iconFactory = new IconGenerator(getContext());   //Create this marker for the legend
         iconFactory.setStyle(IconGenerator.STYLE_PURPLE);
         iconFactory.setTextAppearance(R.style.iconGenText);
         ImageView custommarker = (ImageView) view.findViewById(R.id.custommarker);
@@ -284,7 +289,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onClick(View v) {
 
-        if(v.getId()==R.id.drawroute) {                  //navigate to the marker position
+        if(v.getId()==R.id.drawroute) {                  //draw a route on the searchmap
             if (currentmarker != null && place != null) {
                 String url = getUrl(place, currentmarker);
                 FetchUrl FetchUrl = new FetchUrl();
@@ -293,7 +298,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
 
-        if(v.getId()==R.id.navigatebutton){
+        if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
             double lat = currentmarker.latitude;
             double lon = currentmarker.longitude;
             String label = rate.getText().toString();
@@ -310,19 +315,17 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             if(!isReported) {
                 // delete the corresponding checkin and update this user's points
                 latlngcode = getLatLngCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
-                com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
+                getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
-                getcifeed = database.child("UserInformation").orderByKey().equalTo(UID);
-                getcifeed.addChildEventListener(listener3);
+                updatecinfeed();
                 return;
             }
             if(isReported){
                 // add a verification to reported spot and update user's points
                 String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
-                com.google.firebase.database.Query getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
+                getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
                 getreported.addChildEventListener(listener5);
-                getrepfeed = database.child("UserInformation").orderByKey().equalTo(UID);
-                getrepfeed.addChildEventListener(listener4);
+                updaterepfeed();
                 return;
             }
         }
@@ -334,11 +337,29 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             Log.d(TAG,"recenter");
         }
         if(v.getId()==R.id.startsearch){
-            button3.setVisibility(View.GONE);
-            legend.setVisibility(View.VISIBLE);
-            searchStarted=true;
-            parkWhizSpots = new ParkWhizSpots(latitude,longitude,searchmap,getContext());
-            parkWhizSpots.getParkWhizspots();
+            //check number of keys
+            database = FirebaseDatabase.getInstance().getReference();
+            database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Integer keys = dataSnapshot.getValue(Integer.class);
+                    if(keys>0){
+                        dataSnapshot.getRef().setValue(keys-1);
+                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                        homeScreenActivity.refreshMainAdapter();
+                        startSearch();
+                    }
+                    else{
+                        Toast.makeText(getContext(),"You dont have any keys left. Please check-in at a parking spot to earn 2 keys.",Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
         }
         if(v.getId()==R.id.complain){
             // Create an instance of the dialog fragment and show it
@@ -362,29 +383,39 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             Boolean notav = bundle.getBoolean("notav");
             Boolean nospace = bundle.getBoolean("nospace");
             Boolean notfree = bundle.getBoolean("notfree");
-            registerComplaint(notav,nospace,notfree);
+            registerComplaint(notav,nospace,notfree);           //register user's complaint
             Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void startSearch(){
+        button3.setVisibility(View.GONE);
+        legend.setVisibility(View.VISIBLE);
+        searchStarted=true;
+        parkWhizSpots = new ParkWhizSpots(latitude,longitude,searchmap,getContext()); //send a single call to ParkWhiz API
+        parkWhizSpots.getParkWhizspots();
     }
 
     private void registerComplaint(Boolean notav,Boolean nospace,Boolean notfree){
         if(isReported){
             if(nospace||notfree){
+                //reduce verifications on the reported spot
                 isComplaint = true;
                 String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
-                com.google.firebase.database.Query getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
+                getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
                 getreported.addChildEventListener(listener5);
             }
         }
         else{
             if(notav){
+                //delete the corresponding checkin
                 latlngcode = getLatLngCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
-                com.google.firebase.database.Query getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
+                getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
             }
             if(nospace){
-                com.google.firebase.database.Query getcomplaints = database.child("UserInformation").orderByKey().equalTo(UID);
-                getcomplaints.addChildEventListener(listener6);
+                //register complaint against user
+                updatecomplaints();
             }
         }
     }
@@ -417,6 +448,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key, null);
                 database.updateChildren(childUpdates);
             }
+            getcheckin.removeEventListener(listener1);
         }
 
         @Override
@@ -440,117 +472,95 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
     };
 
-    //define the ChildEventListener to update reported spot's verification
-    ChildEventListener listener2 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            if(!isComplaint) {
-                Log.d(TAG, "entered listener2");
-                ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
-                verification = times.getverification();
-                updateVerification(verification);
+
+
+    // helper functions for updating stuff
+    private void changeVerification(String uid){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("ReportedTimes").child(uid).child(key).child("verification").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long verification = (long) dataSnapshot.getValue();
+                if(isComplaint) {
+                    verification = verification - 1;
+                    dataSnapshot.getRef().setValue(verification);
+                }
+                else{
+                    verification = verification + 1;
+                    dataSnapshot.getRef().setValue(verification);
+                }
+                isComplaint=false;
             }
-            else{
-                ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
-                verification = times.getverification();
-                degradeVerification(verification);
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void updatecinfeed(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("checkinfeed").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long cinfeed = (long) dataSnapshot.getValue();
+                cinfeed = cinfeed + 1;
+                dataSnapshot.getRef().setValue(cinfeed);
 
             }
 
-        }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            }
+        });
+    }
 
-        }
+    private void updatecomplaints(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("complaints").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long complaints = (long) dataSnapshot.getValue();
+                complaints = complaints + 1;
+                dataSnapshot.getRef().setValue(complaints);
 
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+            }
 
-        }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            }
+        });
+    }
 
-        }
+    private void updaterepfeed(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("reportfeed").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long repfeed = (long) dataSnapshot.getValue();
+                repfeed = repfeed + 1;
+                dataSnapshot.getRef().setValue(repfeed);
 
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
+            }
 
-        }
-    };
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
 
-    //define the ChildEventListener to update user's points
-    ChildEventListener listener3 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
-            cinfeed = userDetails.getcheckinfeed();
-            updatecinfeed(cinfeed);
-            getcifeed.removeEventListener(listener3);
-        }
+            }
+        });
+    }
 
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-    //define the ChildEventListener to update user's points
-    ChildEventListener listener4 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
-            repfeed = userDetails.getreportfeed();
-            Log.d(TAG,"entered listener4");
-            updaterepfeed(repfeed);
-            getrepfeed.removeEventListener(listener4);
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-    //define the ChildEventListener that helps us get to listener2
     ChildEventListener listener5 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Log.d(TAG,"entered listener5");
             uid = dataSnapshot.getValue(String.class);
-            com.google.firebase.database.Query getverified = database.child("ReportedTimes").child(uid).orderByKey().equalTo(key);
-            getverified.addChildEventListener(listener2);
+            changeVerification(uid);
+            getreported.removeEventListener(listener5);
         }
 
         @Override
@@ -574,80 +584,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
     };
 
-    ChildEventListener listener6 = new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
-            int complaints = userDetails.getcomplaints();
-            updatecomplaints(complaints);
-            database.child("UserInformation").orderByKey().equalTo(UID).removeEventListener(listener6);
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-
-    // helper functions for updating stuff
-    private void updateVerification(int v){
-        v = v+1;
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/ReportedTimes/"+uid+"/"+key+"/verification", v);
-        database.updateChildren(childUpdates);
-    }
-
-    private void degradeVerification(int v){
-        v = v-1;
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/ReportedTimes/"+uid+"/"+key+"/verification", v);
-        database.updateChildren(childUpdates);
-        isComplaint = false;
-    }
-
-    private void updatecinfeed(int c){
-        c = c+1;
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/UserInformation/"+UID+"/checkinfeed", c);
-        database.updateChildren(childUpdates);
-    }
-
-    private void updatecomplaints(int complaints){
-        complaints = complaints+1;
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/UserInformation/"+UID+"/complaints", complaints);
-        database.updateChildren(childUpdates);
-    }
-
-    private void updaterepfeed(int r){
-        r = r+1;
-        Log.d(TAG,"entered updaterepfeed ");
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put("/UserInformation/"+UID+"/reportfeed", r);
-        database.updateChildren(childUpdates);
-    }
 
     private void updateUI() {
 
         latitude = currentLocation.getLatitude();       //get the current latitude
         longitude = currentLocation.getLongitude();     //get the current longitude
-        sendLocation();                                 //update this user's location in searcher database
+        //sendLocation();                                 //update this user's location in searcher database
         place = new LatLng(latitude, longitude);        //initiate LatLng object
         if(marker!=null){
             marker.remove();                            //remove previous marker
@@ -664,6 +606,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 t.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
+                        if(finder!=null){
+                            finder.detachListeners();      //detach previous finder's listeners
+                        }
                         finder = new SpotFinder(latitude, longitude, searchmap, UID); //declare the SpotFinder and pass it user's location and searchmap
                         finder.addListener();   //call its addListener method
                     }
@@ -714,7 +659,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public boolean onMarkerClick(Marker marker){
 
-        currentmarker = marker.getPosition(); //get the marker's position
+        currentmarker = marker.getPosition(); //get the marker's position and set it to currentmarker
         Map Keys  =  finder.getKeys();        //get these maps from the spotfinder object
         Map Times =  finder.getTimes();
         Map Cats  =  finder.getCats();
@@ -759,7 +704,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
             }
         }
-        if(PWSpotnames.get(currentmarker)!=null){
+        if(PWSpotnames.get(currentmarker)!=null){  //marker belongs to ParkWhiz spot
             heading.setText("Parking Lot Name");
             category.setText("ParkWhiz suggested parking spot");
             float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
@@ -933,7 +878,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(10);
-                lineOptions.color(android.graphics.Color.RED);
+                lineOptions.color(android.graphics.Color.BLUE);
 
                 Log.d("onPostExecute","onPostExecute lineoptions decoded");
 

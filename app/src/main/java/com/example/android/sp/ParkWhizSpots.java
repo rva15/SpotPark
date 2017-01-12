@@ -1,20 +1,17 @@
 package com.example.android.sp;
-
+//All imports
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.ui.IconGenerator;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -28,6 +25,7 @@ import java.util.Map;
  */
 public class ParkWhizSpots {
 
+    //Variable Declarations
     private double latitude, longitude;
     private GoogleMap searchmap;
     private Context context;
@@ -39,23 +37,21 @@ public class ParkWhizSpots {
     }  //empty constructor
 
     public ParkWhizSpots(double latitude, double longitude, GoogleMap searchmap, Context context) {
-
         this.latitude = latitude;
         this.longitude = longitude;
         this.searchmap = searchmap;
         this.context = context;
-
     }
 
     public void getParkWhizspots(){
-        new ParkWhizFeedTask().execute();
+        new ParkWhizFeedTask().execute();   //execute the ParkWhiz spot finder
     }
 
     public Map getPWSpotnames(){
-        return PWSpotnames;
+        return PWSpotnames;                 //return spotnames map
     }
 
-    class ParkWhizFeedTask extends AsyncTask<Void, Void, String> {
+    private class ParkWhizFeedTask extends AsyncTask<Void, Void, String> {
 
         private Exception exception;
 
@@ -67,13 +63,11 @@ public class ParkWhizSpots {
 
 
             try {
-                getTimeStamp();
-                Log.d(TAG, "ParkWhiz trying");
+                //make the URL
                 URL url = new URL("https://api.parkwhiz.com/search/?lat="+Double.toString(latitude)+"&lng="+Double.toString(longitude)+getTimeStamp()+"&key="+context.getResources().getString(R.string.ParkWhiz_API_key));
                 //URL url = new URL("https://api.parkwhiz.com/search/?lat=" + Double.toString(40.7590) + "&lng=" + Double.toString(-73.9845) + getTimeStamp() + "&key=c38210d1f5fda38362d86859997ef847");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 try {
-                    Log.d(TAG, "ParkWhiz trying to read");
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                     StringBuilder stringBuilder = new StringBuilder();
                     String line;
@@ -91,15 +85,14 @@ public class ParkWhizSpots {
             }
         }
 
+        // returns unix timestamps of now and 3hours from now
         private String getTimeStamp() {
 
-            Log.d(TAG, "timestamp " + System.currentTimeMillis() / 1000L);
-            String start = Long.toString(System.currentTimeMillis() / 1000L);
 
+            String start = Long.toString(System.currentTimeMillis() / 1000L);
             Calendar now = Calendar.getInstance();
             Calendar tmp = (Calendar) now.clone();
             tmp.add(Calendar.HOUR_OF_DAY, 3);
-            Log.d(TAG, "timestamp " + tmp.getTimeInMillis() / 1000L);
             String end = Long.toString(tmp.getTimeInMillis() / 1000L);
 
             return ("&start=" + start + "&end=" + end);
@@ -111,10 +104,8 @@ public class ParkWhizSpots {
             if (response == null) {
                 response = "THERE WAS AN ERROR";
             }
-            Log.d(TAG, "ParkWhiz response " + response);
 
-
-            try {
+            try { //get the parking lot names and their prices
                 JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
                 JSONArray array = object.getJSONArray("parking_listings");
                 if (array == null) {
@@ -127,17 +118,17 @@ public class ParkWhizSpots {
                     LatLng pwspotplace = new LatLng(lat,lng);
                     String pwspotname  = array.getJSONObject(i).getString("location_name");
                     Double pwspotprice = array.getJSONObject(i).getDouble("price");
-                    PWSpotnames.put(pwspotplace,pwspotname);
+                    PWSpotnames.put(pwspotplace,pwspotname);   //map them to their locations
                     PWSpotprices.put(pwspotplace,pwspotprice);
 
-                    IconGenerator iconFactory = new IconGenerator(context);
+                    IconGenerator iconFactory = new IconGenerator(context); //generate the custom marker showing price
                     iconFactory.setStyle(IconGenerator.STYLE_PURPLE);
                     iconFactory.setTextAppearance(R.style.iconGenText);
                     MarkerOptions markerOptions = new MarkerOptions().
                             icon(BitmapDescriptorFactory.fromBitmap(iconFactory.makeIcon("$"+Double.toString(pwspotprice)))).
                             position(pwspotplace).
                             anchor(iconFactory.getAnchorU(), iconFactory.getAnchorV());
-                    searchmap.addMarker(markerOptions);
+                    searchmap.addMarker(markerOptions);     //add it to the map
                 }
 
             } catch (JSONException e) {

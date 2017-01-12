@@ -106,14 +106,18 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onStop() {
         i=0;                            //set counter for UpdateUI back to 0
-        mGoogleApiClient.disconnect();  //disconnect apiclient on stop
+        if(mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();  //disconnect apiclient on stop
+        }
         super.onStop();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        if(mGoogleApiClient.isConnected()) {
+            stopLocationUpdates();       //stop location updates when activity pauses as defined below
+        }
         if (null != sMapView){
             sMapView.onPause();}
     }

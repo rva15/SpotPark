@@ -80,7 +80,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     // -- Firebase variables --
     private FirebaseAuth mAuthstart,mAuthfb,mAuthlogin,mAuthsignup, mAuthgoogle;
-    private DatabaseReference mDatabase;
     private DatabaseReference database;
     private FirebaseAuth.AuthStateListener mAuthListener,newAccountListener;
 
@@ -189,8 +188,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (user != null) {
                     //account created, add user to firebase
                     Log.d(TAG, "New account created for id " + user.getUid());
-                    addNewUser(user.getUid());    // add New User details to database
                     checkStatus(user.getUid());
+                    checkExistance(user.getUid());    // check if this user already has an account
+
 
 
                 } else {
@@ -308,13 +308,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //add a new user to database
     private void addNewUser(String userID){
         Log.d(TAG, "Adding new user");
-        mDatabase = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
-        String key = mDatabase.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,0,0,0,0); //make a new user object
+        database = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
+        String key = database.child("UserInformation").push().getKey();
+        UserDetails user = new UserDetails(firstname,lastname,email,2,0,0,0); //make a new user object
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);
-        mDatabase.updateChildren(childUpdates);
+        database.updateChildren(childUpdates);
 
         //upload user's profile picture to firebase
         if(profilepic!=null) {
@@ -339,6 +339,28 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             });
         }
 
+    }
+
+    //function to check if user account already exists
+    private void checkExistance(final String userid){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(userid).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()){
+                    addNewUser(userid);
+                }
+                else{
+                    Log.d(TAG,"account already exists");
+                    goAhead(userid);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
@@ -407,7 +429,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            fblogin_button.setVisibility(View.VISIBLE);
                             findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             Toast.makeText(LoginActivity.this, "Unable to create the account!",
@@ -441,7 +462,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            fblogin_button.setVisibility(View.VISIBLE);
                             findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -536,7 +556,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            fblogin_button.setVisibility(View.VISIBLE);
                             findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -637,7 +656,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-                            fblogin_button.setVisibility(View.VISIBLE);
                             findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
                             Log.w(TAG, "signInWithCredential", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
