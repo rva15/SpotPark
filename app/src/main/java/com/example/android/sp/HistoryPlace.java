@@ -12,16 +12,18 @@ public class HistoryPlace {
     private double plongitude;
     private String date;
     private String time;
+    private int isfavorite;
 
     public HistoryPlace() {
         // Default constructor required for calls to DataSnapshot.getValue(com.example.android.sp.CheckInUser.class)
     }
 
-    public HistoryPlace(double platitude, double plongitude,String date,String time) {
+    public HistoryPlace(double platitude, double plongitude,String date,String time,int isfavorite) {
         this.platitude     = platitude;
         this.plongitude    = plongitude;
         this.date          = date;
         this.time          = time;
+        this.isfavorite    = isfavorite;
     }
 
     public double getplatitude(){
@@ -32,6 +34,7 @@ public class HistoryPlace {
     }
     public String getdate(){return this.date;}
     public String gettime(){return this.time;}
+    public int    getisfavorite(){return this.isfavorite;}
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -40,6 +43,7 @@ public class HistoryPlace {
         result.put("plongitude", plongitude);
         result.put("date",date);
         result.put("time",time);
+        result.put("isfavorite",isfavorite);
         return result;
     }
 }

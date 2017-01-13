@@ -298,13 +298,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     // Get the checked in fragment
-    public void getCheckedin(Bitmap mapimage,double hours,double mins){
+    public void getCheckedin(Bitmap mapimage,double hours,double mins,int sub){
         isCheckedin=true;
         Bundle data = new Bundle();
         data.putString("userid",UID);
         data.putParcelable("mapimage",mapimage);
         data.putDouble("hours",hours);
         data.putDouble("mins",mins);
+        data.putInt("sub",sub);
         data.putInt("width",fragmentcontainer.getWidth());
         PostCheckinFragment postCheckinFragment = new PostCheckinFragment();
         postCheckinFragment.setArguments(data);

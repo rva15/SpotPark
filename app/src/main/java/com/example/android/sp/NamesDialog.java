@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
@@ -33,6 +34,11 @@ public class NamesDialog extends DialogFragment {
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.dialog_names, null);
+        Bundle mArgs = getArguments();
+        final double latitude = mArgs.getDouble("latitude");
+        final double longitude = mArgs.getDouble("longitude");
+        final Bitmap bitmap = mArgs.getParcelable("bitmap");
+        final String key    = mArgs.getString("key");
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
@@ -45,6 +51,10 @@ public class NamesDialog extends DialogFragment {
                         String spotname = editText.getText().toString();
                         Intent i = new Intent().putExtra("rates", hourlyrate);
                         i.putExtra("spotname", spotname);
+                        i.putExtra("latitude",latitude);
+                        i.putExtra("longitude",longitude);
+                        i.putExtra("bitmap",bitmap);
+                        i.putExtra("key",key);
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                     }
                 })

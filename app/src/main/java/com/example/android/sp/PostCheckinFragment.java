@@ -11,6 +11,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.NativeExpressAdView;
+
 /**
  * Created by ruturaj on 1/5/17.
  */
@@ -20,7 +23,7 @@ public class PostCheckinFragment extends Fragment {
     private View view;
     private Bitmap mapimage;
     private ImageView cinmap;
-    private int width;
+    private int width,sub;
     private double hours,mins;
     private String time;
 
@@ -37,7 +40,8 @@ public class PostCheckinFragment extends Fragment {
         width = extras.getInt("width");
         hours = extras.getDouble("hours");
         mins  = extras.getDouble("mins");
-        time  = gettime((int)hours,(int)mins);          //get the time in suitable format
+        sub   = extras.getInt("sub");
+        time  = gettime((int)hours,(int)mins,sub);          //get the time in suitable format
 
     }
 
@@ -66,6 +70,13 @@ public class PostCheckinFragment extends Fragment {
         TextView earnmore = (TextView) view.findViewById(R.id.earnmore);
         String s = "You just earned two keys by checking in to this place. Earn <b> two more keys by letting us know </b> when you leave!";
         earnmore.setText(fromHtml(s));
+
+        // Initialize the Ad unit
+        NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.carlocadView);
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(getResources().getString(R.string.test_device_ID))
+                .build();
+        adView.loadAd(request);
         return view;
     }
 
@@ -84,33 +95,44 @@ public class PostCheckinFragment extends Fragment {
     }
 
     //Utility to get time in suitable format
-    private String gettime(int hours,int mins){
+    private String gettime(int hours,int mins,int sub){
         if(hours==123 || mins==123){
             time = "---";
             return time;
         }
-        if(hours>12){
-            if(mins <10) {
-                time = Integer.toString(hours - 12) + ":0" + Integer.toString(mins) + " pm";
+        double timeinmins = hours*60 + mins - sub/60000;
+        int newhours=0,newmins=0;
+        if(timeinmins>0){
+            newhours = (int) Math.floor(timeinmins/60);
+            newmins  = (int)timeinmins - 60*newhours;
+        }
+        if(timeinmins<0){
+            timeinmins = 24*60 + timeinmins;
+            newhours = (int) Math.floor(timeinmins/60);
+            newmins  = (int)timeinmins - 60*newhours;
+        }
+        if(newhours>12){
+            if(newmins <10) {
+                time = Integer.toString(newhours - 12) + ":0" + Integer.toString(newmins) + " pm";
             }
             else{
-                time = Integer.toString(hours - 12) + ":" + Integer.toString(mins) + " pm";
+                time = Integer.toString(newhours - 12) + ":" + Integer.toString(newmins) + " pm";
             }
         }
-        if(hours<12){
-            if(mins<10) {
-                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " am";
+        if(newhours<12){
+            if(newmins<10) {
+                time = Integer.toString(newhours) + ":0" + Integer.toString(newmins) + " am";
             }
             else{
-                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " am";
+                time = Integer.toString(newhours) + ":" + Integer.toString(newmins) + " am";
             }
         }
-        if(hours==12){
-            if(mins <10) {
-                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " pm";
+        if(newhours==12){
+            if(newmins <10) {
+                time = Integer.toString(newhours) + ":0" + Integer.toString(newmins) + " pm";
             }
             else{
-                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " pm";
+                time = Integer.toString(newhours) + ":" + Integer.toString(newmins) + " pm";
             }
         }
         return time;

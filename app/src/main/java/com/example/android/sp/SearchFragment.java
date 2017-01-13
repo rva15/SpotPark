@@ -92,7 +92,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private boolean isReported = false,isAutoMode=true,searchStarted=false,isComplaint=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private Button button3;
+    private Button button3,button2;
     private ParkWhizSpots parkWhizSpots;
     private LinearLayout legend;
 
@@ -215,7 +215,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         heading = (TextView) view.findViewById(R.id.heading);
         Button button = (Button) view.findViewById(R.id.navigatebutton);
         button.setOnClickListener(this);
-        Button button2 = (Button) view.findViewById(R.id.parkedbutton);
+        button2 = (Button) view.findViewById(R.id.parkedbutton);
         button2.setOnClickListener(this);
         Button button4 = (Button) view.findViewById(R.id.drawroute);
         button4.setOnClickListener(this);
@@ -318,6 +318,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
                 getcheckin.addChildEventListener(listener1);
                 updatecinfeed();
+                Toast.makeText(getContext(),"Thanks for letting us know. You earned one point for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+                homeScreenActivity.getHome();
                 return;
             }
             if(isReported){
@@ -326,8 +329,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
                 getreported.addChildEventListener(listener5);
                 updaterepfeed();
+                Toast.makeText(getContext(),"Thanks for letting us know. You earned one point for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+                homeScreenActivity.getHome();
                 return;
             }
+
         }
         if(v.getId()==R.id.recenter){
             // animate camera back to user's location
@@ -666,6 +673,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Map Desc  =  finder.getDesc();
         Map PWSpotnames = parkWhizSpots.getPWSpotnames();
         if(Cats.get(currentmarker)!=null){    //the marker belongs to a reported spot
+            button2.setVisibility(View.VISIBLE);
             isReported=true;
             heading.setText("Reporter's Description");
             if((boolean)Cats.get(currentmarker)==true){
@@ -688,6 +696,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
         if(Keys.get(currentmarker)!=null) {         //marker belongs to a checkin spot
+            button2.setVisibility(View.VISIBLE);
             isReported=false;
             key = (String) Keys.get(currentmarker);
             int time = (int) Times.get(currentmarker);
@@ -705,6 +714,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
         if(PWSpotnames.get(currentmarker)!=null){  //marker belongs to ParkWhiz spot
+            button2.setVisibility(View.GONE);
             heading.setText("Parking Lot Name");
             category.setText("ParkWhiz suggested parking spot");
             float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());

@@ -78,7 +78,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private static String UID="";
     private int i=0,walktimedef = 10031;
     private double hours=123,mins=123,checkinhour,checkinmin;
-    private int dollars,cents;
+    private int dollars,cents,sub;
     private ImageView pin;
     private static final int REQ_CODE = 1;
     private String rph,h,m,o,c,t;
@@ -351,7 +351,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             hours = Double.parseDouble(parkhour);
             mins = Double.parseDouble(parkmin);
             //get the requested delay period
-            int sub = 900000;
+            sub = 900000;
             if (parkoption.equals("15")) {
                 sub = 900000;
             }
@@ -382,7 +382,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,(int)hours,(int)mins,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
         // Make an entry in user's history
-        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]));
+        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
         Map<String, Object> historyMap = historyPlace.toMap();
         // Make the entries
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
@@ -473,7 +473,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     private void showPostCheckin(){
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //display post checkin message
-        homeScreenActivity.getCheckedin(bitmap,hours,mins);
+        homeScreenActivity.getCheckedin(bitmap,hours,mins,sub);
     }
 
     //---------------------------Notifications Related Functions---------------------------//
