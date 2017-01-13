@@ -3,10 +3,12 @@
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/card_view"
-    android:layout_margin="8dp"
+    android:layout_marginBottom="16dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    card_view:cardCornerRadius="4dp"
+    card_view:contentPadding="0dp"
+    card_view:cardCornerRadius="0dp"
+
     >
 
     <LinearLayout
@@ -17,7 +19,8 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:id="@+id/spimage"/>
 
         <TextView
@@ -30,12 +33,16 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            >
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Navigate"
+                android:layout_marginBottom="8dp"
                 android:layout_alignParentRight="true"
                 android:id="@+id/favcardbutton"/>
             <ImageView

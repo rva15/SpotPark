@@ -2,12 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/favmv">
+    android:id="@+id/favmv"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your Favorite Spots"
+        android:layout_marginBottom="16dp"
+        android:padding="8dp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:background="@color/darkgrey"
+        android:textSize="16dp"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/cardList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
         />
 
 </LinearLayout>

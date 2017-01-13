@@ -136,6 +136,7 @@ public class HistoryFragment extends Fragment  {
                             Log.d(TAG, "setting adapter");
                             historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID);
                             recList.setAdapter(historyAdapter);   //set the adapter
+                            database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
                         }
 
 

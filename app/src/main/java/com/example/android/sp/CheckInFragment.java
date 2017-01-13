@@ -1,5 +1,6 @@
 package com.example.android.sp;
 // All imports
+import android.*;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -15,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
@@ -94,7 +96,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private LatLng place;
     private SimpleDateFormat simpleDateFormat;
     private DatabaseReference database;
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 30000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
     private LocationRequest mLocationRequest;
@@ -278,8 +280,15 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         //you need to check first if you have permissions from user
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
-
-            return;
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(),
+                    android.Manifest.permission.ACCESS_FINE_LOCATION)){
+                //somehow display message to user
+            }
+            else{
+                ActivityCompat.requestPermissions(this.getActivity(),
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        64);
+            }
         }
         //if yes, request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(
@@ -287,6 +296,34 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     //-------------------------------CheckIn Action Related Functions-------------------------//
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 64: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted
+                    if (Build.VERSION.SDK_INT >= 23 &&
+                            ContextCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+                        LocationServices.FusedLocationApi.requestLocationUpdates(
+                                mGoogleApiClient, mLocationRequest, this);
+                    }
+
+                } else {
+
+                    // permission denied,
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
 
     @Override
     public void onClick(View v) {

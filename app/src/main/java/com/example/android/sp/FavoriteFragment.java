@@ -1,6 +1,5 @@
 package com.example.android.sp;
-
-import android.content.Intent;
+//All imports
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
@@ -13,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
@@ -24,23 +22,24 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by ruturaj on 10/14/16.
  */
 public class FavoriteFragment extends Fragment {
 
-    DatabaseReference database;
-    String UID="";
-    static String TAG="debugger";
-    int width,i=0,max;
-    LinearLayout mv;
-    ArrayList<FavoriteInfo> result;
-    RecyclerView recList;
+    //Variable Declarations
+    private DatabaseReference database;
+    private String UID="";
+    private static String TAG="debugger";
+    private int width,i=0,max;
+    private LinearLayout mv;
+    private ArrayList<FavoriteInfo> result;
+    private RecyclerView recList;
 
+
+    //--------------Fragment Lifecycle Functions----------//
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,8 +47,6 @@ public class FavoriteFragment extends Fragment {
 
         Bundle extras = getArguments();
         UID = extras.getString("userid");
-        List<FavoriteInfo> result = new ArrayList<FavoriteInfo>();
-
 
     }
 
@@ -65,7 +62,7 @@ public class FavoriteFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_favorite, container, false); //inflate the view
         recList = (RecyclerView) view.findViewById(R.id.cardList);
         recList.setHasFixedSize(true);
-        LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
+        LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());      //inflate the recycler view
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
         getFavoriteData();
@@ -73,25 +70,21 @@ public class FavoriteFragment extends Fragment {
         return view;
     }
 
+    //------------Helper Functions---------------//
+
     public void getFavoriteData(){
         result = new ArrayList<FavoriteInfo>();
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
-        database.child("FavoriteKeys").child(UID).addValueEventListener(listener2);
-
+        database.child("FavoriteKeys").child(UID).addListenerForSingleValueEvent(listener2);
 
     }
 
-
-
-    public void getnumber(String number){
-        Log.d(TAG,"number is "+number);
-    }
 
     ValueEventListener listener2 = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
-            max = (int) dataSnapshot.getChildrenCount();
+            max = (int) dataSnapshot.getChildrenCount();                   //get the number of favorite spots
             database.child("FavoriteKeys").child(UID).orderByKey().addChildEventListener(listener1);
             database.child("FavoriteKeys").child(UID).removeEventListener(listener2);
         }
@@ -107,8 +100,6 @@ public class FavoriteFragment extends Fragment {
         @Override
         public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
             width = mv.getWidth();
-            Log.d(TAG,"main view width "+Integer.toString(width));
-            Log.d(TAG,"download key "+dataSnapshot.getKey());
             final FavoritePlace favoritePlace = dataSnapshot.getValue(FavoritePlace.class);
 
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -132,8 +123,9 @@ public class FavoriteFragment extends Fragment {
                     result.add(info);
                     i=i+1;
                     if(i==max){
-                        ContactAdapter ca = new ContactAdapter(getresult(),getActivity(),recList,UID);
+                        FavoritesAdapter ca = new FavoritesAdapter(getresult(),getActivity(),recList,UID); //set the adapter
                         recList.setAdapter(ca);
+                        database.child("FavoriteKeys").child(UID).orderByKey().removeEventListener(listener1);
                     }
 
 

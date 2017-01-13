@@ -1,16 +1,10 @@
 package com.example.android.sp;
-
-import android.app.Activity;
+//All imports
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.ButtonBarLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,39 +16,35 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.support.v4.app.ActivityCompat;
-
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by ruturaj on 10/14/16.
  */
-public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactViewHolder> {
+public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.ContactViewHolder> {
 
-    static private ArrayList<FavoriteInfo> favoriteList;
-    static String TAG="debugger",UID="";
-    static public FragmentActivity activity;
-    ContactViewHolder contactViewHolder;
-    static RecyclerView recyclerView;
-    View itemView;
-    static DatabaseReference database;
+    //Variable Declarations
+    private static ArrayList<FavoriteInfo> favoriteList;
+    private static String TAG="debugger",UID="";
+    private static FragmentActivity activity;
+    private ContactViewHolder contactViewHolder;
+    private static RecyclerView recyclerView;
+    private View itemView;
+    private static DatabaseReference database;
 
-    public ContactAdapter(ArrayList<FavoriteInfo> favoriteList,FragmentActivity activity,RecyclerView recyclerView,String UID) {
+    //Constructor
+    public FavoritesAdapter(ArrayList<FavoriteInfo> favoriteList, FragmentActivity activity, RecyclerView recyclerView, String UID) {
         this.favoriteList = favoriteList;
         this.activity = activity;
         this.recyclerView = recyclerView;
         this.UID = UID;
-
     }
 
 
@@ -107,7 +97,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
         @Override
         public void onClick(View view) {
-            if (view.getId() == R.id.favcardbutton) {
+            if (view.getId() == R.id.favcardbutton) {   //Call the google maps app
                 int itemPosition = getAdapterPosition();
                 double latitude = favoriteList.get(itemPosition).latitude;
                 double longitude = favoriteList.get(itemPosition).longitude;
@@ -129,12 +119,11 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             }
             if (view.getId() == R.id.editicon) {
                 editdialog();
-                Log.d(TAG, "favoriteList " + Integer.toString(view.getId()));
             }
 
         }
 
-        public void deletedialog() {
+        public void deletedialog() {   //show a confirmation dialog before deleting the spot
             Log.d(TAG, "entered deletedialog");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setMessage("Are you sure you want to delete this spot?");
@@ -155,7 +144,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             dialog.show();
         }
 
-        public void editdialog() {
+        public void editdialog() {   //dynamically build an alert dialog
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
             LinearLayout layout = new LinearLayout(activity);
             LinearLayout.LayoutParams parms = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -199,6 +188,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
             childUpdates.put("/FavoriteKeys/" + UID + "/" + favoriteList.get(getAdapterPosition()).key, null);
+            childUpdates.put("/HistoryKeys/"+UID+"/"+favoriteList.get(getAdapterPosition()).key+"/isfavorite",0); //make the change in History database
             database.updateChildren(childUpdates);
             FirebaseStorage storage = FirebaseStorage.getInstance();
             StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");

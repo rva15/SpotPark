@@ -1,13 +1,13 @@
 package com.example.android.sp;
-
-import android.content.Intent;
+//All imports
+import android.*;
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -32,12 +31,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-
 import java.io.ByteArrayOutputStream;
 
 /**
@@ -45,28 +38,27 @@ import java.io.ByteArrayOutputStream;
  */
 public class ReportFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,View.OnClickListener{
 
-    //Necessary global variable declarations
+    //variable declarations
     private GoogleMap reportmap;
     private GoogleApiClient mGoogleApiClient;
-    public  double curlatitude;
-    public  double curlongitude;
-    float zoom = 16;
+    private  double curlatitude;
+    private  double curlongitude;
+    private float zoom = 16;
     private static final String TAG = "Debugger ";
-    Location mCurrentLocation;
-    LatLng place;
-    String tid,ID;
-    static String UID="";
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
+    private Location mCurrentLocation;
+    private LatLng place;
+    private String tid,ID;
+    private static String UID="";
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 30000;
+    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-    LocationRequest mLocationRequest;
-    int i=0;
-    CameraPosition position;
-    LatLng cameracenter;
-    public static final String ARG_PAGE = "ARG_PAGE";
-    private int mPage;
-    MapView sMapView;
-    ImageView rpin;
+    private LocationRequest mLocationRequest;
+    private int i=0;
+    private CameraPosition position;
+    private LatLng cameracenter;
+    private static final String ARG_PAGE = "ARG_PAGE";
+    private MapView sMapView;
+    private ImageView rpin;
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
     public static ReportFragment newInstance(int page,String id) {
@@ -84,7 +76,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        //mPage = getArguments().getInt(ARG_PAGE);
+
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
                 .addConnectionCallbacks(this)
@@ -167,7 +159,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         sMapView.getMapAsync(this);
         NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.repadView);
         AdRequest request = new AdRequest.Builder()
-                .addTestDevice("266C3F7B130505999AFFA64AAA489FBD")
+                .addTestDevice(getResources().getString(R.string.test_device_ID))
                 .build();
         adView.loadAd(request);
         return view;
@@ -210,8 +202,15 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         //you need to check first if you have permissions from user
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
-
-            return;
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(),
+                    Manifest.permission.ACCESS_FINE_LOCATION)){
+                //somehow display message to user
+            }
+            else{
+                ActivityCompat.requestPermissions(this.getActivity(),
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        63);
+            }
         }
         //if yes, request location updates
         LocationServices.FusedLocationApi.requestLocationUpdates(
@@ -220,6 +219,35 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
 
     //----------------------Other Helper Functions----------------------------------//
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 63: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted
+                    if (Build.VERSION.SDK_INT >= 23 &&
+                            ContextCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+                        LocationServices.FusedLocationApi.requestLocationUpdates(
+                                mGoogleApiClient, mLocationRequest, this);
+                    }
+
+                } else {
+
+                    // permission denied,
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
 
     @Override
     public void onClick(View v) {
