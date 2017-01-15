@@ -16,6 +16,27 @@
         android:background="@color/darkgrey"
         android:textSize="16dp"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/newuserfavorites"
+        android:text="Spots that you 'favorite' will appear here."
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/fetchingfavorites"
+        android:text="Fetching favorites ... "
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/cardList"
         android:layout_width="match_parent"

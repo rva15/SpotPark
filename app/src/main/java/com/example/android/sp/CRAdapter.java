@@ -1,5 +1,5 @@
 package com.example.android.sp;
-
+//All imports
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -8,22 +8,16 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,25 +26,21 @@ import java.util.Map;
  * Created by ruturaj on 11/22/16.
  */
 public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder> {
+    //Variable Declarations
     static private ArrayList<Bitmap> crimage;
     static private ArrayList<String> crkey;
-    static private ArrayList<String> crdes;
-    static private ArrayList<String> crcode;
-    static private ArrayList<Boolean> crver;
     static private ArrayList<ReportedTimes> crtimes;
-    static String TAG="debugger",UID="";
-    static public FragmentActivity activity;
-    ContactViewHolder contactViewHolder;
-    static RecyclerView recyclerView;
-    View itemView;
-    static DatabaseReference database;
+    private static String TAG="debugger",UID="";
+    static private FragmentActivity activity;
+    private ContactViewHolder contactViewHolder;
+    private static RecyclerView recyclerView;
+    private View itemView;
+    private static DatabaseReference database;
 
     public CRAdapter(ArrayList crimage,ArrayList crtimes,ArrayList crkey,FragmentActivity activity,RecyclerView recyclerView,String UID) {
         this.crimage = crimage;
         this.crtimes = crtimes;
         this.crkey   = crkey;
-        this.crdes  = crdes;
-        this.crcode = crcode;
         this.activity = activity;
         this.recyclerView = recyclerView;
         this.UID = UID;
@@ -67,7 +57,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
     public void onBindViewHolder(ContactViewHolder contactViewHolder, int i) {
         this.contactViewHolder = contactViewHolder;
         contactViewHolder.spotname.setText(crtimes.get(i).getdescription());
-        if(crtimes.get(i).getverification()<3) {
+        if(crtimes.get(i).getverification()<2) {
             contactViewHolder.category.setImageResource(R.drawable.uver);
             contactViewHolder.points.setText("2 points");
         }
@@ -106,8 +96,6 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             category = (ImageView) v.findViewById(R.id.crstatus);
             points = (TextView) v.findViewById(R.id.points);
             spotimage.setOnClickListener(this);
-            //Button button = (Button) v.findViewById(R.id.crbutton);
-            //button.setOnClickListener(this);
             ImageView deleteview = (ImageView) v.findViewById(R.id.crdeleteicon);
             ImageView editview = (ImageView) v.findViewById(R.id.crediticon);
             deleteview.setOnClickListener(this);

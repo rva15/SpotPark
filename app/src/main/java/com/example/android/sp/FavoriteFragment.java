@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
@@ -37,6 +39,8 @@ public class FavoriteFragment extends Fragment {
     private LinearLayout mv;
     private ArrayList<FavoriteInfo> result;
     private RecyclerView recList;
+    private View view;
+    private TextView fetchingfavorites;
 
 
     //--------------Fragment Lifecycle Functions----------//
@@ -59,12 +63,13 @@ public class FavoriteFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_favorite, container, false); //inflate the view
+        view = inflater.inflate(R.layout.fragment_favorite, container, false); //inflate the view
         recList = (RecyclerView) view.findViewById(R.id.cardList);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());      //inflate the recycler view
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
+        fetchingfavorites = (TextView) view.findViewById(R.id.fetchingfavorites);
         getFavoriteData();
         mv = (LinearLayout) view.findViewById(R.id.favmv);
         return view;
@@ -73,6 +78,7 @@ public class FavoriteFragment extends Fragment {
     //------------Helper Functions---------------//
 
     public void getFavoriteData(){
+        fetchingfavorites.setVisibility(View.VISIBLE);
         result = new ArrayList<FavoriteInfo>();
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("FavoriteKeys").child(UID).addListenerForSingleValueEvent(listener2);
@@ -85,6 +91,9 @@ public class FavoriteFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();                   //get the number of favorite spots
+            if(max==0){
+                showdefault();
+            }
             database.child("FavoriteKeys").child(UID).orderByKey().addChildEventListener(listener1);
             database.child("FavoriteKeys").child(UID).removeEventListener(listener2);
         }
@@ -123,6 +132,7 @@ public class FavoriteFragment extends Fragment {
                     result.add(info);
                     i=i+1;
                     if(i==max){
+                        fetchingfavorites.setVisibility(View.GONE);
                         FavoritesAdapter ca = new FavoritesAdapter(getresult(),getActivity(),recList,UID); //set the adapter
                         recList.setAdapter(ca);
                         database.child("FavoriteKeys").child(UID).orderByKey().removeEventListener(listener1);
@@ -163,6 +173,12 @@ public class FavoriteFragment extends Fragment {
 
         }
     };
+
+    private void showdefault(){
+        TextView message = (TextView)view.findViewById(R.id.newuserfavorites);
+        fetchingfavorites.setVisibility(View.GONE);
+        message.setVisibility(View.VISIBLE);
+    }
 
 
 }

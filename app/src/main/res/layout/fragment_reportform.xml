@@ -108,16 +108,14 @@
                         android:layout_marginLeft="24dp"
                         android:id="@+id/allweek"
                         android:text="All week"
-                        android:buttonTint="@color/tab_background_selected"
-                        android:onClick="deactivateDays"/>
+                        android:buttonTint="@color/tab_background_selected" />
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_marginLeft="16dp"
                         android:id="@+id/choosedays"
                         android:buttonTint="@color/tab_background_selected"
-                        android:text="Select days"
-                        android:onClick="activateDays"/>
+                        android:text="Select days" />
                 </RadioGroup>
 
                 <LinearLayout
@@ -245,7 +243,7 @@
                         android:buttonTint="@color/tab_background_selected"
                         android:layout_marginLeft="24dp"
                         android:text="All day"
-                        android:onClick="deactivateButtons"/>
+                        />
                     <RadioButton
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -253,7 +251,7 @@
                         android:layout_marginLeft="24dp"
                         android:buttonTint="@color/tab_background_selected"
                         android:text="Select time"
-                        android:onClick="activateButtons"/>
+                        />
                 </RadioGroup>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -266,15 +264,13 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="match_parent"
-                        android:text="Starts At"
-                        android:onClick="showStartDialog"/>
+                        android:text="Starts At" />
                     <Button
                         android:id="@+id/chooseEnd"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="match_parent"
-                        android:text="Ends At"
-                        android:onClick="showEndDialog"/>
+                        android:text="Ends At" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -305,15 +301,13 @@
 
 
 
-    <Button
+        <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Report this Spot"
-            android:onClick="reportspot"/>
+            android:id="@+id/reportspot"/>
 
     </LinearLayout>
 
 </ScrollView>
-
-

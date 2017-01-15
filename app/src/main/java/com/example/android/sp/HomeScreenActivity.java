@@ -316,6 +316,38 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         fragmentTransaction.commit();
     }
 
+    // Get the Report Form fragment
+    public void getReportForm(byte[] mapimage,double latitude,double longitude){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        data.putByteArray("mapimage",mapimage);
+        data.putDouble("latitude",latitude);
+        data.putDouble("longitude",longitude);
+        ReportFormFragment reportFormFragment = new ReportFormFragment();
+        reportFormFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, reportFormFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void getPostReport(byte[] mapimage){
+        Bundle data = new Bundle();
+        data.putString("userid",UID);
+        data.putByteArray("repmapimage",mapimage);
+        data.putInt("width",fragmentcontainer.getWidth());
+        PostReportFragment postReportFragment = new PostReportFragment();
+        postReportFragment.setArguments(data);
+        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, postReportFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
+
     //--------------------------------Helper Functions----------------------------------------//
 
     //define the ChildEventListener for Delete CheckIn function
@@ -404,16 +436,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         mAdapter.notifyDataSetChanged();
     }
 
-    public void getReportForm(String s, String lat, String lon, byte[] bytearray){
-        Log.d(TAG,"reportform string "+s);
-        Intent intent = new Intent(this, ReportForm.class); //send Intent
-        intent.putExtra("user_id",s);
-        intent.putExtra("lats",lat);
-        intent.putExtra("lons",lon);
-        intent.putExtra("image",bytearray);
-        startActivity(intent);
-        this.finish();
-    }
+
 
 
 

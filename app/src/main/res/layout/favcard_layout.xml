@@ -29,7 +29,7 @@
             android:id="@+id/spname"
             android:gravity="center"
             android:textColor="@color/black"
-            android:textSize="24dp"/>
+            android:textSize="16dp"/>
 
         <RelativeLayout
             android:layout_width="match_parent"

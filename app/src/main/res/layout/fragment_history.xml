@@ -17,6 +17,27 @@
         android:background="@color/darkgrey"
         android:textSize="16dp"/>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/newuserhistory"
+        android:text="Your Check-In history will appear here."
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/fetchinghistory"
+        android:text="Fetching history ... "
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
 
 
     <android.support.v7.widget.RecyclerView

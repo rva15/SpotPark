@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,6 +46,8 @@ public class HistoryFragment extends Fragment  {
     private LinearLayout mv;
     private RecyclerView recList;
     private HistoryAdapter historyAdapter;
+    private View view;
+    private TextView fetchinghistory;
 
     //----Fragment Lifecycle Functions----------//
 
@@ -60,14 +63,16 @@ public class HistoryFragment extends Fragment  {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_history, container, false); //inflate the view
+        view = inflater.inflate(R.layout.fragment_history, container, false); //inflate the view
         recList = (RecyclerView) view.findViewById(R.id.hisfraglist);
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());     //inflate the recycler view
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
         mv = (LinearLayout) view.findViewById(R.id.hisfragmv);
+        fetchinghistory = (TextView) view.findViewById(R.id.fetchinghistory);
         getHistoryData();                                                         //get user's history
+
 
         return view;
     }
@@ -82,11 +87,15 @@ public class HistoryFragment extends Fragment  {
     //------------Helper Functions----------------------//
 
     private void getHistoryData(){
+        fetchinghistory.setVisibility(View.VISIBLE);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("HistoryKeys").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 max = (int) dataSnapshot.getChildrenCount();
+                if(max==0){
+                    showdefault();
+                }
                 Log.d(TAG,"max is "+Integer.toString(max));
                 if(max>10){                                         //if number of user's checkins >10, fetch only 10
                     max = 10;
@@ -134,6 +143,7 @@ public class HistoryFragment extends Fragment  {
                         i = i + 1;
                         if (i == max) {
                             Log.d(TAG, "setting adapter");
+                            fetchinghistory.setVisibility(View.GONE);
                             historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID);
                             recList.setAdapter(historyAdapter);   //set the adapter
                             database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
@@ -222,6 +232,12 @@ public class HistoryFragment extends Fragment  {
         }
 
 
+    }
+
+    private void showdefault(){
+        TextView message = (TextView)view.findViewById(R.id.newuserhistory);
+        fetchinghistory.setVisibility(View.GONE);
+        message.setVisibility(View.VISIBLE);
     }
 
 

@@ -46,6 +46,7 @@
     <string name="report_ad_unit_id">ca-app-pub-6738316052917153/7289549821</string>
     <string name="carlocation_ad_unit_id">ca-app-pub-6738316052917153/3316361828</string>
     <string name="postcheckin_ad_unit_id">ca-app-pub-6738316052917153/6069521826</string>
+    <string name="postreport_ad_unit_id">ca-app-pub-6738316052917153/7190524627</string>
     <string name="googleAPI_serverkey">AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I</string>
     <string name="ParkWhiz_API_key">c38210d1f5fda38362d86859997ef847</string>
     <string name="navigation_view_item_1">Search</string>

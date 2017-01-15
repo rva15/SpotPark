@@ -1,40 +1,26 @@
 package com.example.android.sp;
-
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
+//All imports
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.app.Fragment;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.support.v4.view.ViewPager.LayoutParams;
-
-import com.fasterxml.jackson.databind.deser.DataFormatReaders;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,15 +29,17 @@ import java.util.List;
  */
 public class ContributionsFragment extends Fragment {
 
-    static String TAG = "debugger";
-    static String UID;
-    ViewPager contviewPager;
-    TabLayout conttabLayout;
-    View view;
-    Adapter adapter;
-    LinearLayout pointsbar;
-    int pbwidth,points=0,max=0,count=0;
-    DatabaseReference database;
+    //Variable Declarations
+    private static String TAG = "debugger";
+    private static String UID;
+    private ViewPager contviewPager;
+    private TabLayout conttabLayout;
+    private View view;
+    private Adapter adapter;
+    private LinearLayout pointsbar;
+    private int pbwidth,points=0,max=0,count=0;
+    private DatabaseReference database;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -76,7 +64,12 @@ public class ContributionsFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
-            database.child("ReportedTimes").child(UID).orderByKey().addChildEventListener(listener1);
+            if(max==0){
+                database.child("UserInformation").child(UID).orderByKey().addListenerForSingleValueEvent(listener3);
+            }
+            else {
+                database.child("ReportedTimes").child(UID).orderByKey().addChildEventListener(listener1);
+            }
             database.child("ReportedTimes").child(UID).removeEventListener(listener2);
 
         }
@@ -100,26 +93,10 @@ public class ContributionsFragment extends Fragment {
             }
             if(count==max) {
                 Log.d(TAG, "points " + Integer.toString(points));
-                database.child("UserInformation").child(UID).orderByKey().addValueEventListener(listener3);
+                database.child("UserInformation").child(UID).orderByKey().addListenerForSingleValueEvent(listener3);
+                database.child("ReportedTimes").child(UID).orderByKey().removeEventListener(listener1);
             }
         }
-
-        ValueEventListener listener3 = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
-                points = points + userDetails.getcheckinfeed();
-                points = points + 2*userDetails.getreportfeed();
-                Log.d(TAG, "final points " + Integer.toString(points));
-                setupPointsBar();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -142,6 +119,23 @@ public class ContributionsFragment extends Fragment {
         }
     };
 
+    ValueEventListener listener3 = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
+            points = points + userDetails.getcheckinfeed();
+            points = points + 2*userDetails.getreportfeed();
+            Log.d(TAG, "final points " + Integer.toString(points));
+            setupPointsBar();
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+
 
     public void setupPointsBar(){
         Log.d(TAG,"pointsbar width pixels"+Integer.toString(pbwidth));
@@ -153,7 +147,7 @@ public class ContributionsFragment extends Fragment {
             String name = "pb"+Integer.toString(i);
             int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
             TextView tv = (TextView)view.findViewById(resID);
-            tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen));
+            tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen,null));
             Log.d(TAG,"on tv "+Integer.toString(i));
         }
 
@@ -161,8 +155,8 @@ public class ContributionsFragment extends Fragment {
             String name = "pb"+Integer.toString(j);
             int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
             TextView tv = (TextView)view.findViewById(resID);
-            tv.setBackground(getResources().getDrawable(R.drawable.tvborderwhite));
-            Log.d(TAG,"on tv "+Integer.toString(j));
+            tv.setBackground(getResources().getDrawable(R.drawable.tvborderwhite,null));
+            Log.d(TAG,"setting white "+Integer.toString(j));
         }
 
         int remainder = points%10;
@@ -179,7 +173,7 @@ public class ContributionsFragment extends Fragment {
                 0,
                 px, w1);
         tv.setLayoutParams(param);
-        tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen));
+        tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen,null));
 
         name = "pb"+Integer.toString(green+2);
         Log.d(TAG,"on tv "+name);
@@ -189,11 +183,11 @@ public class ContributionsFragment extends Fragment {
                 0,
                 px, w2);
         tv.setLayoutParams(param);
-        tv.setBackground(getResources().getDrawable(R.drawable.tvborderwhite));
+        tv.setBackground(getResources().getDrawable(R.drawable.tvborderwhite,null));
 
         tv = (TextView)view.findViewById(R.id.currentpoints);
         tv.setText(Integer.toString(points));
-        tv.setTextColor(getResources().getColor(R.color.green));
+        tv.setTextColor(ContextCompat.getColor(getContext(), R.color.green));
         param = new LinearLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT,
                 px);

@@ -1,9 +1,7 @@
 package com.example.android.sp;
-
-import android.content.Context;
+//All imports
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -14,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -25,35 +24,32 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 public class ContRepFragment extends Fragment {
 
-    static String UID="";
-    public static final String ARG_PAGE = "ARG_PAGE";
-    RecyclerView recList;
-    LinearLayout mv;
+    private static String UID="";
+    private static final String ARG_PAGE = "ARG_PAGE";
+    private RecyclerView recList;
+    private LinearLayout mv;
     static private ArrayList<Bitmap> crimage;
     static private ArrayList<String> crkey;
     static private ArrayList<String> crdes;
     static private ArrayList<String> crcode;
     static private ArrayList<ReportedTimes> crtimes;
-    DatabaseReference database;
-    static String TAG="debugger";
-    int max,width,i=0;
+    private DatabaseReference database;
+    private static String TAG="debugger";
+    private int max,width,i=0;
+    private View view;
+    private TextView fetchingrep;
+
+    //-----Fragment Lifecycle Functions-----------------//
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-       // Bundle extras = getArguments();
-       // UID = extras.getString("userid");
-       // Log.d(TAG,"cr uid "+UID);
 
     }
 
@@ -65,17 +61,18 @@ public class ContRepFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        crimage = new ArrayList<>();
+        crimage = new ArrayList<>();       //initialize all arrays
         crkey = new ArrayList<>();
         crdes = new ArrayList<>();
         crcode = new ArrayList<>();
         crtimes = new ArrayList<>();
-        View view = inflater.inflate(R.layout.fragment_contrep, container, false); //inflate the view
-        recList = (RecyclerView) view.findViewById(R.id.contcardList);
+        view = inflater.inflate(R.layout.fragment_contrep, container, false); //inflate the view
+        recList = (RecyclerView) view.findViewById(R.id.contcardList);             //setup the recycler view
         recList.setHasFixedSize(true);
         LinearLayoutManager llm = new LinearLayoutManager(this.getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
+        fetchingrep = (TextView) view.findViewById(R.id.fetchingrep);
         getcontrepdata();
         mv = (LinearLayout) view.findViewById(R.id.contmv);
         return view;
@@ -93,9 +90,9 @@ public class ContRepFragment extends Fragment {
 
 
     public void getcontrepdata(){
+        fetchingrep.setVisibility(View.VISIBLE);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("ReportedTimes").child(UID).addValueEventListener(listener2);
-        Log.d(TAG,"get contrep");
     }
 
 
@@ -104,6 +101,9 @@ public class ContRepFragment extends Fragment {
         public void onDataChange(DataSnapshot dataSnapshot) {
             Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
+            if(max==0){
+                showdefaultmessage();
+            }
             database.child("ReportedTimes").child(UID).orderByKey().addChildEventListener(listener1);
             database.child("ReportedTimes").child(UID).removeEventListener(listener2);
 
@@ -121,8 +121,6 @@ public class ContRepFragment extends Fragment {
         @Override
         public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
             width = mv.getWidth();
-            Log.d(TAG,"main view width "+Integer.toString(width));
-            Log.d(TAG,"download key "+dataSnapshot.getKey());
             final ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
 
             FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -144,8 +142,10 @@ public class ContRepFragment extends Fragment {
                     crtimes.add(reportedTimes);
                     i=i+1;
                     if(i==max){
+                        fetchingrep.setVisibility(View.GONE);
                         CRAdapter ca = new CRAdapter(crimage,crtimes,crkey,getActivity(),recList,UID);
                         recList.setAdapter(ca);
+                        database.child("ReportedTimes").child(UID).orderByKey().removeEventListener(listener1);
                     }
 
 
@@ -180,6 +180,12 @@ public class ContRepFragment extends Fragment {
 
         }
     };
+
+    public void showdefaultmessage(){
+        TextView message = (TextView) view.findViewById(R.id.newusermessage);
+        fetchingrep.setVisibility(View.GONE);
+        message.setVisibility(View.VISIBLE);
+    }
 
 
 

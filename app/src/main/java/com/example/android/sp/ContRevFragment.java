@@ -1,42 +1,35 @@
 package com.example.android.sp;
+//All imports
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
 
 /**
  * Created by ruturaj on 11/28/16.
  */
 public class ContRevFragment extends Fragment {
-    static String UID="";
-    public static final String ARG_PAGE = "ARG_PAGE";
-    static String TAG="debugger";
-    TextView numcins,numreps,cinpoints,reppoints;
-    DatabaseReference database;
+
+    //Variable Declarations
+    private static String UID="";
+    private static final String ARG_PAGE = "ARG_PAGE";
+    private static String TAG="debugger";
+    private TextView numcins,numreps,cinpoints,reppoints;
+    private DatabaseReference database;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-       // Bundle extras = getArguments();
-       // UID = extras.getString("userid");
-       // Log.d(TAG,"cr uid "+UID);
-
     }
 
     @Override
@@ -69,7 +62,7 @@ public class ContRevFragment extends Fragment {
 
     public void getUserData(){
         database = FirebaseDatabase.getInstance().getReference();
-        database.child("UserInformation").child(UID).addValueEventListener(valueEventListener);
+        database.child("UserInformation").child(UID).addListenerForSingleValueEvent(valueEventListener);
     }
 
     ValueEventListener valueEventListener = new ValueEventListener() {

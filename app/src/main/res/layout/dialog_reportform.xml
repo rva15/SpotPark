@@ -6,7 +6,7 @@
     android:theme="@style/AppTheme">
 
     <TimePicker
-        android:id="@+id/freetime"
+        android:id="@+id/rftimepicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:timePickerMode="clock"

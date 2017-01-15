@@ -418,21 +418,30 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,(int)hours,(int)mins,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
-        // Make an entry in user's history
-        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
-        Map<String, Object> historyMap = historyPlace.toMap();
+
         // Make the entries
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-        childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
-        childUpdates.put("/CheckInUsers/"+UID,userMap);
-        childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
         if(tag.equals("1")){
             // If user asked to add the spot to favorites
             FavoritePlace favoritePlace = new FavoritePlace(cameracenter.latitude,cameracenter.longitude,deftitle);
             Map<String, Object> favoriteMap = favoritePlace.toMap();
             childUpdates.put("/FavoriteKeys/"+UID+"/"+key,favoriteMap);
             Toast.makeText(this.getContext(),"Spot added to Favorites",Toast.LENGTH_SHORT).show();
+            // Make an entry in user's history saying it has been favorited
+            HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]),1);
+            Map<String, Object> historyMap = historyPlace.toMap();
+            childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
         }
+        else{
+            // Make an entry in user's history saying it has not been favorited
+            HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
+            Map<String, Object> historyMap = historyPlace.toMap();
+            childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
+        }
+        childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
+        childUpdates.put("/CheckInUsers/"+UID,userMap);
+
+
         incrementKeys();                                              //award the user with 2 keys
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
         homeScreenActivity.refreshMainAdapter();

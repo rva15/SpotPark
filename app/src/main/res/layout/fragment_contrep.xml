@@ -1,7 +1,29 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/contmv">
+    android:id="@+id/contmv"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/newusermessage"
+        android:text="You have not reported any spot yet. To do so, use the 'Report' tab on the Home Screen."
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:id="@+id/fetchingrep"
+        android:text="Fetching reported spots ... "
+        android:gravity="center"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"/>
+
 
     <android.support.v7.widget.RecyclerView
         android:layout_margin="16dp"

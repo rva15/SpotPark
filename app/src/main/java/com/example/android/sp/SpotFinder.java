@@ -369,7 +369,10 @@ public class SpotFinder {
             //database.child("Searchers").child(array.get(k)).removeEventListener(listener2);   //remove listener2 for other searchers
             database.child("ReportedDetails").child(array.get(k)).removeEventListener(listener3);//remove listener3 for reported spots
         }
-        getReported.removeEventListener(listener4);
+        Log.d(TAG,"detaching listeners");
+        if(getReported!=null) {
+            getReported.removeEventListener(listener4);
+        }
     }
 
     private void insertdata(String unique, int mins,int status,int dollar,int cent){
@@ -461,7 +464,7 @@ public class SpotFinder {
 
         }
         if(reportedTimes.getfullweek()==false){
-            if(weekDay=="Monday"){
+            if(weekDay.equals("Monday")){
                 if(reportedTimes.getmon()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -491,7 +494,7 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Tuesday"){
+            if(weekDay.equals("Tuesday")){
                 if(reportedTimes.gettue()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -521,7 +524,7 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Wednesday"){
+            if(weekDay.equals("Wednesday")){
                 if(reportedTimes.getwed()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -551,7 +554,7 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Thursday"){
+            if(weekDay.equals("Thursday")){
                 if(reportedTimes.getthu()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -581,7 +584,7 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Friday"){
+            if(weekDay.equals("Friday")){
                 if(reportedTimes.getfri()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -611,7 +614,8 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Saturday"){
+            if(weekDay.equals("Saturday")){
+                Log.d(TAG,"fullweek saturday");
                 if(reportedTimes.getsat()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;
@@ -641,7 +645,7 @@ public class SpotFinder {
                 }
 
             }
-            if(weekDay=="Sunday"){
+            if(weekDay.equals("Sunday")){
                 if(reportedTimes.getsun()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;

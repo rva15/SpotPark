@@ -1,6 +1,5 @@
 package com.example.android.sp;
-
-
+//All imports
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -16,28 +15,23 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.support.v4.app.Fragment;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
-import com.facebook.internal.Utility;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.vision.text.Text;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,7 +45,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -63,23 +56,24 @@ import java.io.IOException;
  */
 public class SettingsFragment extends Fragment implements View.OnClickListener {
 
-    static String TAG = "debugger";
-    static String UID;
-    View view;
-    TextView fullname, email;
-    ImageView dp;
+    //Variable declaration
+    private static String TAG = "debugger";
+    private static String UID;
+    private View view;
+    private TextView fullname, email;
+    private ImageView dp;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    int logintype = 0;
-    ImageView loginicon,editprofile;
-    Button changepswd;
-    int REQ_CODE=3;
-    String currentemail;
-    FirebaseUser user;
-    String fn,ln;
+    private int logintype = 0;
+    private ImageView loginicon,editprofile;
+    private Button changepswd;
+    private int REQ_CODE=3;
+    private String currentemail;
+    private FirebaseUser user;
+    private String fn,ln;
     private DatabaseReference database;
-    Bitmap bmp;
-    public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
+    private Bitmap bmp;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
 
     @Override
@@ -92,6 +86,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         database = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
+        //get the user's login type
         user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             for (UserInfo profile : user.getProviderData()) {
@@ -111,7 +106,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             ;
         }
 
-
+        //get his other information
         fullname = (TextView) view.findViewById(R.id.fullname);
         email = (TextView) view.findViewById(R.id.email);
         loginicon = (ImageView) view.findViewById(R.id.logintype);
@@ -120,12 +115,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         dp = (ImageView) view.findViewById(R.id.dp);
         changepswd.setOnClickListener(this);
         editprofile.setOnClickListener(this);
-        database.child("UserInformation").child(UID).addValueEventListener(listener1);
+        database.child("UserInformation").child(UID).addListenerForSingleValueEvent(listener1);
         setdp();
         return view;
     }
 
-    public void setdp(){
+    private void setdp(){
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
         StorageReference islandRef = storageRef.child(UID+"/Profile/dp.jpg");
@@ -134,12 +129,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
-                // Data for "images/island.jpg" is returns, use this as needed
+                // Display pic downloaded
                 Log.d(TAG, "download success");
                 bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 dp.setImageBitmap(bmp);
-
-
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -161,6 +154,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             fullname.setText(userDetails.getfirstname() + " " + userDetails.getlastname());
             currentemail = userDetails.getemail();
             email.setText(userDetails.getemail());
+            //set the change password button visibility
             if (logintype == 1) {
                 loginicon.setImageResource(R.drawable.email);
                 changepswd.setVisibility(View.VISIBLE);
@@ -193,7 +187,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    public void showProfileDialog(){
+    private void showProfileDialog(){
         DialogFragment dialogFragment = new EditProfileDialog();
         Bundle args = new Bundle();
         args.putString("fn", fn);
@@ -205,13 +199,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         dialogFragment.show(this.getActivity().getSupportFragmentManager(),"EditProfile fragment");
     }
 
-    public void showPswdDialog() {
+    private void showPswdDialog() {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new ChangePswdDialog();
         dialog.setTargetFragment(SettingsFragment.this, REQ_CODE);       //set target fragment to this fragment
         dialog.show(this.getActivity().getSupportFragmentManager(),"ChangePswd fragment");
     }
 
+    //function that allows setting of display picture
     private void selectImage() {
 
         final CharSequence[] items = { "Take Photo", "Choose from Library"
@@ -258,7 +253,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
 
-
+    //check permissions from the user and take appropriate actions
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static boolean checkPermission(final Context context)
     {
@@ -323,11 +318,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 Log.d(TAG, "image upload success");
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
+                home.refreshMainAdapter();
             }
         });
     }
 
-    public Bitmap cropimage(Bitmap srcBmp){
+    private Bitmap cropimage(Bitmap srcBmp){
         Bitmap dstBmp;
         if (srcBmp.getWidth() >= srcBmp.getHeight()){
 
@@ -391,6 +387,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 Log.d(TAG, "image upload success");
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
+                home.refreshMainAdapter();
             }
         });
     }
@@ -399,7 +396,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //fetch information from the dialog and call the checkIn function
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "requestcode " + Integer.toString(requestCode));
         if (requestCode == 3) {
@@ -449,6 +445,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     String ln = bundle.getString("ln");
                     String email = bundle.getString("email");
                     updateEmail(fn, ln, email);
+                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+                    homeScreenActivity.refreshMainAdapter();
                 }
             }
             else{
@@ -462,9 +460,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         if(requestCode==2){
             onSelectFromGalleryResult(data);
         }
+
+
     }
 
-    public void updatePassword(String newpass){
+    private void updatePassword(String newpass){
         Log.d(TAG,"making new password "+newpass);
         user.updatePassword(newpass)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -477,7 +477,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 });
     }
 
-    public void updateEmail(String fname,String lname,String newemail){
+    private void updateEmail(String fname,String lname,String newemail){
         database = FirebaseDatabase.getInstance().getReference();
         email.setText(newemail);
         database.child("UserInformation").child(UID).child("firstname").setValue(fname);
