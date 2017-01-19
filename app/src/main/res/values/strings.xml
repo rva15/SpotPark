@@ -25,7 +25,7 @@
 
     <string name="action_help">"Action Help"</string>
     <string name="logout">Logout</string>
-    <string name="delete">Delete Checkin</string>
+    <string name="delete">Delete Check-In</string>
     <string name="history">Checkin History</string>
     <string name="favorite">Favorite Spots</string>
     <string name="contri">Contributions</string>

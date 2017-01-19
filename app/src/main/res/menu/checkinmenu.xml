@@ -10,7 +10,12 @@
         app:showAsAction="ifRoom"/> -->
 
     <!-- Check updates -->
-    <!--TODO: Doesn't work -->
+    <item android:id="@+id/delete"
+        android:title="@string/delete"
+        app:showAsAction="never"/>
+    <item android:id="@+id/edit"
+        android:title="Edit Check-In"
+        app:showAsAction="never"/>
     <item android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never"/>

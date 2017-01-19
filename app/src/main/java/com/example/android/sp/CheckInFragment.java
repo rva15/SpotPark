@@ -379,7 +379,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         cents = (int)Math.round(100*(d - Math.floor(d)));
 
         // Get the spot's LatLngCode
-        String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
+        final String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
         Log.d(TAG, "LatLngCode : " + LatLngCode);
 
         // Setup notifications and alert user if time entered is invalid
@@ -407,12 +407,12 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 return;
             }
             Log.d(TAG,"notification delay "+Integer.toString(delay));
-            scheduleNotification(getAlertNotification(), delay, 1);              //schedule alert notification for ticket expiring
-            scheduleNotification(getInformNotification(), delay + 12000, 23);    //ask user if he wants to inform others by this notification
+            scheduleNotification(getAlertNotification(sub/60000), delay, 1);              //schedule alert notification for ticket expiring
+            scheduleNotification(getInformNotification(sub/60000), delay + 12000, 23);    //ask user if he wants to inform others by this notification
         }
 
         // Proceed to make database entries
-        String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
+        final String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails  and CheckInUser objects
         CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
@@ -457,7 +457,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             public void onSnapshotReady(Bitmap snapshot) {
 
                 bitmap = snapshot;
-                showPostCheckin();
+                showPostCheckin(LatLngCode,key);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
@@ -515,11 +515,18 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         this.getActivity().startService(servIntent);
 
 
+
+
     }
 
-    private void showPostCheckin(){
-        HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //display post checkin message
-        homeScreenActivity.getCheckedin(bitmap,hours,mins,sub);
+    private void showPostCheckin(String latlngcode,String key){
+        HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //pass information to homescreen activity
+        homeScreenActivity.setLatlngcode(latlngcode);
+        homeScreenActivity.setLatitude(cameracenter.latitude);
+        homeScreenActivity.setLongitude(cameracenter.longitude);
+        homeScreenActivity.setCheckinkey(key);
+        homeScreenActivity.setRate(dollars,cents);
+        homeScreenActivity.getCheckedin(bitmap,hours,mins,sub); //display the post checkin screen
     }
 
     //---------------------------Notifications Related Functions---------------------------//
@@ -537,7 +544,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     //construct the notification that allows the user to navigate back to his car
-    private Notification getAlertNotification() {
+    private Notification getAlertNotification(int mins) {
 
         Intent navigate = new Intent(this.getActivity(), HomeScreenActivity.class);
         navigate.putExtra("startedfrom","notification");
@@ -549,7 +556,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
-        builder.setContentText("Parking Ticket expires in 15min !");
+        builder.setContentText("Parking Ticket expires in "+Integer.toString(mins)+"min !");
         builder.addAction(accept);
         builder.setAutoCancel(true);
         Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -559,19 +566,24 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     }
 
     //construct notification asking users to inform others
-    private Notification getInformNotification() {
+    private Notification getInformNotification(int mins) {
 
         Intent serviceintent = new Intent(this.getActivity(),DirectionService.class);
         serviceintent.putExtra("started_from","checkin");
         PendingIntent pIntent = PendingIntent.getService(this.getActivity(), 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
+        Intent buttonIntent = new Intent(getContext(), CancelNotification.class);
+        buttonIntent.putExtra("notificationId",23);
+        PendingIntent btPendingIntent = PendingIntent.getBroadcast(getContext(), 0, buttonIntent,0);
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", btPendingIntent).build();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
-        builder.setContentText("Inform other users that you're leaving?");
+        builder.setContentText("Are you vacating the spot in about "+Integer.toString(mins)+"mins?");
         builder.addAction(accept);
+        builder.addAction(cancel);
         builder.setAutoCancel(true);
         Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         builder.setSound(uri);

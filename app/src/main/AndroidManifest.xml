@@ -61,6 +61,7 @@
             android:value="@string/facebook_app_id" />
 
         <receiver android:name=".NotificationPublisher" />
+        <receiver android:name=".CancelNotification" />
 
         <service
             android:name=".DirectionService"

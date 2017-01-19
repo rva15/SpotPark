@@ -1,14 +1,27 @@
 package com.example.android.sp;
 // All imports
+import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.Dialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,7 +31,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 import com.google.android.gms.auth.api.Auth;
@@ -26,27 +43,42 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
 import android.support.v7.app.ActionBarDrawerToggle;
+
+import java.io.ByteArrayOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks {
+public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, EditCheckInDialog.EditCheckInDialogListener {
 
     // -- Variable Declarations --
 
     // General Utility
     private String UID="",starter="",latlngcode,key;
     private int count=0;
-    private Boolean isCheckedin;
+    private Boolean isCheckedin,inputerror=false;
     private LinearLayout fragmentcontainer;
-    private String TAG="debugger";
+    private String TAG="debugger",locationcode,checkinkey;
     private final static String logoutFlagString = "logoutflag";
+    private double latitude,longitude;
+    private int dollars,cents,isfavorite;
 
 
     // Google and Firebase
@@ -184,9 +216,28 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
+        if(isCheckedin){
+            inflater.inflate(R.menu.checkinmenu, menu); //inflate menu
+        }
+        else{
+            inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
+        }
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu (Menu menu) {
+        menu.clear();
+        MenuInflater inflater = getMenuInflater();
+        if(isCheckedin){
+            inflater.inflate(R.menu.checkinmenu, menu); //inflate menu
+        }
+        else{
+            inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
 
@@ -200,7 +251,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             getSettings();
         }
         if(id == R.id.delete){
-            delete();
+            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);   //Attach listener to Checkinusers
+            getcheckin.addListenerForSingleValueEvent(listener2);
+        }
+        if(id == R.id.edit){
+            showEditCheckInDialog();
         }
 
         if (mDrawerToggle.onOptionsItemSelected(item)) {
@@ -211,6 +267,26 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // ----------- Main Menu Functions-----------------//
 
+    private void deletedialog() {   //show a confirmation dialog before deleting the spot
+        Log.d(TAG, "entered deletedialog");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you want to delete this Check-In?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(TAG, "deletedialog yes");
+                delete();
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Log.d(TAG, "deletedialog no");
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
     // Delete the checkin
     public void delete(){
@@ -224,10 +300,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         PendingIntent pendingIntent2 = PendingIntent.getBroadcast(this, 23, cancelaction2, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager2.cancel(pendingIntent2);
-        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);   //Attach listener to Checkinusers
         getcheckin.addChildEventListener(listener1);
-        getcheckin.addValueEventListener(listener2);
+
     }
 
     // Get History Fragment
@@ -337,6 +411,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         data.putString("userid",UID);
         data.putByteArray("repmapimage",mapimage);
         data.putInt("width",fragmentcontainer.getWidth());
+        data.putInt("width",fragmentcontainer.getWidth());
         PostReportFragment postReportFragment = new PostReportFragment();
         postReportFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
@@ -349,6 +424,262 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
 
     //--------------------------------Helper Functions----------------------------------------//
+
+    public void showEditCheckInDialog() {
+        // Create an instance of the EditCheckIn Dialog fragment and show it
+        DialogFragment dialog = new EditCheckInDialog();
+        Bundle args = new Bundle();
+        args.putInt("dollars",dollars); //pass the previous checkin's rate to dialog
+        args.putInt("cents",cents);
+        dialog.setArguments(args);
+        dialog.show(getSupportFragmentManager(),"Edit Checkin fragment");
+    }
+
+    //functions accessed by other classes
+    public void setLatlngcode(String latlngcode){
+        this.locationcode = latlngcode;
+    }
+
+    public void setCheckinkey(String checkinkey){
+        this.checkinkey = checkinkey;
+    }
+
+    public void setLatitude(double latitude){
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude){
+        this.longitude = longitude;
+    }
+
+    public void setRate(int dollars,int cents){
+        this.dollars = dollars;
+        this.cents = cents;
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        Dialog dialogView = dialog.getDialog();
+        Spinner spin;
+        spin = (Spinner) dialogView.findViewById(R.id.editspinner1);
+        CheckBox remind = (CheckBox) dialogView.findViewById(R.id.editremind);
+        String checked="1";    //default values for checked and favorite
+        String favorite="0";
+        if(!remind.isChecked()){   //see if the user asked to be reminded
+            checked = "0";
+        }
+        String text = spin.getSelectedItem().toString();
+        Log.d(TAG,"selected option "+text);
+        EditText rph = (EditText) dialogView.findViewById(R.id.editrate);
+        TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.edittime);
+        String hourlyrate = rph.getText().toString();
+        double hours=0,mins=0;
+        if (Build.VERSION.SDK_INT >= 23 ) {            //Use the correct method according to API levels
+            hours = (double) timePicker.getHour();
+        }
+        else {
+            hours = (double) timePicker.getCurrentHour();
+        }
+        if (Build.VERSION.SDK_INT >= 23 ) {
+            mins = (double) timePicker.getMinute();
+        }
+        else{
+            mins = (double) timePicker.getCurrentMinute();
+        }
+        String hour = Double.toString(hours);
+        String min = Double.toString(mins);
+        Log.d(TAG,"edit checkin "+ hour + min + hourlyrate + favorite + checked + text);
+        checkIn(hourlyrate,hour,min,text,checked,favorite);
+    }
+
+    private void checkIn(String parkrate,String parkhour,String parkmin,String parkoption,String parkchecked,final String tag) {
+
+        stopService(new Intent(HomeScreenActivity.this,LocationService.class)); //Stop services
+        stopService(new Intent(HomeScreenActivity.this,DirectionService.class));
+        Intent cancelaction = new Intent(this, NotificationPublisher.class);    //Cancel notifications
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+        Intent cancelaction2 = new Intent(this, NotificationPublisher.class);
+        PendingIntent pendingIntent2 = PendingIntent.getBroadcast(this, 23, cancelaction2, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager2 = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager2.cancel(pendingIntent2);
+
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        Calendar calendar = Calendar.getInstance();                    //get current time
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
+        String checkinTime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
+        String[] timearray = checkinTime.split(":");               //split the time into hours and mins
+        double currenthour = Double.parseDouble(timearray[0]);
+        double currentmin = Double.parseDouble(timearray[1]);
+
+        // Get the parking rate in dollars and cents
+        double d = toDouble(parkrate);
+        if(d==12345.){
+            Toast.makeText(this,"Invalid parking rate!",Toast.LENGTH_SHORT).show(); //show a message if parking rate is invalid
+            return;
+        }
+        int dollars =  (int)Math.round(Math.floor(d));
+        int cents = (int)Math.round(100*(d - Math.floor(d)));
+
+
+        // Setup notifications and alert user if time entered is invalid
+        //Proceed towards starting NotificationBroadcast
+        double hours=123,mins=123;
+        int sub;
+        if(parkchecked.equals("1")) {
+            hours = Double.parseDouble(parkhour);
+            mins = Double.parseDouble(parkmin);
+            //get the requested delay period
+            sub = 900000;
+            if (parkoption.equals("15")) {
+                sub = 900000;
+            }
+            if (parkoption.equals("30")) {
+                sub = 1800000;
+            }
+            if (parkoption.equals("45")) {
+                sub = 2700000;
+            }
+            if (parkoption.equals("60")) {
+                sub = 3600000;
+            }
+            int delay = (int) getDelay(currenthour, currentmin, hours, mins) - sub;    //get the delay for notification
+            if (delay < 0) {
+                Toast.makeText(this, "Your requested alert time has already passed!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
+                return;
+            }
+            Log.d(TAG,"notification delay "+Integer.toString(delay));
+            scheduleNotification(getAlertNotification(sub/60000), delay, 1);              //schedule alert notification for ticket expiring
+            scheduleNotification(getInformNotification(sub/60000), delay + 12000, 23);    //ask user if he wants to inform others by this notification
+        }
+
+
+
+        // Proceed to make database entries
+        //construct the CheckInDetails  and CheckInUser objects
+        CheckInDetails checkInDetails = new CheckInDetails(latitude,longitude,dollars,cents,UID,10031);
+        Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
+        CheckInUser user = new CheckInUser(latitude,longitude,(int)hours,(int)mins,locationcode,checkinkey);  // construct the CheckInUser object
+        Map<String, Object> userMap = user.toMap();                    //call its toMap method
+
+
+        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+        childUpdates.put("/CheckInKeys/"+locationcode+"/"+checkinkey, checkInDetailsMap);
+        childUpdates.put("/CheckInUsers/"+UID,userMap);
+        database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
+
+        //Put in checkin information into phone local storage
+        CheckInHelperDB dbHelper = new CheckInHelperDB(this);
+        dbHelper.updateInfo(UID,latitude,longitude,currenthour,currentmin,currenthour,currentmin);
+        Intent servIntent = new Intent(this,LocationService.class);     //start the LocationService
+        this.startService(servIntent);
+
+        Toast.makeText(this,"Changes Saved",Toast.LENGTH_SHORT).show();
+
+    }
+
+
+    private void scheduleNotification(Notification notification, int delay, int unique) {
+
+        Intent notificationIntent = new Intent(this, NotificationPublisher.class);   //send intent to NotificationPublisher class
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);  //attach Notification ID
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification); //and Notification with the intent
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, unique, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT); //setup the broadcase with the pending intent
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);       //setup an AlarmService
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+    }
+
+    //construct the notification that allows the user to navigate back to his car
+    private Notification getAlertNotification(int mins) {
+
+        Intent navigate = new Intent(this, HomeScreenActivity.class);
+        navigate.putExtra("startedfrom","notification");
+        navigate.putExtra("sendstatus",true);
+        navigate.putExtra("userid",UID);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, navigate, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Navigate to Car", pIntent).build();
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.logowhite);
+        builder.setColor(ContextCompat.getColor(this, R.color.tab_background_unselected));
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Parking Ticket expires in "+Integer.toString(mins)+"min !");
+        builder.addAction(accept);
+        builder.setAutoCancel(true);
+        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(uri);
+
+        return builder.build();
+    }
+
+    //construct notification asking users to inform others
+    private Notification getInformNotification(int mins) {
+
+        Intent serviceintent = new Intent(this,DirectionService.class);
+        serviceintent.putExtra("started_from","checkin");
+        PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
+        NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
+        Intent buttonIntent = new Intent(getApplicationContext(), CancelNotification.class);
+        buttonIntent.putExtra("notificationId",23);
+        PendingIntent btPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, buttonIntent,0);
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", btPendingIntent).build();
+
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.drawable.logowhite);
+        builder.setColor(ContextCompat.getColor(this, R.color.tab_background_unselected));
+        builder.setContentTitle("SpotPark");
+        builder.setContentText("Inform other users that you're leaving in about "+Integer.toString(mins)+"mins ?");
+        builder.addAction(accept);
+        builder.addAction(cancel);
+        builder.setAutoCancel(true);
+        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(uri);
+
+
+        return builder.build();
+    }
+
+    //function that calculates time difference between two times in milliseconds
+    private double getDelay(double checkinhour,double checkinmin,double checkouthour,double checkoutmin){
+        double comins;
+        double cimins;
+        double mindelay=0.;
+        cimins = checkinhour*60 + checkinmin;
+        comins = checkouthour*60 + checkoutmin;
+        if(comins>=cimins){
+            mindelay = comins - cimins;
+        }
+        if(comins<cimins){
+            mindelay = (24*60-cimins)+comins;
+        }
+        return (mindelay*60*1000);
+    }
+
+    private Double toDouble(String var){                                   //convert String to Double
+        try{
+            Double i = Double.parseDouble(var.trim());
+            return i;
+        }
+
+        catch (NumberFormatException nfe){
+            inputerror = true;
+            return 12345.;
+        }
+
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+        //Do nothing
+        Log.d(TAG,"negative click");
+    }
+
 
     //define the ChildEventListener for Delete CheckIn function
     ChildEventListener listener1 = new ChildEventListener() {
@@ -392,6 +723,9 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         public void onDataChange(DataSnapshot dataSnapshot) {
             if(!dataSnapshot.exists()){
                 Toast.makeText(getApplicationContext(),"There is no active CheckIn",Toast.LENGTH_SHORT).show();
+            }
+            else{
+                deletedialog();
             }
         }
 

@@ -123,7 +123,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
 
         }
 
-        public void deletedialog() {   //show a confirmation dialog before deleting the spot
+        private void deletedialog() {   //show a confirmation dialog before deleting the spot
             Log.d(TAG, "entered deletedialog");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setMessage("Are you sure you want to delete this spot?");
@@ -144,7 +144,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
             dialog.show();
         }
 
-        public void editdialog() {   //dynamically build an alert dialog
+        private void editdialog() {   //dynamically build an alert dialog
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(activity);
             LinearLayout layout = new LinearLayout(activity);
             LinearLayout.LayoutParams parms = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -183,7 +183,7 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
 
 
 
-        public void deletedata() {
+        private void deletedata() {
             Log.d(TAG,"deletedialog"+ favoriteList.get(getAdapterPosition()).key);
             database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map

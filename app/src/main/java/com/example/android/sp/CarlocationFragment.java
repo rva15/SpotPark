@@ -1,5 +1,6 @@
 package com.example.android.sp;
 //All imports
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -269,6 +271,33 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     //-----------------------------Helper functions----------------------------//
 
+    private void informaction(){
+        informbutton.setVisibility(View.GONE);
+        Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
+        servIntent.putExtra("started_from", "navigation");
+        this.getActivity().startService(servIntent);
+        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+        homeScreenActivity.refreshMainAdapter();
+    }
+
+    private void confirminform() {   //show a confirmation dialog before deleting the spot
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("This will send other app users a notification when you are near the car. You will be rewarded 2 more keys.");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                informaction();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
     private void updateUI() {
 
         latitude = mCurrentLocation.getLatitude();       //get the latitude
@@ -335,6 +364,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             coutmins  = user.getcoutmins();
             latlngcode = user.getlatlngcode();
             checkinkey = user.getkey();
+            // pass information to home screen to make edit checkin active
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.setCheckinkey(checkinkey);
+            homeScreenActivity.setLatitude(carlatitude);
+            homeScreenActivity.setLongitude(carlongitude);
+            homeScreenActivity.setLatlngcode(latlngcode);
             timeview.setText(gettime(couthours,coutmins));
             drawroute(carlatitude,carlongitude);
             checkInformed();
@@ -367,6 +402,8 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
             Integer minstoleave =  checkInDetails.getminstoleave();
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.setRate(checkInDetails.getdollars(),checkInDetails.getcents()); //set default rate for edit checkins
             Log.d(TAG,"mins to leave "+Integer.toString(minstoleave));
             if(minstoleave!=10031){
                 informbutton.setVisibility(View.GONE);
@@ -399,6 +436,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
         }
     };
+
 
     private String gettime(int hours,int mins){
         if(hours==123 || mins==123){
@@ -436,12 +474,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     public void onClick(View v) {
         if(v.getId()==R.id.informbutton) {
             Log.d(TAG, "clicked inform");
-            informbutton.setVisibility(View.GONE);
-            Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
-            servIntent.putExtra("started_from", "navigation");
-            this.getActivity().startService(servIntent);
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-            homeScreenActivity.refreshMainAdapter();
+            confirminform();
         }
         if(v.getId()==R.id.recenter){
             recenter.setVisibility(View.GONE);
