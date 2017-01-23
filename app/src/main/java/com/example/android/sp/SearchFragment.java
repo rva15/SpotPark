@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.media.Image;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -52,6 +53,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,9 +96,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private boolean isReported = false,isAutoMode=true,searchStarted=false,isComplaint=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private Button button3,button2;
+    private Button button3,button2,book;
     private ParkWhizSpots parkWhizSpots;
     private LinearLayout legend;
+    private ImageView roundsearch;
 
     //--Google Map and Firebase variables
     private GoogleMap searchmap;
@@ -231,6 +234,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         legend.setVisibility(View.GONE);
         complain = (TextView)view.findViewById(R.id.complain);
         complain.setOnClickListener(this);
+        roundsearch = (ImageView) view.findViewById(R.id.roundsearch);
+        roundsearch.setOnClickListener(this);
+        book = (Button) view.findViewById(R.id.book);
+        book.setOnClickListener(this);
 
         IconGenerator iconFactory = new IconGenerator(getContext());   //Create this marker for the legend
         iconFactory.setStyle(IconGenerator.STYLE_PURPLE);
@@ -335,6 +342,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
 
+        if(v.getId()==R.id.roundsearch){
+            showSearchDialog();
+        }
+
         if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
             double lat = currentmarker.latitude;
             double lon = currentmarker.longitude;
@@ -376,12 +387,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         if(v.getId()==R.id.recenter){
             // animate camera back to user's location
             recenter.setVisibility(View.GONE);
-            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15));
             isAutoMode=true;
             Log.d(TAG,"recenter");
         }
         if(v.getId()==R.id.startsearch){
             //check number of keys
+
             database = FirebaseDatabase.getInstance().getReference();
             database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -391,6 +403,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         dataSnapshot.getRef().setValue(keys-1);
                         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
                         homeScreenActivity.refreshMainAdapter();
+                        roundsearch.setVisibility(View.VISIBLE);
                         startSearch();
                     }
                     else{
@@ -415,6 +428,16 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
         }
 
+        if(v.getId()==R.id.book){
+            //send intent to web browser along with spot's url
+            Map PWSpotlinks = parkWhizSpots.getParkWhizlinks();
+            String url = (String) PWSpotlinks.get(currentmarker);
+            Log.d(TAG,"pwurl is "+url);
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        }
+
 
     }
 
@@ -430,13 +453,36 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             registerComplaint(notav,nospace,notfree);           //register user's complaint
             Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
         }
+        if(requestCode==4){
+            Bundle bundle = data.getExtras();
+            Calendar startcalendar = (Calendar)bundle.get("startcalendar");
+            Calendar endcalendar = (Calendar)bundle.get("endcalendar");
+            resetParkWhiz(startcalendar,endcalendar);
+        }
+    }
+
+    private void resetParkWhiz(Calendar start,Calendar end){
+        if(parkWhizSpots!=null){
+            parkWhizSpots.removeParkWhizspots();
+        }
+        parkWhizSpots = new ParkWhizSpots(latitude,longitude,start,end,searchmap,getContext()); //send a single call to ParkWhiz API
+        parkWhizSpots.getParkWhizspots();
+
+    }
+
+    private void showSearchDialog(){
+        // Create an instance of the dialog fragment and show it
+        Log.d(TAG,"showing dialog");
+        DialogFragment dialog = new SearchTimeDialog();
+        dialog.setTargetFragment(SearchFragment.this,4);       //set target fragment to this fragment
+        dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
     }
 
     private void startSearch(){
         button3.setVisibility(View.GONE);
         legend.setVisibility(View.VISIBLE);
         searchStarted=true;
-        parkWhizSpots = new ParkWhizSpots(latitude,longitude,searchmap,getContext()); //send a single call to ParkWhiz API
+        parkWhizSpots = new ParkWhizSpots(latitude,longitude,null,null,searchmap,getContext()); //send a single call to ParkWhiz API
         parkWhizSpots.getParkWhizspots();
     }
 
@@ -640,7 +686,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));  //set marker at current location
         if(isAutoMode) {
-            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
+            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15)); //zoom on the location
         }
 
         // call the spot finder algorithm
@@ -710,7 +756,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Map Desc  =  finder.getDesc();
         Map PWSpotnames = parkWhizSpots.getPWSpotnames();
         if(Cats.get(currentmarker)!=null){    //the marker belongs to a reported spot
+            book.setVisibility(View.GONE);
             button2.setVisibility(View.VISIBLE);
+            complain.setVisibility(View.VISIBLE);
             isReported=true;
             heading.setText("Reporter's Description");
             if((boolean)Cats.get(currentmarker)==true){
@@ -733,7 +781,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
         if(Keys.get(currentmarker)!=null) {         //marker belongs to a checkin spot
+            book.setVisibility(View.GONE);
             button2.setVisibility(View.VISIBLE);
+            complain.setVisibility(View.VISIBLE);
             isReported=false;
             key = (String) Keys.get(currentmarker);
             int time = (int) Times.get(currentmarker);
@@ -751,6 +801,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
         if(PWSpotnames.get(currentmarker)!=null){  //marker belongs to ParkWhiz spot
+            book.setVisibility(View.VISIBLE);
+            complain.setVisibility(View.GONE);
             button2.setVisibility(View.GONE);
             heading.setText("Parking Lot Name");
             category.setText("ParkWhiz suggested parking spot");

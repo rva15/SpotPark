@@ -65,6 +65,16 @@
 
             </LinearLayout>
 
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:id="@+id/roundsearch"
+                android:visibility="gone"
+                android:layout_marginBottom="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_gravity="bottom|right"
+                android:src="@drawable/roundsearch"/>
+
         </FrameLayout>
 
             <FrameLayout
@@ -230,6 +240,15 @@
                         android:layout_height="0dp"
                         android:layout_weight="1"
                         android:text="I Parked Here"/>
+
+                    <Button
+                        android:id="@+id/book"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:text="Book"/>
+
+
 
                 </LinearLayout>
 
