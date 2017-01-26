@@ -76,175 +76,68 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="40dp">
-
-                <LinearLayout
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:layout_width="0px"
-                    android:layout_height="0px"/>
+                android:layout_marginTop="80dp">
 
 
-                <EditText
-                    android:id="@+id/username"
-                    android:nextFocusUp="@id/username"
-                    android:nextFocusLeft="@id/username"
+                <FrameLayout
+                    android:id="@+id/FrameLayout1"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:textColor="@color/white"
-                    android:hint="@string/email"
-                    />
+                    android:layout_height="wrap_content" >
 
-                <EditText
-                    android:id="@+id/password"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:inputType="textPassword"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:textColor="@color/white"
-                    android:hint="@string/password"
-                    />
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp">
-
-
-                    <Button
-                        android:id="@+id/login"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="5dp"
-                        android:layout_height="wrap_content"
-                        android:onClick="login"
-                        android:textColor="@color/black"
-                        android:background="#E8E8E8"
-                        android:text="@string/login_button_text"
+                    <com.facebook.login.widget.LoginButton
+                        android:id="@+id/fblogin_button"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:visibility="gone"
                         />
 
-                    <Button
-                        android:id="@+id/account"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="5dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_height="wrap_content"
-                        android:onClick="showSignupDialog"
-                        android:textColor="@color/black"
-                        android:background="#E8E8E8"
-                        android:text="@string/signup_button_text"
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="80dp"
+                        android:id="@+id/fblogin"
+                        android:layout_marginBottom="32dp"
+                        android:layout_gravity="center_horizontal"
+                        android:src="@drawable/loginfb"/>
+
+                </FrameLayout>
+
+
+
+                <FrameLayout
+                    android:id="@+id/FrameLayout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" >
+
+                    <com.google.android.gms.common.SignInButton
+                        android:id="@+id/google_login"
+                        android:layout_width="match_parent"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_height="48dp"
                         />
 
-                </LinearLayout>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="80dp"
+                        android:id="@+id/googlelogin"
+                        android:layout_marginBottom="32dp"
+                        android:layout_gravity="center_horizontal"
+                        android:src="@drawable/logingoogle"/>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/forgot_pass_text"
-                    android:layout_marginTop="16dp"/>
-
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_weight="5"
-                        android:layout_gravity="center"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="10dp"
-                        android:background="@color/white"/>
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="16dp"
-                        android:gravity="center"
-                        android:textColor="@color/white"
-                        android:text="OR"/>
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_weight="5"
-                        android:layout_height="1dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_gravity="center"
-                        android:background="@color/white"/>
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="16dp">
-
-                    <FrameLayout
-                        android:id="@+id/FrameLayout1"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content" >
-
-                        <com.facebook.login.widget.LoginButton
-                            android:id="@+id/fblogin_button"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:layout_marginStart="20dp"
-                            android:visibility="gone"
-                            />
-
-                        <ImageView
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:id="@+id/fblogin"
-                            android:layout_marginStart="20dp"
-                            android:layout_marginEnd="8dp"
-                            android:src="@drawable/loginfb"/>
-
-                    </FrameLayout>
+                </FrameLayout>
 
 
-
-                    <FrameLayout
-                        android:id="@+id/FrameLayout2"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="wrap_content" >
-
-                        <com.google.android.gms.common.SignInButton
-                            android:id="@+id/google_login"
-                            android:layout_width="match_parent"
-                            android:layout_marginStart="8dp"
-                            android:layout_marginEnd="20dp"
-                            android:layout_height="48dp"
-
-                            />
-
-
-                    </FrameLayout>
-
-
-                </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
 
-
-
     </LinearLayout>
+
+
+
+
 
 
 </ScrollView>

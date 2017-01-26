@@ -62,26 +62,25 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener,SignupDialog.SignupDialogListener
-{
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener {
     //Initializing all objects and variables
 
     // -- General Utilities --
-    private EditText username,user,pass,fn,ln,password;
+    private EditText username, user, pass, fn, ln, password;
     private static final String TAG = "debugger";
-    private final static String UID="";
-    private String userid="";
+    private final static String UID = "";
+    private String userid = "";
     private String logoutFlag = "0";
-    private String firstname="",email="",lastname="";
+    private String firstname = "", email = "", lastname = "";
     private String logoutFlagString = "logoutflag";
-    private int count=0;
-    private boolean isCheckedIn=false;
+    private int count = 0;
+    private boolean isCheckedIn = false;
     private Bitmap profilepic;
 
     // -- Firebase variables --
-    private FirebaseAuth mAuthstart,mAuthfb,mAuthlogin,mAuthsignup, mAuthgoogle;
+    private FirebaseAuth mAuthstart, mAuthfb, mAuthlogin, mAuthsignup, mAuthgoogle;
     private DatabaseReference database;
-    private FirebaseAuth.AuthStateListener mAuthListener,newAccountListener;
+    private FirebaseAuth.AuthStateListener mAuthListener, newAccountListener;
 
     // -- Fb login variables --
     private CallbackManager callbackManager;
@@ -92,13 +91,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private Uri googlepic;
 
 
-
     // -------------  Activity LifeCycle Functions -------------------------------//
 
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);                 //call onCreate method of super class
         FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
@@ -134,30 +131,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         fblogin_button.setVisibility(View.GONE);
         ImageView fblogin = (ImageView) findViewById(R.id.fblogin);        //load the fblogin button image
         fblogin.setOnClickListener(this);                                  //set onClick listener on it
-        fblogin_button.setReadPermissions(Arrays.asList("public_profile","email")); //setup facebook permissions
+        fblogin_button.setReadPermissions(Arrays.asList("public_profile", "email")); //setup facebook permissions
         //Add the callback manager to facebook's login button
-        fblogin_button.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
-        {
+        fblogin_button.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
-            public void onSuccess(LoginResult loginResult)
-            {
+            public void onSuccess(LoginResult loginResult) {
                 //on successfull login we pass fb access token to this function
                 handleFacebookAccessToken(loginResult.getAccessToken());
             }
 
             @Override
-            public void onCancel()
-            {
+            public void onCancel() {
                 Log.d(TAG, "user cancelled fb login");
             }
 
             @Override
-            public void onError(FacebookException exception)
-            {
+            public void onError(FacebookException exception) {
                 Log.d(TAG, "Unable to login");
             }
         });
-
 
 
         // Configure google sign-in to request the user's ID, email address, and basic
@@ -170,15 +162,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 .enableAutoManage(this /* LoginActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        SignInButton signInButton = (SignInButton)findViewById(R.id.google_login);
+        SignInButton signInButton = (SignInButton) findViewById(R.id.google_login);
         setGooglePlusButtonText(signInButton);                                 //modify the text on google sign in button
-        signInButton.setOnClickListener(this);
+        signInButton.setVisibility(View.GONE);
+        ImageView googlelogin = (ImageView) findViewById(R.id.googlelogin);
+        googlelogin.setOnClickListener(this);
 
 
         // Setup email login
-        username = (EditText) findViewById(R.id.username);                    //find username textbox
-        username.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);       //turn off its auto correct
-        password = (EditText) findViewById(R.id.password);                    //find password textbox
+        //username = (EditText) findViewById(R.id.username);                    //find username textbox
+        //username.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);       //turn off its auto correct
+        //password = (EditText) findViewById(R.id.password);                    //find password textbox
 
 
         //Create another listener for signups
@@ -191,9 +185,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     Log.d(TAG, "New account created for id " + user.getUid());
                     checkStatus(user.getUid());
                     checkExistance(user.getUid());    // check if this user already has an account
-
-
-
                 } else {
                     // account creation unsuccessful
                     Log.d(TAG, "account not created");
@@ -203,13 +194,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         //logout current user on receiving a signal from CheckInActivity
         Intent intent = getIntent();
-        if(intent.getExtras() != null && intent.getStringExtra(logoutFlagString) != null){
+        if (intent.getExtras() != null && intent.getStringExtra(logoutFlagString) != null) {
             logoutFlag = intent.getStringExtra(logoutFlagString);
-            if(logoutFlag.equals("1")) {
+            if (logoutFlag.equals("1")) {
                 LoginManager.getInstance().logOut();  //logout Facebook
                 FirebaseAuth.getInstance().signOut(); //logout Firebase
             }
-            logoutFlag="0";
+            logoutFlag = "0";
         }
 
         //Setup initial state of progress bar
@@ -229,8 +220,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onStart();
 
     }
+
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
     }
 
@@ -239,13 +231,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-        Toast.makeText(this,"Connectivity problems!",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Connectivity problems!", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
 
-
     //------------------- Utility Functions ----------------------------------//
+
+
 
     //-----------This function checks if the user has an active CheckIn ---//
     private void checkStatus(String UID){
@@ -253,7 +246,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         userid = UID;
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
 
-        ValueEventListener valuelistener = new ValueEventListener() {
+        final ValueEventListener valuelistener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Get Post object and use the values to update the UI
@@ -261,14 +254,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     if (dataSnapshot.exists()) {
                         Log.d(TAG, "CheckIn exists");
                         isCheckedIn=true;
+                        goAhead(userid);     //Proceed to HomeScreenActivity
 
                     }
                     else if(!dataSnapshot.exists()){
                         Log.d(TAG, "CheckIn does not exist");
                         isCheckedIn=false;
+                        goAhead(userid);     //Proceed to HomeScreenActivity
 
                     }
-                    goAhead(userid);     //Proceed to HomeScreenActivity
+
                 }
                 count=count+1;
             }
@@ -286,7 +281,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     //go Ahead to HomeScreenActivity
     private void goAhead(String ID){
-        checkStatus(ID);
+        Log.d(TAG,"going ahead");
         mAuthstart.removeAuthStateListener(mAuthListener);
         mAuthfb.removeAuthStateListener(newAccountListener);
         mAuthlogin.removeAuthStateListener(mAuthListener);
@@ -353,7 +348,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
                 else{
                     Log.d(TAG,"account already exists");
-                    goAhead(userid);
+                    checkStatus(userid);
                 }
             }
 
@@ -367,7 +362,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.google_login:
+            case R.id.googlelogin:
                 googlelogin();
                 break;
             case R.id.fblogin:
@@ -388,7 +383,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
 
-    public void showSignupDialog(View v) {
+    /*public void showSignupDialog(View v) {
         // Create an instance of the Signup Dialog fragment and show it
         DialogFragment dialog = new SignupDialog();
         dialog.show(getSupportFragmentManager(),"Signup fragment");
@@ -422,6 +417,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //create a listener for signup process
         profilepic = BitmapFactory.decodeResource(getResources(),R.drawable.user); //default profile pic
         mAuthsignup.addAuthStateListener(newAccountListener);        //add listener
+        Log.d(TAG,"email is "+user.getText().toString());
+        Log.d(TAG,"password is "+pass.getText().toString());
         mAuthsignup.createUserWithEmailAndPassword(user.getText().toString(), pass.getText().toString()) //create the user
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -434,6 +431,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             Toast.makeText(LoginActivity.this, "Unable to create the account!",
                                     Toast.LENGTH_LONG).show();
+                            Log.d(TAG,"unable to create "+task.getException());
                         }
                     }
                 });
@@ -446,7 +444,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //This function is triggered when you press the login button
     public void login(View view) {
 
-        if(!username.getText().toString().contains(".com") || !username.getText().toString().contains("@"))
+        if(!username.getText().toString().contains("@"))
         {
             Toast.makeText(this,"Invalid email !",Toast.LENGTH_SHORT).show();     //check for validity of email id
             return;
@@ -473,7 +471,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                 });
 
-    }
+    }*/
 
     //------------------------------------Facebook Login ------------------------------------//
 

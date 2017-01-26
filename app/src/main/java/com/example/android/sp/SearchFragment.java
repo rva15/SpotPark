@@ -96,10 +96,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private boolean isReported = false,isAutoMode=true,searchStarted=false,isComplaint=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private Button button3,button2,book;
+    private Button button2,book;
     private ParkWhizSpots parkWhizSpots;
     private LinearLayout legend;
-    private ImageView roundsearch;
+    private ImageView roundsearch,startsearch;
 
     //--Google Map and Firebase variables
     private GoogleMap searchmap;
@@ -224,8 +224,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         button2.setOnClickListener(this);
         Button button4 = (Button) view.findViewById(R.id.drawroute);
         button4.setOnClickListener(this);
-        button3 = (Button) view.findViewById(R.id.startsearch);
-        button3.setOnClickListener(this);
+        startsearch = (ImageView) view.findViewById(R.id.startsearch);
+        startsearch.setOnClickListener(this);
         gMapView.setOnClickListener(this);
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
         recenter.setVisibility(View.GONE);
@@ -479,7 +479,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
     private void startSearch(){
-        button3.setVisibility(View.GONE);
+        startsearch.setVisibility(View.GONE);
         legend.setVisibility(View.VISIBLE);
         searchStarted=true;
         parkWhizSpots = new ParkWhizSpots(latitude,longitude,null,null,searchmap,getContext()); //send a single call to ParkWhiz API
