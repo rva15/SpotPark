@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -195,6 +196,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         // be available.
         Toast.makeText(this, "Connectivity problems!", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)  {
+        if (keyCode == KeyEvent.KEYCODE_BACK ) {
+            // do something on back.
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
 
@@ -415,7 +426,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Log.d(TAG, "Adding new user");
         database = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
         String key = database.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,2,0,0,0); //make a new user object
+        UserDetails user = new UserDetails(firstname,lastname,email,4,0,0,0); //make a new user object
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);

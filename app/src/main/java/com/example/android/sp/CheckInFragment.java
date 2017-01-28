@@ -1,10 +1,15 @@
 package com.example.android.sp;
 // All imports
 import android.*;
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
@@ -282,7 +287,20 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 ContextCompat.checkSelfPermission(this.getActivity(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ){
             if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(),
                     android.Manifest.permission.ACCESS_FINE_LOCATION)){
-                //somehow display message to user
+                //display message to user
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+                alertBuilder.setCancelable(true);
+                alertBuilder.setTitle("Permission necessary");
+                alertBuilder.setMessage("Permission to access your location is necessary");
+                alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 64);
+                    }
+                });
+                AlertDialog alert = alertBuilder.create();
+                alert.show();
+
             }
             else{
                 ActivityCompat.requestPermissions(this.getActivity(),

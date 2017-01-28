@@ -2,6 +2,9 @@ package com.example.android.sp;
 //All imports
 import android.*;
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
@@ -205,6 +208,18 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
             if (ActivityCompat.shouldShowRequestPermissionRationale(this.getActivity(),
                     Manifest.permission.ACCESS_FINE_LOCATION)){
                 //somehow display message to user
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+                alertBuilder.setCancelable(true);
+                alertBuilder.setTitle("Permission necessary");
+                alertBuilder.setMessage("Permission to access your location is necessary");
+                alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 63);
+                    }
+                });
+                AlertDialog alert = alertBuilder.create();
+                alert.show();
             }
             else{
                 ActivityCompat.requestPermissions(this.getActivity(),
