@@ -1,5 +1,7 @@
 package com.example.android.sp;
 //All imports
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
@@ -9,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,15 +32,19 @@ public class WalkTime {
     private DatabaseReference database;
     private String latlngcode="",key="",UID="";
     private int totalmins=0,count=0;
+    private Calendar calendar;
+    private Context context;
 
     public WalkTime(){} //empty constructor
 
-    public WalkTime(double carlatitude,double carlongitude,double userlatitude,double userlongitude,String UID){
+    public WalkTime(double carlatitude, double carlongitude, double userlatitude, double userlongitude, String UID, Context context){
         this.carlatitude = carlatitude;
         this.carlongitude = carlongitude;
         this.userlatitude = userlatitude;
         this.userlongitude = userlongitude;
         this.UID  = UID;
+        this.context=context;
+
     }
 
     public void getWalkTime(){
@@ -147,12 +155,12 @@ public class WalkTime {
             return routes;
         }
 
-        public void updatedata(){
+        private void updatedata(){
             database = FirebaseDatabase.getInstance().getReference();
             updatewalktime();
         }
 
-        public void updatewalktime() {
+        private void updatewalktime() {
             ValueEventListener valuelistener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -163,10 +171,26 @@ public class WalkTime {
                             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
                             latlngcode = user.getlatlngcode();
                             key = user.getkey();
+                            calendar = Calendar.getInstance();
+                            int updatehour = calendar.get(Calendar.HOUR_OF_DAY);
+                            int updatemin  = calendar.get(Calendar.MINUTE);
+                            SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
+                            String strDate = mdformat.format(calendar.getTime());
 
                             Map<String, Object> childUpdates = new HashMap<>();
                             childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/minstoleave", totalmins); //update the total mins required
+                            childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/updatedate",strDate);     //put today's date and time
+                            childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/updatehour",updatehour);
+                            childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key+"/updatemin",updatemin);
                             database.updateChildren(childUpdates);
+                            if(totalmins==0 || totalmins==1){
+                                if(context!=null) {
+                                    context.stopService(new Intent(context, DirectionService.class));
+                                }
+                                else{
+                                    Log.d(TAG,"context is null");
+                                }
+                            }
 
 
                         } else if (!dataSnapshot.exists()) {

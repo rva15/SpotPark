@@ -3,6 +3,7 @@
 package com.example.android.sp;
 //all imports
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -59,6 +61,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 
 
@@ -66,7 +69,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //Initializing all objects and variables
 
     // -- General Utilities --
-    private EditText username, user, pass, fn, ln, password;
+    private EditText username, pass, fn, ln, password;
     private static final String TAG = "debugger";
     private final static String UID = "";
     private String userid = "";
@@ -81,6 +84,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private FirebaseAuth mAuthstart, mAuthfb, mAuthlogin, mAuthsignup, mAuthgoogle;
     private DatabaseReference database;
     private FirebaseAuth.AuthStateListener mAuthListener, newAccountListener;
+    private FirebaseUser user;
 
     // -- Fb login variables --
     private CallbackManager callbackManager;
@@ -102,28 +106,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_login);            //setup the content view for the loginActivity
         Firebase.setAndroidContext(this);                   //set Firebase context
 
-        //create an auth state listener allows already logged in users to proceed
-        mAuthstart = FirebaseAuth.getInstance();            //get current state of login
-        mAuthfb = FirebaseAuth.getInstance();            //get Firebase Instances
-        mAuthgoogle = FirebaseAuth.getInstance();
-        mAuthsignup = FirebaseAuth.getInstance();
-        mAuthlogin = FirebaseAuth.getInstance();
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    //if someone is already signed in, move on to main activity
-                    Log.d(TAG, "UID of signed in user " + user.getUid());
-                    checkStatus(user.getUid());   //See if user has active CheckIn and then proceed
-                } else {
-                    // there is no one signed in
-                    Log.d(TAG, "no one signed in");
-                }
-
-            }
-        };
-        mAuthstart.addAuthStateListener(mAuthListener); //add the above listener to the firebaseAuth object
 
         // Configure facebook login material
         callbackManager = CallbackManager.Factory.create();                //callbackManager for facebook login
@@ -175,38 +157,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //password = (EditText) findViewById(R.id.password);                    //find password textbox
 
 
-        //Create another listener for signups
-        newAccountListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    //account created, add user to firebase
-                    Log.d(TAG, "New account created for id " + user.getUid());
-                    checkStatus(user.getUid());
-                    checkExistance(user.getUid());    // check if this user already has an account
-                } else {
-                    // account creation unsuccessful
-                    Log.d(TAG, "account not created");
-                }
-            }
-        };
 
-        //logout current user on receiving a signal from CheckInActivity
-        Intent intent = getIntent();
-        if (intent.getExtras() != null && intent.getStringExtra(logoutFlagString) != null) {
-            logoutFlag = intent.getStringExtra(logoutFlagString);
-            if (logoutFlag.equals("1")) {
-                LoginManager.getInstance().logOut();  //logout Facebook
-                FirebaseAuth.getInstance().signOut(); //logout Firebase
-            }
-            logoutFlag = "0";
-        }
+
+
 
         //Setup initial state of progress bar
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+
+        //Async some initialization tasks
+        new ActivityStartBackground().execute();
+
     }
 
 
@@ -239,60 +201,207 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //------------------- Utility Functions ----------------------------------//
 
 
+    private class ActivityStartBackground extends AsyncTask<String,Void,String> {
 
-    //-----------This function checks if the user has an active CheckIn ---//
-    private void checkStatus(String UID){
-        showLoading();            //display the progress bar
-        userid = UID;
-        database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+        @Override
+        protected String doInBackground(String... UID) {
+            mAuthstart = FirebaseAuth.getInstance();            //get current state of login
+            mAuthfb = FirebaseAuth.getInstance();            //get Firebase Instances
+            mAuthgoogle = FirebaseAuth.getInstance();
+            mAuthsignup = FirebaseAuth.getInstance();
+            mAuthlogin = FirebaseAuth.getInstance();
 
-        final ValueEventListener valuelistener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get Post object and use the values to update the UI
-                if(count==0) {
-                    if (dataSnapshot.exists()) {
-                        Log.d(TAG, "CheckIn exists");
-                        isCheckedIn=true;
-                        goAhead(userid);     //Proceed to HomeScreenActivity
 
+
+            //Create another listener for signups
+            newAccountListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        //account created, add user to firebase
+                        Log.d(TAG, "New account created for id " + user.getUid());
+                        new CheckExistanceBackground().execute(user.getUid());    //Check if this account already exists
+                    } else {
+                        // account creation unsuccessful
+                        Log.d(TAG, "account not created");
                     }
-                    else if(!dataSnapshot.exists()){
-                        Log.d(TAG, "CheckIn does not exist");
-                        isCheckedIn=false;
-                        goAhead(userid);     //Proceed to HomeScreenActivity
+                }
+            };
 
+            //logout current user on receiving a signal from CheckInActivity
+            Intent intent = getIntent();
+            if (intent.getExtras() != null && intent.getStringExtra(logoutFlagString) != null) {
+                logoutFlag = intent.getStringExtra(logoutFlagString);
+                if (logoutFlag.equals("1")) {
+                    LoginManager.getInstance().logOut();  //logout Facebook
+                    FirebaseAuth.getInstance().signOut(); //logout Firebase
+                }
+                logoutFlag = "0";
+            }
+
+            return "";
+        }
+
+        @Override
+        protected void onPreExecute(){
+            showLoading();             //show the progress circle
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            new FirstAuthBackground().execute();      //check if user is logged in
+        }
+    }
+
+    private class CheckExistanceBackground extends AsyncTask<String,Void,String> {
+
+        @Override
+        protected String doInBackground(String... UID) {
+            userid = UID[0];
+            database = FirebaseDatabase.getInstance().getReference();  //check User Information database to see if the user exists
+            database.child("UserInformation").child(userid).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(!dataSnapshot.exists()){
+                        addNewUser(userid);       //if user is new add him to database
                     }
+                    else{
+                        Log.d(TAG,"account already exists");
+                        new CheckStatusBackground().execute(userid); //if not,see if there is active checkIn
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
                 }
-                count=count+1;
-            }
+            });
+            return null;
+        }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+        @Override
+        protected void onPreExecute(){
 
-                //Do nothing
+        }
 
-            }
-        };
-        database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener); //attach listener
+        @Override
+        protected void onPostExecute(String result) {
 
+        }
     }
 
-    //go Ahead to HomeScreenActivity
-    private void goAhead(String ID){
-        Log.d(TAG,"going ahead");
-        mAuthstart.removeAuthStateListener(mAuthListener);
-        mAuthfb.removeAuthStateListener(newAccountListener);
-        mAuthlogin.removeAuthStateListener(mAuthListener);
-        mAuthsignup.removeAuthStateListener(newAccountListener);
-        mAuthgoogle.removeAuthStateListener(newAccountListener);
-        Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
-        intent.putExtra("userid", ID);
-        intent.putExtra("sendstatus",isCheckedIn);
-        intent.putExtra("startedfrom","login");
-        startActivity(intent);
+
+
+    private class CheckStatusBackground extends AsyncTask<String,Void,String> {
+
+        @Override
+        protected String doInBackground(String... UID) {
+            userid = UID[0];
+            database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+
+            final ValueEventListener valuelistener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Get Post object and use the values to update the UI
+                    if(count==0) {
+                        if (dataSnapshot.exists()) {
+                            Log.d(TAG, "CheckIn exists");
+                            isCheckedIn=true;
+                            Log.d(TAG,"going ahead");
+                            mAuthstart.removeAuthStateListener(mAuthListener);
+                            mAuthfb.removeAuthStateListener(newAccountListener);
+                            mAuthlogin.removeAuthStateListener(mAuthListener);
+                            mAuthsignup.removeAuthStateListener(newAccountListener);
+                            mAuthgoogle.removeAuthStateListener(newAccountListener);
+                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
+                            intent.putExtra("userid", userid);
+                            intent.putExtra("sendstatus",isCheckedIn);
+                            intent.putExtra("startedfrom","login");
+                            startActivity(intent);
+
+                        }
+                        else if(!dataSnapshot.exists()){
+                            Log.d(TAG, "CheckIn does not exist");
+                            isCheckedIn=false;
+                            Log.d(TAG,"going ahead");
+                            mAuthstart.removeAuthStateListener(mAuthListener);
+                            mAuthfb.removeAuthStateListener(newAccountListener);
+                            mAuthlogin.removeAuthStateListener(mAuthListener);
+                            mAuthsignup.removeAuthStateListener(newAccountListener);
+                            mAuthgoogle.removeAuthStateListener(newAccountListener);
+                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
+                            intent.putExtra("userid", userid);
+                            intent.putExtra("sendstatus",isCheckedIn);
+                            intent.putExtra("startedfrom","login");
+                            startActivity(intent);
+
+                        }
+
+                    }
+                    count=count+1;
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                    //Do nothing
+
+                }
+            };
+            database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener); //attach listener
+
+            return "";
+        }
+
+        @Override
+        protected void onPreExecute(){
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+        }
     }
+
+    private class FirstAuthBackground extends AsyncTask<Void,Void,Void> {
+
+        @Override
+        protected Void doInBackground(Void... UID) {
+            mAuthListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        //if someone is already signed in, proceed to check his status
+                        Log.d(TAG, "UID of signed in user " + user.getUid());
+                        new CheckStatusBackground().execute(user.getUid());
+                    } else {
+                        // there is no one signed in
+                        Log.d(TAG, "no one signed in");
+                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                        findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
+                    }
+                }
+            };
+            mAuthstart.addAuthStateListener(mAuthListener); //add the above listener to the firebaseAuth object
+
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute(){
+
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+
+        }
+    }
+
+    //-----------This function checks if the user has an active CheckIn ---//
 
     //Display progress bar
     private void showLoading(){
@@ -335,28 +444,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             });
         }
 
-    }
-
-    //function to check if user account already exists
-    private void checkExistance(final String userid){
-        database = FirebaseDatabase.getInstance().getReference();
-        database.child("UserInformation").child(userid).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(!dataSnapshot.exists()){
-                    addNewUser(userid);
-                }
-                else{
-                    Log.d(TAG,"account already exists");
-                    checkStatus(userid);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
     }
 
     @Override

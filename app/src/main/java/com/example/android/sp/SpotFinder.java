@@ -43,9 +43,11 @@ public class SpotFinder {
     private Map searchers = new HashMap();
     private Map chintimes = new HashMap();
     private Map chinkeys = new HashMap();
+    private Map uidkey   = new HashMap();
     private SimpleDateFormat dayFormat,simpleDateFormat;
     private ArrayList<Integer> markerimage = new ArrayList<Integer>();
     private com.google.firebase.database.Query getReported;
+    private Calendar calendar;
 
 
 
@@ -110,6 +112,7 @@ public class SpotFinder {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             CheckInDetails details = dataSnapshot.getValue(CheckInDetails.class);  //retrieve a snapshot from the node and store it in CheckInDetails.class
+
             spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //get location of spot
             int time = details.getminstoleave();                                   //and the mins to leave
             int dollars = details.getdollars();
@@ -121,7 +124,7 @@ public class SpotFinder {
                 //do nothing
             }
             if(time<=2){
-
+                beServerCheckIn(details,dataSnapshot.getKey());
                 insertdata(dataSnapshot.getKey(),time,1,dollars,cents);           //insert entry in local db and make it active
                 Marker marker = (Marker) markers.get(spotplace);                  //get the marker that sits at the spotplace
                 if(marker!=null){                                           //check if marker already exists at the place
@@ -136,7 +139,9 @@ public class SpotFinder {
                 }
             }
             if(time>2 && time<=10){
+
                 if(checkStatus(dataSnapshot.getKey())){                                     //check if spot is already active
+                    beServerCheckIn(details,dataSnapshot.getKey());
                     spotplace = new LatLng(details.getlatitude(),details.getlongitude());   //store the spot's location in spotplace
                     Marker marker = (Marker) markers.get(spotplace);
                     if(marker!=null){       //then check if there is a marker at the spot
@@ -209,6 +214,7 @@ public class SpotFinder {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             String userid = dataSnapshot.getValue(String.class);
+            uidkey.put(dataSnapshot.getKey(),userid);            //map these to each other for reported server function
             getReported = database.child("ReportedTimes").child(userid).orderByKey().equalTo(dataSnapshot.getKey());
             getReported.addChildEventListener(listener4);
         }
@@ -239,6 +245,7 @@ public class SpotFinder {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
+            beServerRep(times,dataSnapshot.getKey());
             if (analyzeReported(times)) { //see if the reported spot's timings match present time and day
                 spotplace = new LatLng(times.getlatitude(),times.getlongitude());
                 Marker marker = (Marker) markers.get(spotplace);
@@ -274,7 +281,12 @@ public class SpotFinder {
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {    //currently all these functions have been left empty
-
+            ReportedTimes reportedtimes = dataSnapshot.getValue(ReportedTimes.class);
+            spotplace = new LatLng(reportedtimes.getlatitude(),reportedtimes.getlongitude());
+            Marker marker = (Marker)markers.get(spotplace);
+            if(marker!=null){
+                marker.remove();
+            }
         }
 
         @Override
@@ -361,6 +373,48 @@ public class SpotFinder {
     public Map getTimes(){return chintimes;}
     public Map getCats(){return reportcat;}
     public Map getDesc(){return reportdesc;}
+
+    private void beServerCheckIn(CheckInDetails checkInDetails,String key){
+        String updatedate = checkInDetails.getupdatedate();
+        int updatehour = checkInDetails.getupdatehour();
+        int updatemin  = checkInDetails.getupdatemin();
+        if(removeCheckIn(updatedate,updatehour,updatemin)){
+            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+            for(int k=0;k<9;k++){
+                childUpdates.put("/CheckInKeys/"+array.get(k)+"/"+key,null);
+            }
+            database.updateChildren(childUpdates);
+        }
+
+    }
+
+    private boolean removeCheckIn(String updatedate,int updatehour,int updatemin){
+        calendar = Calendar.getInstance();                    //get current time
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
+        String strDate = mdformat.format(calendar.getTime());
+        if(!strDate.equals(updatedate)){
+           return true;
+        }
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int min  = calendar.get(Calendar.MINUTE);
+        int currenttime = hour*60 + min;
+        int updatetime  = updatehour*60 + updatemin;
+        if(currenttime-updatetime>10){
+            return true;
+        }
+        return false;
+    }
+
+    private void beServerRep(ReportedTimes reportedtimes,String key){
+        if(reportedtimes.getverification()<(-1)){
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("/ReportedTimes/"+uidkey.get(key)+"/"+key,null);
+            for(int k=0;k<9;k++){
+                childUpdates.put("/ReportedDetails/"+array.get(k)+"/"+key,null);
+            }
+            database.updateChildren(childUpdates);
+        }
+    }
 
     //function to detach all listeners
     public void detachListeners(){

@@ -41,6 +41,7 @@ public class DirectionService extends android.app.Service{
     private CheckInHelperDB dbHelper;
     private Double carlat,carlon;
     private DatabaseReference database;
+    private DirectionService directionService;
 
     //---------------------------Service Lifecycle Methods---------------------------------//
 
@@ -207,7 +208,7 @@ public class DirectionService extends android.app.Service{
 
             if (count < 30) {       //send a maximum of 30 calls to the Directions API
                 Log.d(TAG,"direction service getting walktime");
-                WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID);
+                WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID,getApplicationContext());
                 walkTime.getWalkTime(); //get estimated time of walk to the car
             }
             count = count + 1;

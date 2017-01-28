@@ -369,6 +369,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
         String strDate = mdformat.format(calendar.getTime());
 
+
         // Get the parking rate in dollars and cents
         double d = toDouble(parkrate);
         if(d==12345.){
@@ -414,7 +415,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         // Proceed to make database entries
         final String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails  and CheckInUser objects
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef);
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef,strDate,(int)checkinhour,(int)checkinmin);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,(int)hours,(int)mins,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method

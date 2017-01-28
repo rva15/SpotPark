@@ -513,6 +513,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         String[] timearray = checkinTime.split(":");               //split the time into hours and mins
         double currenthour = Double.parseDouble(timearray[0]);
         double currentmin = Double.parseDouble(timearray[1]);
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
+        String strDate = mdformat.format(calendar.getTime());
 
         // Get the parking rate in dollars and cents
         double d = toDouble(parkrate);
@@ -559,7 +561,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
         // Proceed to make database entries
         //construct the CheckInDetails  and CheckInUser objects
-        CheckInDetails checkInDetails = new CheckInDetails(latitude,longitude,dollars,cents,UID,10031);
+
+        CheckInDetails checkInDetails = new CheckInDetails(latitude,longitude,dollars,cents,UID,10031,strDate,(int)currenthour,(int)currentmin);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(latitude,longitude,(int)hours,(int)mins,locationcode,checkinkey);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
