@@ -66,7 +66,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
     public static ReportFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG,"report passed id : "+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         ReportFragment fragment = new ReportFragment();
@@ -271,12 +270,10 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
             @Override
             public void onSnapshotReady(Bitmap snapshot) {
                 bitmap = snapshot;
-                Log.d(TAG,"bitmap ready");
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
                 byte[] data = baos.toByteArray();
                 showForm(data,cameracenter.latitude,cameracenter.longitude);
-                Log.d(TAG,"showform called");
             }
         };
         rpin.setVisibility(View.GONE);
@@ -297,7 +294,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
 
     private void updateUI() {
-        Log.d(TAG, "yayy location updated !!!");
         curlatitude = mCurrentLocation.getLatitude();       //get the latitude
         curlongitude = mCurrentLocation.getLongitude();     //get the longitude
         place = new LatLng(curlatitude, curlongitude);  //initiate LatLng object

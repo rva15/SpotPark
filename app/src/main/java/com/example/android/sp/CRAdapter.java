@@ -128,19 +128,16 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
         }
 
         public void deletedialog() {
-            Log.d(TAG, "entered deletedialog");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setMessage("Are you sure you want to delete this reported spot?");
             builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    Log.d(TAG, "deletedialog yes");
                     deletedata();
 
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    Log.d(TAG, "deletedialog no");
                     dialog.cancel();
                 }
             });
@@ -188,7 +185,6 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
 
 
         public void deletedata() {
-            Log.d(TAG,"deletedialog"+ crkey.get(getAdapterPosition()));
             database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
             childUpdates.put("/ReportedDetails/" + crtimes.get(getAdapterPosition()).getlatlngcode()+ "/" + crkey.get(getAdapterPosition()), null);
@@ -200,7 +196,6 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             favoriteRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Log.d(TAG,"deletedialog success");
                     notif();
                     ((HomeScreenActivity) activity).getContri();
                 }

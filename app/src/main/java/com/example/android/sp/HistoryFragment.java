@@ -96,7 +96,7 @@ public class HistoryFragment extends Fragment  {
                 if(max==0){
                     showdefault();
                 }
-                Log.d(TAG,"max is "+Integer.toString(max));
+
                 if(max>10){                                         //if number of user's checkins >10, fetch only 10
                     max = 10;
                 }
@@ -118,8 +118,6 @@ public class HistoryFragment extends Fragment  {
         public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
             if(count<(max+1)) {
                 width = mv.getWidth();
-                Log.d(TAG, "main view width " + Integer.toString(width));
-                Log.d(TAG, "download key " + dataSnapshot.getKey());
                 final HistoryPlace historyPlace = dataSnapshot.getValue(HistoryPlace.class);
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -130,7 +128,6 @@ public class HistoryFragment extends Fragment  {
                 islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
-                        Log.d(TAG, "download success");
                         Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                         Bitmap cropped = bmp;
                         if (bmp.getHeight() * 2 > width) {   //check this to avoid crash
@@ -139,10 +136,8 @@ public class HistoryFragment extends Fragment  {
                         bitmaps.add(cropped);
                         historyPlaces.add(historyPlace);
                         keys.add(dataSnapshot.getKey());
-                        Log.d(TAG, "max i is " + Integer.toString(i));
                         i = i + 1;
                         if (i == max) {
-                            Log.d(TAG, "setting adapter");
                             fetchinghistory.setVisibility(View.GONE);
                             historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID);
                             recList.setAdapter(historyAdapter);   //set the adapter
@@ -155,7 +150,6 @@ public class HistoryFragment extends Fragment  {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         // Handle any errors
-                        Log.d(TAG, "download failed");
                     }
                 });
             }
@@ -216,14 +210,12 @@ public class HistoryFragment extends Fragment  {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Handle unsuccessful uploads
-                    Log.d(TAG,"image upload failed");
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    Log.d(TAG,"image upload success");
                 }
             });
 

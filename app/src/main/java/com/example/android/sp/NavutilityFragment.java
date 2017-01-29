@@ -248,7 +248,6 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
     public void drawroute(double carlatitude,double carlongitude){
         LatLng origin = new LatLng(latitude, longitude);
         LatLng dest = new LatLng(carlatitude, carlongitude);
-        Log.d(TAG,"favoriteList "+Double.toString(carlatitude));
         navigationmap.addMarker(new MarkerOptions().position(dest).title("Car's here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         String url = getUrl(origin, dest);
         FetchUrl FetchUrl = new FetchUrl();
@@ -274,9 +273,7 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
             try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
             } catch (Exception e) {
-                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -319,11 +316,9 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
             }
 
             data = sb.toString();
-            Log.d("downloadUrl", data.toString());
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -342,17 +337,12 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
                 DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
 
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
                 e.printStackTrace();
             }
             return routes;
@@ -388,8 +378,6 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
                 lineOptions.width(10);
                 lineOptions.color(android.graphics.Color.RED);
 
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
             }
 
             // Drawing polyline in the Google Map for the i-th route
@@ -397,7 +385,6 @@ public class NavutilityFragment extends Fragment implements OnMapReadyCallback, 
                 navigationmap.addPolyline(lineOptions);
             }
             else {
-                Log.d("onPostExecute","without Polylines drawn");
             }
         }
     }

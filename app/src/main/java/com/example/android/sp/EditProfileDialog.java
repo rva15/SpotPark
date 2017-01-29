@@ -53,7 +53,6 @@ public class EditProfileDialog extends DialogFragment {
                 i.putExtra("ln", editln.getText().toString());
                 i.putExtra("email", editemail.getText().toString());
                 i.putExtra("changedp",true);
-                Log.d(TAG,"clicked dp");
                 getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                 EditProfileDialog.this.getDialog().cancel();
             }
@@ -68,7 +67,6 @@ public class EditProfileDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int id) {
 
                         String fn = editfn.getText().toString();
-                        Log.d(TAG,"fn is "+fn);
                         String ln = editln.getText().toString();
                         String email = editemail.getText().toString();
 

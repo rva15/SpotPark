@@ -40,7 +40,6 @@ public class WalkTimeParser {
                         textsec = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("duration")).get("text");
                         String[] output = textsec.split(" ");
                         mins = mins+ Integer.parseInt(output[0]);
-                        Log.d(TAG,"mins : "+mins);
                     }
 
                 }

@@ -49,7 +49,6 @@ public class DirectionService extends android.app.Service{
     //onCreate method
     @Override
     public void onCreate(){
-        Log.d(TAG, "running direction service");
         NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
         manager.cancel(1);   //remove the alert notification from Checkin Fragment
         manager.cancel(23);  //remove the inform notification from Checkin Fragment
@@ -68,9 +67,7 @@ public class DirectionService extends android.app.Service{
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask network for location
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
         }
 
         try {
@@ -78,16 +75,13 @@ public class DirectionService extends android.app.Service{
                     LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask GPS for location
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
 
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -125,17 +119,11 @@ public class DirectionService extends android.app.Service{
         carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
         carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
 
-        Log.d(TAG,"direction service params " + key);
-        Log.d(TAG,"direction params " + carlat.toString());
-        Log.d(TAG,"direction params" + carlon.toString());
-
         if(intent!=null) {
             //possible duplication happening here but still harmless
             incrementKeys();   //award user with 2 keys
-            Log.d(TAG,"running direction service with intent");
             origin = (String) intent.getExtras().get("started_from");
             if(origin.equals("LS") || origin.equals("navigation")){ //this was started from location service
-                Log.d(TAG,"started from LS or navigation");
                 Intent cancelaction = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
@@ -146,7 +134,6 @@ public class DirectionService extends android.app.Service{
                 alarmManager2.cancel(pendingIntent2); //cancel the inform and alert notifications that user would have got
             }
             if(origin.equals("checkin")){ //this was started from the inform notification
-                Log.d(TAG,"entered checkin");
                 stopService(new Intent(DirectionService.this,LocationService.class)); //stop the location service
             }
         }
@@ -157,7 +144,6 @@ public class DirectionService extends android.app.Service{
 
     @Override
     public void onDestroy() {
-        Log.d(TAG,"on destroy");
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -195,7 +181,7 @@ public class DirectionService extends android.app.Service{
 
         public LocationListener(String provider)
         {
-            Log.e(TAG, "LocationListener " + provider);
+
             mLastLocation = new Location(provider);
         }
 
@@ -207,7 +193,6 @@ public class DirectionService extends android.app.Service{
             double lon = location.getLongitude();
 
             if (count < 30) {       //send a maximum of 30 calls to the Directions API
-                Log.d(TAG,"direction service getting walktime");
                 WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID,getApplicationContext());
                 walkTime.getWalkTime(); //get estimated time of walk to the car
             }
@@ -217,7 +202,6 @@ public class DirectionService extends android.app.Service{
             double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
             double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
             if((deltalat<2)&&(deltalon<2)){
-                Log.d(TAG,"stopping directionservice");  //stop direction service once user is near car
                 stopSelf();
             }
 
@@ -227,19 +211,19 @@ public class DirectionService extends android.app.Service{
         @Override
         public void onProviderDisabled(String provider)
         {
-            Log.e(TAG, "onProviderDisabled: " + provider);
+
         }
 
         @Override
         public void onProviderEnabled(String provider)
         {
-            Log.e(TAG, "onProviderEnabled: " + provider);
+
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            Log.e(TAG, "onStatusChanged: " + provider);
+
         }
 
     }

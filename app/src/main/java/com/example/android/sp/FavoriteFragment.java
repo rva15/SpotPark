@@ -89,7 +89,6 @@ public class FavoriteFragment extends Fragment {
     ValueEventListener listener2 = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();                   //get the number of favorite spots
             if(max==0){
                 showdefault();
@@ -120,7 +119,6 @@ public class FavoriteFragment extends Fragment {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     // Data for "images/island.jpg" is returns, use this as needed
-                    Log.d(TAG, "download success "+Integer.toString(i));
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Bitmap cropped = Bitmap.createBitmap(bmp, (int)(bmp.getWidth()/2 - width/2),(int)(bmp.getHeight()/2 - width/4),width,(int)width/2);
                     FavoriteInfo info = new FavoriteInfo();
@@ -144,7 +142,6 @@ public class FavoriteFragment extends Fragment {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Handle any errors
-                    Log.d(TAG, "download failed");
                 }
             });
         }

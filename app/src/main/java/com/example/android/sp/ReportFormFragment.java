@@ -136,8 +136,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         if(requestCode==7) {
 
             Bundle bundle = data.getExtras();
-            Log.d(TAG,"hour is "+Integer.toString(bundle.getInt("hour")));
-            Log.d(TAG,"hour is "+Integer.toString(bundle.getInt("mins")));
             time.add(bundle.getInt("hour"));
             time.add(bundle.getInt("mins"));
             printtime();
@@ -202,7 +200,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         }
                         starthour = time.get(i);
                         startmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
                     if(time.get(i)>12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
@@ -215,7 +212,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         }
                         starthour = time.get(i);
                         startmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
 
                 }
@@ -230,7 +226,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         }
                         endhour = time.get(i);
                         endmin = time.get(i + 1);
-                        Log.d(TAG, "it is end time");
                     }
                     if(time.get(i)>12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
@@ -243,7 +238,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         }
                         endhour = time.get(i);
                         endmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
                 }
             }
@@ -334,14 +328,12 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
-                Log.d(TAG,"image upload failed");
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Log.d(TAG,"image upload success");
             }
         });
 

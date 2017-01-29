@@ -125,12 +125,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onCancel() {
-                Log.d(TAG, "user cancelled fb login");
+
             }
 
             @Override
             public void onError(FacebookException exception) {
-                Log.d(TAG, "Unable to login");
+
             }
         });
 
@@ -195,7 +195,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
         Toast.makeText(this, "Connectivity problems!", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
     }
 
     @Override
@@ -231,11 +230,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     FirebaseUser user = firebaseAuth.getCurrentUser();
                     if (user != null) {
                         //account created, add user to firebase
-                        Log.d(TAG, "New account created for id " + user.getUid());
                         new CheckExistanceBackground().execute(user.getUid());    //Check if this account already exists
                     } else {
                         // account creation unsuccessful
-                        Log.d(TAG, "account not created");
                     }
                 }
             };
@@ -278,7 +275,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         addNewUser(userid);       //if user is new add him to database
                     }
                     else{
-                        Log.d(TAG,"account already exists");
                         new CheckStatusBackground().execute(userid); //if not,see if there is active checkIn
                     }
                 }
@@ -317,9 +313,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     // Get Post object and use the values to update the UI
                     if(count==0) {
                         if (dataSnapshot.exists()) {
-                            Log.d(TAG, "CheckIn exists");
                             isCheckedIn=true;
-                            Log.d(TAG,"going ahead");
                             mAuthstart.removeAuthStateListener(mAuthListener);
                             mAuthfb.removeAuthStateListener(newAccountListener);
                             mAuthlogin.removeAuthStateListener(mAuthListener);
@@ -333,9 +327,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                         }
                         else if(!dataSnapshot.exists()){
-                            Log.d(TAG, "CheckIn does not exist");
                             isCheckedIn=false;
-                            Log.d(TAG,"going ahead");
                             mAuthstart.removeAuthStateListener(mAuthListener);
                             mAuthfb.removeAuthStateListener(newAccountListener);
                             mAuthlogin.removeAuthStateListener(mAuthListener);
@@ -386,11 +378,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     user = firebaseAuth.getCurrentUser();
                     if (user != null) {
                         //if someone is already signed in, proceed to check his status
-                        Log.d(TAG, "UID of signed in user " + user.getUid());
                         new CheckStatusBackground().execute(user.getUid());
                     } else {
                         // there is no one signed in
-                        Log.d(TAG, "no one signed in");
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                         findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
                     }
@@ -423,7 +413,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     //add a new user to database
     private void addNewUser(String userID){
-        Log.d(TAG, "Adding new user");
         database = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
         String key = database.child("UserInformation").push().getKey();
         UserDetails user = new UserDetails(firstname,lastname,email,4,0,0,0); //make a new user object
@@ -445,12 +434,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Handle unsuccessful uploads
-                    Log.d(TAG, "image upload failed");
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "image upload success");
                 }
             });
         }
@@ -582,7 +569,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void onCompleted(JSONObject object, GraphResponse response)
             {
-                Log.d("JSON", ""+response.getJSONObject().toString());
                 //get user's information from facebook
                 try
                 {
@@ -592,7 +578,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
                 catch (JSONException e)
                 {
-                    Log.d(TAG,"could not fetch user details");
                 }
             }
         });
@@ -615,12 +600,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             try {
                                 JSONObject data = response.getJSONObject();
                                 String profilePicUrl = data.getJSONObject("picture").getJSONObject("data").getString("url");
-                                Log.d(TAG,"dp url "+profilePicUrl);
                                 Picasso.with(getApplicationContext()).load(profilePicUrl).into(new com.squareup.picasso.Target() {
                                     @Override
                                     public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
                                         profilepic = bitmap;
-                                        Log.d(TAG,"profile pic loaded");
                                     }
                                     @Override
                                     public void onBitmapFailed(Drawable errorDrawable) {
@@ -641,7 +624,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         );
 
         graphRequest2.executeAsync();
-        Log.d(TAG, "onAuthStateChanged:token"+token.getCurrentAccessToken());
         mAuthfb.addAuthStateListener(newAccountListener);//add previously defined listener
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken()); //get the access token from fb
         mAuthfb.signInWithCredential(credential)    //sign in to firebase using that credential
@@ -696,14 +678,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
     private void googlelogin(){
-        Log.d(TAG,"googlelogin called");
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, 45);
     }
 
 
     private void handleSignInResult(GoogleSignInResult result) {
-        Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             GoogleSignInAccount account = result.getSignInAccount();
@@ -712,12 +692,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             email = account.getEmail();
             googlepic = account.getPhotoUrl();
 
-            Log.d(TAG,"googlepic "+googlepic.toString());
+
             Picasso.with(getApplicationContext()).load(googlepic).into(new com.squareup.picasso.Target() {
                 @Override
                 public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
                     profilepic = bitmap;
-                    Log.d(TAG,"profile pic loaded");
                 }
                 @Override
                 public void onBitmapFailed(Drawable errorDrawable) {
@@ -729,24 +708,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             });
 
             firebaseAuthWithGoogle(account);
-            Log.d(TAG,"google sign in success");
 
         } else {
-            Log.d(TAG,"google sign in not successful");
 
         }
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         showLoading();
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
         mAuthgoogle.addAuthStateListener(newAccountListener);
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuthgoogle.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
 
                         // If sign in fails, display a message to the user. If sign in succeeds
                         // the auth state listener will be notified and logic to handle the
@@ -754,7 +729,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         if (!task.isSuccessful()) {
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
-                            Log.w(TAG, "signInWithCredential", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }

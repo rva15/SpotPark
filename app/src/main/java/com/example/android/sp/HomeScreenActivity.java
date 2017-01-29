@@ -481,7 +481,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             checked = "0";
         }
         String text = spin.getSelectedItem().toString();
-        Log.d(TAG,"selected option "+text);
         EditText rph = (EditText) dialogView.findViewById(R.id.editrate);
         TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.edittime);
         String hourlyrate = rph.getText().toString();
@@ -500,7 +499,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         }
         String hour = Double.toString(hours);
         String min = Double.toString(mins);
-        Log.d(TAG,"edit checkin "+ hour + min + hourlyrate + favorite + checked + text);
         checkIn(hourlyrate,hour,min,text,checked,favorite);
     }
 
@@ -563,7 +561,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 Toast.makeText(this, "Your requested alert time has already passed!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
                 return;
             }
-            Log.d(TAG,"notification delay "+Integer.toString(delay));
             scheduleNotification(getAlertNotification(sub/60000), delay, 1);              //schedule alert notification for ticket expiring
             scheduleNotification(getInformNotification(sub/60000), delay + 12000, 23);    //ask user if he wants to inform others by this notification
         }
@@ -691,7 +688,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public void onDialogNegativeClick(DialogFragment dialog) {
         // User touched the dialog's negative button
         //Do nothing
-        Log.d(TAG,"negative click");
+
     }
 
 
@@ -700,7 +697,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             if(count==0) {
-                Log.d(TAG, "detected something");
                 CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
                 latlngcode=user.getlatlngcode();
                 key = user.getkey();
@@ -766,7 +762,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(Status status) {
-                        Log.d(TAG,"google signed out");
+
                     }
                 });
         Intent intent = new Intent(HomeScreenActivity.this, LoginActivity.class);  //pass intent to login activity

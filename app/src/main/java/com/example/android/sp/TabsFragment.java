@@ -101,10 +101,8 @@ public class TabsFragment extends Fragment {
         public Fragment getItem(int position) {
             if (position == 0) {
                 if (isCheckedin) {
-                    Log.d(TAG, "going to navigation");
                     return CarlocationFragment.newInstance(position + 1, UID);
                 } else {
-                    Log.d(TAG, "user id passed " + UID);
                     return CheckInFragment.newInstance(position + 1, UID);
                 }
             }

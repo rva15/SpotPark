@@ -73,7 +73,6 @@ public class CheckInDialog extends DialogFragment {
                             favorite="1";
                         }
                         String text = spin.getSelectedItem().toString();
-                        Log.d(TAG,"selected option "+text);
                         rph = (EditText) view.findViewById(R.id.rate);
                         timePicker = (TimePicker) view.findViewById(R.id.time);
                         hourlyrate = rph.getText().toString();

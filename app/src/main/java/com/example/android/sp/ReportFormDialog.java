@@ -45,8 +45,6 @@ public class ReportFormDialog extends DialogFragment {
                         else{
                             mins = timePicker.getCurrentMinute();
                         }
-                        Log.d(TAG,"hour is "+Double.toString(hours));
-                        Log.d(TAG,"hour is "+Double.toString(mins));
                         Intent i = new Intent().putExtra("hour", hours);
                         i.putExtra("mins", mins);
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);

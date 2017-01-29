@@ -115,7 +115,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     public static CheckInFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG," id passed :"+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         CheckInFragment fragment = new CheckInFragment();
@@ -399,7 +398,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
         // Get the spot's LatLngCode
         final String LatLngCode = getLatLngCode(cameracenter.latitude,cameracenter.longitude);  //convert the checkin location to its LatLngCode
-        Log.d(TAG, "LatLngCode : " + LatLngCode);
+
 
         // Setup notifications and alert user if time entered is invalid
         //Proceed towards starting NotificationBroadcast
@@ -425,7 +424,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 Toast.makeText(this.getActivity(), "Your requested alert time has already passed!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
                 return;
             }
-            Log.d(TAG,"notification delay "+Integer.toString(delay));
             scheduleNotification(getAlertNotification(sub/60000), delay, 1);              //schedule alert notification for ticket expiring
             scheduleNotification(getInformNotification(sub/60000), delay + 12000, 23);    //ask user if he wants to inform others by this notification
         }
@@ -489,12 +487,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
-                        Log.d(TAG,"image upload failed");
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        Log.d(TAG,"image upload success");
 
                     }
                 });
@@ -506,14 +502,12 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                         @Override
                         public void onFailure(@NonNull Exception exception) {
                             // Handle unsuccessful uploads
-                            Log.d(TAG,"image upload failed");
                         }
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                             Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                            Log.d(TAG,"image upload success");
                         }
                     });
                 }
@@ -614,7 +608,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     //--------------------------------------Other Helper Functions------------------------------------//
 
     private void updateUI() {
-        Log.d(TAG, "location updated");
         curlatitude = mCurrentLocation.getLatitude();       //get the latitude
         curlongitude = mCurrentLocation.getLongitude();     //get the longitude
         place = new LatLng(curlatitude, curlongitude);      //initiate LatLng object

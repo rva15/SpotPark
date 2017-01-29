@@ -1,6 +1,10 @@
 package com.example.android.sp;
 //All imports
+import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -46,18 +50,21 @@ public class SpotFinder {
     private Map uidkey   = new HashMap();
     private SimpleDateFormat dayFormat,simpleDateFormat;
     private ArrayList<Integer> markerimage = new ArrayList<Integer>();
+    private ArrayList<Bitmap>  markerbitmaps = new ArrayList<>();
     private com.google.firebase.database.Query getReported;
     private Calendar calendar;
+    private Context context;
 
 
 
     public SpotFinder(){};  //empty constructor
 
-    public SpotFinder(double latitude, double longitude, GoogleMap searchmap,String id){  //contructor receives parameters
+    public SpotFinder(double latitude, double longitude, GoogleMap searchmap,String id,Context context){  //contructor receives parameters
         this.latitude=latitude;
         this.longitude=longitude;
         this.searchmap=searchmap;
         this.UID = id;
+        this.context = context;
         helperDB = new SearchHelperDB(SPApplication.getContext());     //get context and initialize phone db
         dayFormat = new SimpleDateFormat("EEEE", Locale.getDefault()); //format for day
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");           //format for time
@@ -74,6 +81,13 @@ public class SpotFinder {
         markerimage.add(R.drawable.marker8);
         markerimage.add(R.drawable.marker9);
         markerimage.add(R.drawable.marker10);
+
+        //make the markers the right size
+        for(int i=0;i<markerimage.size();i++){
+            BitmapDrawable bitmapdraw=(BitmapDrawable)context.getResources().getDrawable(markerimage.get(i),null);
+            Bitmap b=bitmapdraw.getBitmap();
+            markerbitmaps.add(Bitmap.createScaledBitmap(b, dpToPx(40), dpToPx(40), false));
+        }
 
     }
 
@@ -120,7 +134,6 @@ public class SpotFinder {
             chintimes.put(spotplace,time);                                         //map the 'time to leave' to the place
             chinkeys.put(spotplace,dataSnapshot.getKey());                         //map the checkinkey to the place
             if (time>10){
-                Log.d(TAG,"time greater than 10");
                 //do nothing
             }
             if(time<=2){
@@ -129,11 +142,11 @@ public class SpotFinder {
                 Marker marker = (Marker) markers.get(spotplace);                  //get the marker that sits at the spotplace
                 if(marker!=null){                                           //check if marker already exists at the place
                     marker.remove();                                        //remove the old marker and add the timed marker
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                     markers.put(spotplace,spotmarker);
                 }
                 else {
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                     markers.put(spotplace,spotmarker);    //else put a timed marker and map it to the place
 
                 }
@@ -146,11 +159,11 @@ public class SpotFinder {
                     Marker marker = (Marker) markers.get(spotplace);
                     if(marker!=null){       //then check if there is a marker at the spot
                         marker.remove();    //if yes then remove the old marker and add a new timed marker
-                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                         markers.put(spotplace,spotmarker);
                     }
                     else {
-                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                         markers.put(spotplace, spotmarker);      //else put a marker and map it to spot
                     }
 
@@ -174,14 +187,12 @@ public class SpotFinder {
                 spotplace = new LatLng(details.getlatitude(),details.getlongitude());  //store the spot's location in spotplace
                 Marker marker = (Marker) markers.get(spotplace);                       //decision is positive so add a timed marker
                 if(marker!=null){
-                    Log.d(TAG,"marker exists");
                     marker.remove();
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                     markers.put(spotplace,spotmarker);
                 }
                 else {
-                    Log.d(TAG,"adding marker");
-                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(markerimage.get(time))));
+                    spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                     markers.put(spotplace,spotmarker);    //add a marker and map it if it doesn't exist already
                 }
             }
@@ -250,9 +261,7 @@ public class SpotFinder {
                 spotplace = new LatLng(times.getlatitude(),times.getlongitude());
                 Marker marker = (Marker) markers.get(spotplace);
                 if (marker != null) {
-                    Log.d(TAG, "marker exists");
                 } else {
-                    Log.d(TAG, "adding marker");
                     chinkeys.put(spotplace,dataSnapshot.getKey());   //map the reported spot's key to the place
                     if (times.getverification() > 1) {
                         spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repver)));
@@ -269,7 +278,6 @@ public class SpotFinder {
 
             }
             if (!analyzeReported(times)) {
-                Log.d(TAG, "reported spot invalid " + dataSnapshot.getKey());
             }
 
         }
@@ -311,9 +319,7 @@ public class SpotFinder {
                     spotplace = new LatLng(searcher.getlatitude(), searcher.getlongitude());  //store the spot's location in spotplace
                     Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
                     if (marker != null) {
-                        Log.d(TAG, "marker exists");
                     } else {
-                        Log.d(TAG, "adding marker");
                         spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                         searchers.put(dataSnapshot.getKey(), spotmarker);   //put a marker at searchers spot and add to map
                     }
@@ -329,13 +335,11 @@ public class SpotFinder {
                 spotplace = new LatLng(searcher.getlatitude(),searcher.getlongitude());  //store the spot's location in spotplace
                 Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
                 if(marker!=null){
-                    Log.d(TAG,"marker exists");
                     marker.remove();            //remove previous marker belonging to the searcher
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                     searchers.put(dataSnapshot.getKey(),spotmarker);        //add marker at the new place
                 }
                 else {
-                    Log.d(TAG,"adding marker");
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
                     searchers.put(dataSnapshot.getKey(),spotmarker);        //add marker at the place
                 }
@@ -349,7 +353,6 @@ public class SpotFinder {
             if(!dataSnapshot.getKey().equals(UID)){
                 Marker marker = (Marker) searchers.get(dataSnapshot.getKey());
                 if(marker!=null){
-                    Log.d(TAG,"marker exists");
                     marker.remove();                //remove marker when searcher quits search
                 }
             }
@@ -388,6 +391,11 @@ public class SpotFinder {
 
     }
 
+    private int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
     private boolean removeCheckIn(String updatedate,int updatehour,int updatemin){
         calendar = Calendar.getInstance();                    //get current time
         SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
@@ -423,7 +431,6 @@ public class SpotFinder {
             //database.child("Searchers").child(array.get(k)).removeEventListener(listener2);   //remove listener2 for other searchers
             database.child("ReportedDetails").child(array.get(k)).removeEventListener(listener3);//remove listener3 for reported spots
         }
-        Log.d(TAG,"detaching listeners");
         if(getReported!=null) {
             getReported.removeEventListener(listener4);
         }
@@ -669,7 +676,6 @@ public class SpotFinder {
 
             }
             if(weekDay.equals("Saturday")){
-                Log.d(TAG,"fullweek saturday");
                 if(reportedTimes.getsat()==true){
                     if(reportedTimes.getfullday()==true){
                         return true;

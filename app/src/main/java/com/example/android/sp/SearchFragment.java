@@ -405,7 +405,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             recenter.setVisibility(View.GONE);
             searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15));
             isAutoMode=true;
-            Log.d(TAG,"recenter");
         }
         if(v.getId()==R.id.startsearch){
             //check number of keys
@@ -448,7 +447,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             //send intent to web browser along with spot's url
             Map PWSpotlinks = parkWhizSpots.getParkWhizlinks();
             String url = (String) PWSpotlinks.get(currentmarker);
-            Log.d(TAG,"pwurl is "+url);
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
             startActivity(i);
@@ -488,7 +486,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     private void showSearchDialog(){
         // Create an instance of the dialog fragment and show it
-        Log.d(TAG,"showing dialog");
         DialogFragment dialog = new SearchTimeDialog();
         dialog.setTargetFragment(SearchFragment.this,4);       //set target fragment to this fragment
         dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
@@ -536,7 +533,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onCameraMoveStarted(int reason){
         // display the recenter button
         if(reason==REASON_GESTURE) {
-            Log.d(TAG,"camera move started reason gesture "+Integer.toString(reason));
             recenter.setVisibility(View.VISIBLE);
             isAutoMode = false;
         }
@@ -546,9 +542,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     ChildEventListener listener1 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            Log.d(TAG,"got the I parked checkin");
             String mycode = getLatLngCode((int)Math.round(place.latitude*100),(int)Math.round(place.longitude*100));
-            Log.d(TAG,"I parked checkin " +mycode);
             if(mycode.equals(latlngcode)){
                 Map<String, Object> childUpdates = new HashMap<>();
                 childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key, null);
@@ -663,7 +657,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     ChildEventListener listener5 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            Log.d(TAG,"entered listener5");
             uid = dataSnapshot.getValue(String.class);
             changeVerification(uid);
             getreported.removeEventListener(listener5);
@@ -715,7 +708,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         if(finder!=null){
                             finder.detachListeners();      //detach previous finder's listeners
                         }
-                        finder = new SpotFinder(latitude, longitude, searchmap, UID); //declare the SpotFinder and pass it user's location and searchmap
+                        finder = new SpotFinder(latitude, longitude, searchmap, UID,getContext()); //declare the SpotFinder and pass it user's location and searchmap
                         finder.addListener();   //call its addListener method
                     }
 
@@ -740,7 +733,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/Searchers/"+LatLngCode+"/"+UID, searcherMap);
         database.updateChildren(childUpdates);
-        Log.d(TAG,"reached sendLocation");
     }
 
     //getting the latlng code
@@ -837,31 +829,28 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             // During the transition of expand and collapse onPanelSlide function will be called.
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-                Log.e(TAG, "onPanelSlide, offset " + slideOffset);
             }
 
             // This method will be call after slide up layout
             @Override
             public void onPanelExpanded(View panel) {
-                Log.e(TAG, "onPanelExpanded");
 
             }
 
             // This method will be call after slide down layout.
             @Override
             public void onPanelCollapsed(View panel) {
-                Log.e(TAG, "onPanelCollapsed");
 
             }
 
             @Override
             public void onPanelAnchored(View panel) {
-                Log.e(TAG, "onPanelAnchored");
+
             }
 
             @Override
             public void onPanelHidden(View panel) {
-                Log.e(TAG, "onPanelHidden");
+
             }
         });
     }
@@ -881,9 +870,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
             } catch (Exception e) {
-                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -926,11 +913,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
 
             data = sb.toString();
-            Log.d("downloadUrl", data.toString());
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -948,18 +933,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             List<List<HashMap<String, String>>> routes = null;
 
             try {
-                jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
+                jObject = new JSONObject(jsonData[0]);;
                 DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
 
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
                 e.printStackTrace();
             }
             return routes;
@@ -995,8 +975,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 lineOptions.width(10);
                 lineOptions.color(android.graphics.Color.BLUE);
 
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
             }
 
             // Drawing polyline in the Google Map for the i-th route
@@ -1004,7 +982,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 searchmap.addPolyline(lineOptions);
             }
             else {
-                Log.d("onPostExecute","without Polylines drawn");
             }
         }
     }

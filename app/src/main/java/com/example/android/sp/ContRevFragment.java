@@ -52,7 +52,6 @@ public class ContRevFragment extends Fragment {
 
     public static ContRevFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG," id passed :"+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         ContRevFragment fragment = new ContRevFragment();
@@ -77,7 +76,6 @@ public class ContRevFragment extends Fragment {
         @Override
         public void onCancelled(DatabaseError databaseError) {
 
-            Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
 
         }
     };

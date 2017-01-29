@@ -58,7 +58,6 @@ public class ParkWhizSpots {
     }
 
     public void removeParkWhizspots(){
-        Log.d(TAG,"removing spots");
         for(int i=0;i<PWMarkers.size();i++){
             PWMarkers.get(i).remove();
         }
@@ -97,7 +96,6 @@ public class ParkWhizSpots {
                     urlConnection.disconnect();
                 }
             } catch (Exception e) {
-                Log.e("ERROR", e.getMessage(), e);
                 return null;
             }
         }
@@ -131,10 +129,9 @@ public class ParkWhizSpots {
                 JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
                 JSONArray array = object.getJSONArray("parking_listings");
                 if (array == null) {
-                    Log.d(TAG, "nothing here");
+
                 }
                 for (int i = 0; i < array.length(); i++) {
-                    Log.d(TAG, "parking names " + array.getJSONObject(i).getDouble("lat"));
                     Double lat = array.getJSONObject(i).getDouble("lat");
                     Double lng = array.getJSONObject(i).getDouble("lng");
                     String url = array.getJSONObject(i).getString("parkwhiz_url");

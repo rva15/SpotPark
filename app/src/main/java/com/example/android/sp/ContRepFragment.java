@@ -80,7 +80,6 @@ public class ContRepFragment extends Fragment {
 
     public static ContRepFragment newInstance(int page,String id) {
         UID = id;
-        Log.d(TAG," id passed :"+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         ContRepFragment fragment = new ContRepFragment();
@@ -99,7 +98,6 @@ public class ContRepFragment extends Fragment {
     ValueEventListener listener2 = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
             if(max==0){
                 showdefaultmessage();
@@ -132,7 +130,6 @@ public class ContRepFragment extends Fragment {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     // Data for "images/island.jpg" is returns, use this as needed
-                    Log.d(TAG, "download success "+Integer.toString(i));
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                     Bitmap cropped = Bitmap.createBitmap(bmp, (int)(bmp.getWidth()/2 - width/2),(int)(bmp.getHeight()/2 - width/4),width,(int)width/2);
                     crimage.add(cropped);
@@ -154,7 +151,6 @@ public class ContRepFragment extends Fragment {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Handle any errors
-                    Log.d(TAG, "download failed");
                 }
             });
         }

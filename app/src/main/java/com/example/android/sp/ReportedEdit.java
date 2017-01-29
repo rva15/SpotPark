@@ -65,7 +65,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
         UID = extras.getString("UID");
         key = extras.getString("key");
         reportedTimes = extras.getParcelable("reportedtimes");
-        Log.d(TAG,"cr times "+reportedTimes.getdescription());
 
 
     }
@@ -232,7 +231,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
         if (view.getId() == R.id.editchooseStart) {
             time.add(123);
             showReditDialog();
-            Log.d(TAG,"choose start");
         }
         if (view.getId() == R.id.editchooseEnd){
             time.add(243);
@@ -277,7 +275,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
                         }
                         starthour = time.get(i);
                         startmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
                     if(time.get(i)>12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
@@ -290,7 +287,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
                         }
                         starthour = time.get(i);
                         startmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
 
                 }
@@ -305,7 +301,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
                         }
                         endhour = time.get(i);
                         endmin = time.get(i + 1);
-                        Log.d(TAG, "it is end time");
                     }
                     if(time.get(i)>12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
@@ -318,7 +313,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
                         }
                         endhour = time.get(i);
                         endmin = time.get(i + 1);
-                        Log.d(TAG, "it is start time");
                     }
                 }
             }
@@ -375,7 +369,6 @@ public class ReportedEdit extends Fragment implements View.OnClickListener{
             }
         }
         database = FirebaseDatabase.getInstance().getReference();
-        Log.d(TAG,"description "+editText.getText().toString());
         String LatLngCode = reportedTimes.getlatlngcode();
         ReportedTimes newTimes = new ReportedTimes(reportedTimes.getlatitude(),reportedTimes.getlongitude(),reportedTimes.getverification(),allday.isChecked(),starthour,startmin,endhour,endmin,allweek.isChecked(),mon.isChecked(),tue.isChecked(),wed.isChecked(),
                 thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),editText.getText().toString(),LatLngCode);

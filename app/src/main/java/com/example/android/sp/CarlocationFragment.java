@@ -92,7 +92,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     public static CarlocationFragment newInstance(int page, String id) {
         UID = id;
-        Log.d(TAG,"passed id : "+UID);
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         CarlocationFragment fragment = new CarlocationFragment();
@@ -248,9 +247,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     @Override
     public void onCameraMoveStarted(int reason){
-        Log.d(TAG,"camera move started "+Integer.toString(reason));
         if(reason==REASON_GESTURE) {
-            Log.d(TAG,"camera move started reason gesture "+Integer.toString(reason));
             recenter.setVisibility(View.VISIBLE);
             isAutoMode = false;
         }
@@ -328,7 +325,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void getcarLocation(String id){
-        Log.d(TAG,"user id is :"+id);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         getcheckin = database.child("CheckInUsers").orderByKey().equalTo(id);
         getcheckin.addChildEventListener(listener1);
@@ -345,7 +341,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     }
 
     private void checkInformed(){
-        Log.d(TAG,"entered checkinformed");
         database = FirebaseDatabase.getInstance().getReference();
         getminstoleave = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(checkinkey);
         getminstoleave.addChildEventListener(listener2);
@@ -356,7 +351,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     ChildEventListener listener1 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            Log.d(TAG,"detected something");
             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
             carlatitude = user.getcarlatitude();
             carlongitude = user.getcarlongitude();
@@ -404,7 +398,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             Integer minstoleave =  checkInDetails.getminstoleave();
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
             homeScreenActivity.setRate(checkInDetails.getdollars(),checkInDetails.getcents()); //set default rate for edit checkins
-            Log.d(TAG,"mins to leave "+Integer.toString(minstoleave));
             if(minstoleave!=10031){
                 informbutton.setVisibility(View.GONE);
             }
@@ -473,14 +466,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onClick(View v) {
         if(v.getId()==R.id.informbutton) {
-            Log.d(TAG, "clicked inform");
             confirminform();
         }
         if(v.getId()==R.id.recenter){
             recenter.setVisibility(View.GONE);
             navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
             isAutoMode=true;
-            Log.d(TAG,"recenter");
         }
     }
 
@@ -501,9 +492,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
             } catch (Exception e) {
-                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -546,11 +535,9 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             }
 
             data = sb.toString();
-            Log.d("downloadUrl", data.toString());
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -569,17 +556,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
                 DataParser parser = new DataParser();
-                Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
                 routes = parser.parse(jObject);
-                Log.d("ParserTask","Executing routes");
-                Log.d("ParserTask",routes.toString());
 
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
                 e.printStackTrace();
             }
             return routes;
@@ -615,8 +597,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 lineOptions.width(7);
                 lineOptions.color(Color.BLUE);
 
-                Log.d("onPostExecute","onPostExecute lineoptions decoded");
-
             }
 
             // Drawing polyline in the Google Map for the i-th route
@@ -624,7 +604,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 navigationmap.addPolyline(lineOptions);
             }
             else {
-                Log.d("onPostExecute","without Polylines drawn");
             }
         }
     }

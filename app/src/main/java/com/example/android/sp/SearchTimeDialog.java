@@ -125,7 +125,7 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
-            // TODO Auto-generated method stub
+
             if(startend) {
                 endcalendar.set(Calendar.YEAR, year);
                 endcalendar.set(Calendar.MONTH, monthOfYear);

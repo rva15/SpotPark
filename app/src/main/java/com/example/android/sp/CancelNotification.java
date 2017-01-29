@@ -17,7 +17,6 @@ public class CancelNotification extends BroadcastReceiver {
         int notificationId = intent.getIntExtra("notificationId", 0);
 
         // if you want cancel notification
-        Log.d("debugger","cancel id "+Integer.toString(notificationId));
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(notificationId);
     }

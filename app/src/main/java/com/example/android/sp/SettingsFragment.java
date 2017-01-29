@@ -82,7 +82,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         Bundle extras = getArguments();
         UID = extras.getString("userid");
-        Log.d(TAG, "cr uid " + UID);
         database = FirebaseDatabase.getInstance().getReference();
         mAuth = FirebaseAuth.getInstance();
 
@@ -92,7 +91,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             for (UserInfo profile : user.getProviderData()) {
                 // Id of the provider (ex: google.com)
                 String providerId = profile.getProviderId();
-                Log.d(TAG, "provider id " + providerId);
                 if (providerId.equals("password")) {
                     logintype = 1;
                 }
@@ -124,13 +122,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
         StorageReference islandRef = storageRef.child(UID+"/Profile/dp.jpg");
-        Log.d(TAG,"looking up "+islandRef.toString());
         final long ONE_MEGABYTE = 1024 * 1024;
         islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
                 // Display pic downloaded
-                Log.d(TAG, "download success");
                 bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 dp.setImageBitmap(bmp);
             }
@@ -138,7 +134,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
-                Log.d(TAG, "download failed");
             }
         });
 
@@ -147,7 +142,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     ValueEventListener listener1 = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Log.d(TAG, "children count is " + dataSnapshot.getChildrenCount());
             UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
             fn = userDetails.getfirstname();
             ln = userDetails.getlastname();
@@ -177,8 +171,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-
-        Log.d(TAG, "clicked it");
         if (v.getId() == R.id.changepass) {
             showPswdDialog();
         }
@@ -308,14 +300,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
-                Log.d(TAG, "image upload failed");
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Log.d(TAG, "image upload success");
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
                 home.refreshMainAdapter();
@@ -377,14 +367,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle unsuccessful uploads
-                Log.d(TAG, "image upload failed");
             }
         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                Log.d(TAG, "image upload success");
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
                 home.refreshMainAdapter();
@@ -397,7 +385,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "requestcode " + Integer.toString(requestCode));
         if (requestCode == 3) {
             Bundle bundle = data.getExtras();
             if(!bundle.getBoolean("changedp")) {
@@ -406,12 +393,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     final String new1 = bundle.getString("newpswd1");
                     String new2 = bundle.getString("newpswd2");
                     if (!new1.equals(new2)) {
-                        Log.d(TAG, "dont match");
                         Toast.makeText(getContext(), "Passwords dont match!", Toast.LENGTH_SHORT).show();
                         showPswdDialog();
                     } else {
-                        Log.d(TAG, "email " + currentemail);
-                        Log.d(TAG, "password is " + old);
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         AuthCredential credential = EmailAuthProvider
                                 .getCredential(currentemail, old);
@@ -419,10 +403,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        Log.d(TAG, "re-authentication success");
                                         if (!new1.equals("")) {
                                             updatePassword(new1);
-                                            Log.d(TAG, "updating");
                                         } else {
                                             Toast.makeText(getContext(), "new password cannot be blank", Toast.LENGTH_SHORT).show();
                                             showPswdDialog();
@@ -431,7 +413,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                                 }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Log.d(TAG, "re-authentication failed");
                                 Toast.makeText(getContext(), "Incorrect Current Password", Toast.LENGTH_SHORT).show();
                                 showPswdDialog();
                             }
@@ -441,7 +422,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     }
                 } else {
                     String fn = bundle.getString("fn");
-                    Log.d(TAG, "fn is " + fn);
                     String ln = bundle.getString("ln");
                     String email = bundle.getString("email");
                     updateEmail(fn, ln, email);
@@ -450,7 +430,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 }
             }
             else{
-                Log.d(TAG,"change dp");
                 selectImage();
             }
         }
@@ -465,13 +444,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
     private void updatePassword(String newpass){
-        Log.d(TAG,"making new password "+newpass);
         user.updatePassword(newpass)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "User password updated.");
                         }
                     }
                 });

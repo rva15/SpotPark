@@ -43,8 +43,6 @@ public class ChangePswdDialog extends DialogFragment {
                         String old = oldpswd.getText().toString();
                         String new1 = newpswd1.getText().toString();
                         String new2 = newpswd2.getText().toString();
-                        Log.d(TAG,"new1 "+new1);
-                        Log.d(TAG,"new2 "+new2);
                         Intent i = new Intent();
                         i.putExtra("oldpswd", old);
                         i.putExtra("newpswd1", new1);

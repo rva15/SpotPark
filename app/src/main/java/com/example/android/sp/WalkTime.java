@@ -66,9 +66,7 @@ public class WalkTime {
             try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
-                Log.d("Background Task data", data.toString());
             } catch (Exception e) {
-                Log.d("Background Task", e.toString());
             }
             return data;
         }
@@ -110,11 +108,9 @@ public class WalkTime {
             }
 
             data = sb.toString();
-            Log.d("downloadUrl", data.toString());
             br.close();
 
         } catch (Exception e) {
-            Log.d("Exception", e.toString());
         } finally {
             iStream.close();
             urlConnection.disconnect();
@@ -134,9 +130,7 @@ public class WalkTime {
 
             try {
                 jObject = new JSONObject(jsonData[0]);
-                Log.d("ParserTask",jsonData[0].toString());
                 WalkTimeParser parser = new WalkTimeParser(); //initiate walktime parser object
-                Log.d("ParserTask", parser.toString());
 
                 // Starts parsing data
                 totalmins = parser.parse(jObject);  //get mins required to walk to destination
@@ -149,7 +143,6 @@ public class WalkTime {
                 }
 
             } catch (Exception e) {
-                Log.d("ParserTask",e.toString());
                 e.printStackTrace();
             }
             return routes;
@@ -167,7 +160,6 @@ public class WalkTime {
                     // Get Post object and use the values to update the UI
                     if (count == 0) {
                         if (dataSnapshot.exists()) {
-                            Log.d(TAG, "exists");
                             CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
                             latlngcode = user.getlatlngcode();
                             key = user.getkey();
@@ -188,13 +180,11 @@ public class WalkTime {
                                     context.stopService(new Intent(context, DirectionService.class));
                                 }
                                 else{
-                                    Log.d(TAG,"context is null");
                                 }
                             }
 
 
                         } else if (!dataSnapshot.exists()) {
-                            Log.d(TAG, "not exists");
                         }
 
                     }
@@ -203,7 +193,6 @@ public class WalkTime {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Log.w(TAG, "loadPost:onCancelled", databaseError.toException());
                 }
             };
             database.child("CheckInUsers").child(UID).addListenerForSingleValueEvent(valuelistener);
@@ -243,7 +232,6 @@ public class WalkTime {
 
         // Building the url to the web service
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +key;
-        Log.d(TAG,"url is "+url);
 
         return url;
     }

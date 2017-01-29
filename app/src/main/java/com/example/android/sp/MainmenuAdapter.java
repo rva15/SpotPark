@@ -83,7 +83,6 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
         public void onClick(View view) {
 
             TextView tv = (TextView) view;
-            Log.d(TAG,"tv is "+tv.getText());
             String option = (String)tv.getText();
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity) homeactivity;
             if(option.equals("Home")){
@@ -225,12 +224,10 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
         StorageReference islandRef = storageRef.child(UID+"/Profile/dp.jpg");
-        Log.d(TAG,"looking up "+islandRef.toString());
         final long ONE_MEGABYTE = 1024 * 1024;
         islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
             public void onSuccess(byte[] bytes) {
-                Log.d(TAG, "download success");
                 Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 holdertemp.profile.setImageBitmap(getCroppedBitmap(bmp,holdertemp));
             }
@@ -238,7 +235,6 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
-                Log.d(TAG, "download failed");
                 holdertemp.profile.setImageResource(R.drawable.user); //set the default profile pic
             }
         });

@@ -42,7 +42,6 @@ public class LocationService extends android.app.Service{
     //onCreate method
     @Override
     public void onCreate(){
-        Log.d(TAG, "running locationservice");
 
         initializeLocationManager();
         try {
@@ -56,9 +55,7 @@ public class LocationService extends android.app.Service{
                     LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //request location updates through network
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
         }
 
         try {
@@ -66,15 +63,12 @@ public class LocationService extends android.app.Service{
                     LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,  //request location updates through GPS
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
         } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
 
     }
 
     private void initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
 
@@ -118,15 +112,11 @@ public class LocationService extends android.app.Service{
 
 
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");    //initialize a date format
-        Log.d(TAG,"Location Service params " + key);
-        Log.d(TAG,"Location Service params " + carlat.toString());
-        Log.d(TAG,"Location Service params" + carlon.toString());
         return START_STICKY;                                //START_STICKY to keep service going
     }
 
     @Override
     public void onDestroy() {  //on Destroy is called when stopSelf() executes
-        Log.d(TAG,"on destroy");
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -178,7 +168,7 @@ public class LocationService extends android.app.Service{
 
         public LocationListener(String provider)       //constructor
         {
-            Log.e(TAG, "LocationListener " + provider);
+
             mLastLocation = new Location(provider);
         }
 
@@ -188,12 +178,6 @@ public class LocationService extends android.app.Service{
 
             double lat = location.getLatitude();        //get current location
             double lon = location.getLongitude();
-
-
-            Log.e(TAG, "current location " + Double.toString(location.getLatitude()) + " " + Double.toString(location.getLongitude()));
-            Log.d(TAG,"carpos "+carlat.toString());
-            Log.d(TAG,"carpos "+carlon.toString());
-            Log.d(TAG,"carpos"+Double.toString(lastentry));
 
             mLastLocation.set(location);         //set mLastLocation to latest location
             calendar = Calendar.getInstance();   //get the current time
@@ -244,19 +228,19 @@ public class LocationService extends android.app.Service{
         @Override
         public void onProviderDisabled(String provider)
         {
-            Log.e(TAG, "onProviderDisabled: " + provider);
+
         }
 
         @Override
         public void onProviderEnabled(String provider)
         {
-            Log.e(TAG, "onProviderEnabled: " + provider);
+
         }
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras)
         {
-            Log.e(TAG, "onStatusChanged: " + provider);
+
         }
 
     }

@@ -124,19 +124,18 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
         }
 
         private void deletedialog() {   //show a confirmation dialog before deleting the spot
-            Log.d(TAG, "entered deletedialog");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setMessage("Are you sure you want to delete this spot?");
             builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    Log.d(TAG, "deletedialog yes");
+
                     deletedata();
 
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    Log.d(TAG, "deletedialog no");
+
                     dialog.cancel();
                 }
             });
@@ -168,7 +167,6 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
             // Setting Positive "OK" Button
             alertDialogBuilder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    Log.d(TAG,"new title "+et.getText().toString());
                     database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
                     Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
                     childUpdates.put("/FavoriteKeys/" + UID + "/" + favoriteList.get(getAdapterPosition()).key+"/spotname", et.getText().toString());
@@ -184,7 +182,6 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
 
 
         private void deletedata() {
-            Log.d(TAG,"deletedialog"+ favoriteList.get(getAdapterPosition()).key);
             database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
             Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
             childUpdates.put("/FavoriteKeys/" + UID + "/" + favoriteList.get(getAdapterPosition()).key, null);
@@ -196,7 +193,6 @@ public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesAdapter.Cont
             favoriteRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Log.d(TAG,"deletedialog success");
                     notif();
                     ((HomeScreenActivity) activity).getFavorite();
                 }

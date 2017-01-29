@@ -48,7 +48,6 @@ public class ContributionsFragment extends Fragment {
         Bundle extras = getArguments();
         UID = extras.getString("userid");
         pbwidth = extras.getInt("width");
-        Log.d(TAG,"cr uid "+UID);
         contviewPager = (ViewPager) view.findViewById(R.id.contviewpager);
         setupViewPager(contviewPager);
         conttabLayout = (TabLayout) view.findViewById(R.id.conttabs);
@@ -62,7 +61,6 @@ public class ContributionsFragment extends Fragment {
     ValueEventListener listener2 = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Log.d(TAG,"children count is "+dataSnapshot.getChildrenCount());
             max = (int) dataSnapshot.getChildrenCount();
             if(max==0){
                 database.child("UserInformation").child(UID).orderByKey().addListenerForSingleValueEvent(listener3);
@@ -92,7 +90,6 @@ public class ContributionsFragment extends Fragment {
                 points = points+2;
             }
             if(count==max) {
-                Log.d(TAG, "points " + Integer.toString(points));
                 database.child("UserInformation").child(UID).orderByKey().addListenerForSingleValueEvent(listener3);
                 database.child("ReportedTimes").child(UID).orderByKey().removeEventListener(listener1);
             }
@@ -125,7 +122,6 @@ public class ContributionsFragment extends Fragment {
             UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
             points = points + userDetails.getcheckinfeed();
             points = points + 2*userDetails.getreportfeed();
-            Log.d(TAG, "final points " + Integer.toString(points));
             setupPointsBar();
         }
 
@@ -138,7 +134,6 @@ public class ContributionsFragment extends Fragment {
 
 
     public void setupPointsBar(){
-        Log.d(TAG,"pointsbar width pixels"+Integer.toString(pbwidth));
         int px = dpToPx(16);
 
         int green = (int)Math.floor(points/10);
@@ -148,7 +143,6 @@ public class ContributionsFragment extends Fragment {
             int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
             TextView tv = (TextView)view.findViewById(resID);
             tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen,null));
-            Log.d(TAG,"on tv "+Integer.toString(i));
         }
 
         for(int j=green+3;j<12;j++){
@@ -156,17 +150,13 @@ public class ContributionsFragment extends Fragment {
             int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
             TextView tv = (TextView)view.findViewById(resID);
             tv.setBackground(getResources().getDrawable(R.drawable.tvborderwhite,null));
-            Log.d(TAG,"setting white "+Integer.toString(j));
         }
 
         int remainder = points%10;
-        Log.d(TAG,"remainder is "+Integer.toString(remainder));
         float w1 = (float)remainder/10;
         float w2 = 1-w1;
-        Log.d(TAG,"test is "+Float.toString(w2));
 
         String name = "pb"+Integer.toString(green+1);
-        Log.d(TAG,"on tv "+name);
         int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
         TextView tv = (TextView)view.findViewById(resID);
         LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
@@ -176,7 +166,6 @@ public class ContributionsFragment extends Fragment {
         tv.setBackground(getResources().getDrawable(R.drawable.tvbordergreen,null));
 
         name = "pb"+Integer.toString(green+2);
-        Log.d(TAG,"on tv "+name);
         resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
         tv = (TextView)view.findViewById(resID);
         param = new LinearLayout.LayoutParams(
@@ -191,7 +180,6 @@ public class ContributionsFragment extends Fragment {
         param = new LinearLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT,
                 px);
-        Log.d(TAG,"green is "+Integer.toString(Math.round((1+w1)*16)));
         int leftmargin = dpToPx(green*16)+dpToPx(Math.round((2+w1)*16));
         param.setMargins(leftmargin,0,0,dpToPx(8));
         tv.setLayoutParams(param);
