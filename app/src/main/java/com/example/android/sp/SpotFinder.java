@@ -1,9 +1,11 @@
 package com.example.android.sp;
 //All imports
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,10 +18,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -33,7 +45,7 @@ public class SpotFinder {
     //Variable Declaration
     private double latitude=0.0,longitude=0.0;
     private String UID="",currtime;
-    private int currhour,currmin;
+    private int currhour,currmin,count=0,childnum=0;
     private DatabaseReference database;
     private static final String TAG = "Debugger ";
     private ArrayList<String> array = new ArrayList<String>();
@@ -48,9 +60,11 @@ public class SpotFinder {
     private Map chintimes = new HashMap();
     private Map chinkeys = new HashMap();
     private Map uidkey   = new HashMap();
+    private Map chindrivetimes  = new HashMap();
     private SimpleDateFormat dayFormat,simpleDateFormat;
     private ArrayList<Integer> markerimage = new ArrayList<Integer>();
     private ArrayList<Bitmap>  markerbitmaps = new ArrayList<>();
+    private ArrayList<LatLng>  chinlocations = new ArrayList<>();
     private com.google.firebase.database.Query getReported;
     private Calendar calendar;
     private Context context;
@@ -113,13 +127,32 @@ public class SpotFinder {
         }
 
         for(int k=0;k<9;k++){
-            database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
+            //database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
             //database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
+            database.child("CheckInKeys").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener);
             database.child("ReportedDetails").child(array.get(k)).addChildEventListener(listener3);//add listener3 for reported spots
         }
 
     }
 
+    ValueEventListener valueEventListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            childnum = childnum + (int)dataSnapshot.getChildrenCount();
+            count = count+1;
+            if(count==9){
+                count=0;
+                for(int k=0;k<9;k++) {
+                    database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
+                }
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
 
     //define the ChildEventListener added to checkinkeys
     ChildEventListener listener1 = new ChildEventListener() {
@@ -148,6 +181,7 @@ public class SpotFinder {
                 else {
                     spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                     markers.put(spotplace,spotmarker);    //else put a timed marker and map it to the place
+                    chinlocations.add(spotplace);
 
                 }
             }
@@ -165,12 +199,17 @@ public class SpotFinder {
                     else {
                         spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromBitmap(markerbitmaps.get(time))));
                         markers.put(spotplace, spotmarker);      //else put a marker and map it to spot
+                        chinlocations.add(spotplace);
                     }
 
                 }
                 else { //if status is inactive
                     insertdata(dataSnapshot.getKey(), time, 0,dollars,cents);         //make an entry in local db and mark it inactive
                 }
+            }
+            count = count+1;
+            if(count==childnum){
+                getDriveTime();
             }
 
         }
@@ -376,6 +415,7 @@ public class SpotFinder {
     public Map getTimes(){return chintimes;}
     public Map getCats(){return reportcat;}
     public Map getDesc(){return reportdesc;}
+    public Map getDriveTimes(){return chindrivetimes;}
 
     private void beServerCheckIn(CheckInDetails checkInDetails,String key){
         String updatedate = checkInDetails.getupdatedate();
@@ -490,6 +530,145 @@ public class SpotFinder {
 
         return (lons+lats);
     }
+
+    //--------Functions that get time required to reach the spot by user----------------//
+
+    private void getDriveTime(){
+        LatLng origin = new LatLng(latitude,longitude);
+        for(int i=0;i<chinlocations.size();i++) {
+            LatLng destination = chinlocations.get(i);
+            String url = getUrl(origin, destination); //fetch url to connect to google maps
+            FetchUrl FetchUrl = new FetchUrl();
+            FetchUrl.execute(url,(String)chinkeys.get(chinlocations.get(i)));            //execute this asynctask
+        }
+    }
+
+    private class FetchUrl extends AsyncTask<String, Void, String> {
+        String currentkey;
+        @Override
+        protected String doInBackground(String... params) {
+            currentkey = params[1];
+            // For storing data from web service
+            String data = "";
+
+            try {
+                // Fetching the data from web service
+                data = downloadUrl(params[0]);
+            } catch (Exception e) {
+            }
+            return data;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result,currentkey);
+
+        }
+    }
+
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        java.io.InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try {
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+
+            data = sb.toString();
+            br.close();
+
+        } catch (Exception e) {
+        } finally {
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+        String currentkey;
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+            currentkey = jsonData[1];
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                WalkTimeParser parser = new WalkTimeParser(); //initiate walktime parser object
+
+                // Starts parsing data
+                int totalmins = parser.parse(jObject);  //get mins required to drive to destination
+                chindrivetimes.put(currentkey,totalmins);
+                Log.d(TAG,"chindrivetime "+currentkey+" "+Integer.toString(totalmins));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return routes;
+        }
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+
+        }
+    }
+
+    private String getUrl(LatLng origin, LatLng dest) {
+
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+
+
+        // Sensor enabled
+        String sensor = "sensor=false";
+
+        //Api key
+        String key = "AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I";
+
+
+        String mode = "&mode=driving";
+
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + mode+"&key=";
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters +key;
+
+        return url;
+    }
+
+
+    //----------------------------------------------------------------------------------//
 
     private boolean analyzeReported(ReportedTimes reportedTimes){
         Calendar calendar = Calendar.getInstance();

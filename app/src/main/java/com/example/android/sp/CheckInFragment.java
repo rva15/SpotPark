@@ -53,6 +53,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -79,7 +80,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     //--General Utility--
     private  double curlatitude,curlongitude;
-    private float zoom = 16;
+    private float zoom = 18;
     private String checkinTime,deftitle="Untitled";
     private static final String TAG = "Debugger ";
     private static String UID="";
@@ -109,6 +110,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private LatLng cameracenter;
     private MapView gMapView;
     private Bitmap bitmap;
+    private Marker marker;
 
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
@@ -612,6 +614,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         curlongitude = mCurrentLocation.getLongitude();     //get the longitude
         place = new LatLng(curlatitude, curlongitude);      //initiate LatLng object
         //first time this method is called, put a marker on user's location and zoom in on it
+        if(marker!=null){
+            marker.remove();                            //remove previous marker
+        }
+        marker = map.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));  //set marker at current location
         if(i==0){
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
         }

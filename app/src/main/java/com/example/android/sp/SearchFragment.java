@@ -762,6 +762,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         Map Times =  finder.getTimes();
         Map Cats  =  finder.getCats();
         Map Desc  =  finder.getDesc();
+        Map DriveTime = finder.getDriveTimes();
         Map PWSpotnames = parkWhizSpots.getPWSpotnames();
         if(Cats.get(currentmarker)!=null){    //the marker belongs to a reported spot
             book.setVisibility(View.GONE);
@@ -770,7 +771,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             isReported=true;
             heading.setText("Reporter's Description");
             if((boolean)Cats.get(currentmarker)==true){
-                category.setText("Category : Verified free parking spot");
+                category.setText("Verified user-reported free parking spot");
                 float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                 rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                 rate.setText((String)Desc.get(currentmarker));
@@ -779,7 +780,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 return true;
             }
             else{
-                category.setText("Category : Unverified free parking spot");
+                category.setText("Unverified user-reported free parking spot");
                 float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                 rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                 rate.setText((String)Desc.get(currentmarker));
@@ -803,7 +804,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 res.moveToFirst();
                 int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));   //get dollars and cents from phone db
                 int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
-                category.setText("Category : Possibly empty in " + Integer.toString(time) + " mins");
+                //category.setText("Category : Possibly empty in " + Integer.toString(time) + " mins");
+                category.setText("You are " + Integer.toString((int)DriveTime.get(key)) + " mins away from here");
                 rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
             }
