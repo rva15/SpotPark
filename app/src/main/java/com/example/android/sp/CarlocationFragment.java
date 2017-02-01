@@ -279,7 +279,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     private void confirminform() {   //show a confirmation dialog before deleting the spot
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("This will send other app users a notification when you are near the car. You will be rewarded 2 more keys.");
+        builder.setMessage("This will notify other users that a legal parking spot is being vacated soon. You will be rewarded 2 more keys.");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 informaction();
