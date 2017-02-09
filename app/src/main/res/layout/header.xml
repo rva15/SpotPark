@@ -5,15 +5,30 @@
     android:orientation="vertical"
     android:weightSum="1">
 
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/keys"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:padding="8dp"
-        android:textColor="@color/tab_background_selected"/>
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/keys"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:padding="8dp"
+            android:textSize="18dp"
+            android:textColor="@color/orange"/>
+
+        <ImageView
+            android:layout_marginTop="8dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/key"/>
+
+
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

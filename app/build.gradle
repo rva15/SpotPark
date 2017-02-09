@@ -5,11 +5,11 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.example.android.sp"
+        applicationId "com.app.android.sp"
         minSdkVersion 21
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "1.4"
         multiDexEnabled true
     }
     buildTypes {

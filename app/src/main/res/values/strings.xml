@@ -19,7 +19,7 @@
         completions."
     </string>
     <string name="could_not_login_signup">"Could not login/sign-up"</string>
-    <string name="web_client_id">283432722166-icn0f1dke2845so2ag841mpvdklssum7.apps.googleusercontent.com</string>
+    <string name="web_client_id">283432722166-v6kdsn60hqrv8bq1krv5f09g0repjbgk.apps.googleusercontent.com</string>
     <string name="account_successfully_created">"Account Successfully Created"</string>
     <string name="facebook_app_id">1088141281275611</string>
 
@@ -47,7 +47,9 @@
     <string name="carlocation_ad_unit_id">ca-app-pub-6738316052917153/3316361828</string>
     <string name="postcheckin_ad_unit_id">ca-app-pub-6738316052917153/6069521826</string>
     <string name="postreport_ad_unit_id">ca-app-pub-6738316052917153/7190524627</string>
-    <string name="googleAPI_serverkey">AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I</string>
+    <!--<string name="googleAPI_serverkey">AIzaSyDKQYvSAVhRH6s8WW-RmtJPAyLnbjA9t8I</string>-->
+    <string name="googleAPI_serverkey">AIzaSyBVcvHsXeNYexNJFz0MHdi3ApGORwCUTYA</string>
+    <string name="googleAPI_directionskey">AIzaSyACGawqNaWIry4Poo2q4NO4V6kxMMy3iRw</string>
     <string name="ParkWhiz_API_key">c38210d1f5fda38362d86859997ef847</string>
     <string name="navigation_view_item_1">Search</string>
     <string name="navigation_view_item_2">Checkin</string>
