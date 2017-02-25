@@ -63,14 +63,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // General Utility
     private String UID="",starter="",latlngcode,key;
-    private int count=0;
     private Boolean isCheckedin,inputerror=false;
     private LinearLayout fragmentcontainer;
     private String TAG="debugger",locationcode,checkinkey;
     private final static String logoutFlagString = "logoutflag";
     private double latitude,longitude;
     private int couthours,coutmins;
-    private int dollars,cents,isfavorite;
+    private int dollars,cents;
+    private boolean searchstarted=false;
 
 
     // Google and Firebase
@@ -81,12 +81,13 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // Toolbar and Navigation Drawer
     private DrawerLayout mDrawerLayout;
-    private String TITLES[] = {"Home","History","Favorites","Contributions","Settings","Logout"};
+    private String TITLES[] = {"Home","History","Favorites","Contributions","Settings","Help","Logout"};
     private int ICONS[] = {R.drawable.home,
             R.drawable.history,
             R.drawable.favorite,
             R.drawable.contri,
             R.drawable.settings,
+            R.drawable.help,
             R.drawable.logout};
     private Toolbar toolbar;                              // Declaring the Toolbar Object
     private RecyclerView mRecyclerView;                           // Declaring RecyclerView
@@ -105,9 +106,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         UID     = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
         isCheckedin = intent1.getExtras().getBoolean("sendstatus"); //true if user has active CheckIn
         starter=intent1.getStringExtra("startedfrom");
-        Log.d(TAG,"startedfrom "+starter);
         if(starter.equals("notification")){       //check if it was opened from a notification
-            Log.d(TAG,"startedfrom notification"); //then cancel pending notifications
             NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
             nMgr.cancel(1);
         }
@@ -260,19 +259,16 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     // ----------- Main Menu Functions-----------------//
 
     private void deletedialog() {   //show a confirmation dialog before deleting the spot
-        Log.d(TAG, "entered deletedialog");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure you want to delete this Check-In?");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Log.d(TAG, "deletedialog yes");
                 delete();
 
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Log.d(TAG, "deletedialog no");
                 dialog.cancel();
             }
         });
@@ -314,6 +310,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         Bundle data = new Bundle();
         data.putString("userid",UID);
         data.putBoolean("isCheckedin",isCheckedin);
+        data.putBoolean("searchstarted",searchstarted);
         TabsFragment tabsFragment = new TabsFragment();
         tabsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
@@ -361,6 +358,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         fragmentTransaction.replace(R.id.fragment_container, settingsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
+    }
+
+    public void getHelp(){
+        Intent intent = new Intent(this, TutorialActivity.class); //send Intent
+        intent.putExtra("userid",UID);
+        intent.putExtra("sendstatus",isCheckedin);
+        intent.putExtra("startedfrom",starter);
+        startActivity(intent);
     }
 
     // Get the checked in fragment
@@ -463,6 +468,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public void setCoutTime(int couthours,int coutmins){
         this.couthours = couthours;
         this.coutmins = coutmins;
+    }
+
+    public void setStartSearch(boolean searchstarted){
+        this.searchstarted = searchstarted;
     }
 
 
@@ -688,15 +697,13 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     ChildEventListener listener1 = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            if(count==0) {
-                CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-                latlngcode=user.getlatlngcode();
-                key = user.getkey();
-                deletedata();
-                getcheckin.removeEventListener(listener1);
-                getcheckin.removeEventListener(listener2);
-            }
-            count = count+1;
+            CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
+            latlngcode=user.getlatlngcode();
+            key = user.getkey();
+            deletedata();
+            getcheckin.removeEventListener(listener1);
+            getcheckin.removeEventListener(listener2);
+
         }
 
         @Override

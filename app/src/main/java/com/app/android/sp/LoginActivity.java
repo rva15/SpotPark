@@ -6,7 +6,6 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -73,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String firstname = "", email = "", lastname = "";
     private String logoutFlagString = "logoutflag";
     private int count = 0;
-    private boolean isCheckedIn = false;
+    private boolean isCheckedIn = false,isNewUser=false;
     private Bitmap profilepic;
 
     // -- Firebase variables --
@@ -98,7 +97,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);                 //call onCreate method of super class
-        FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
+        //FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
         setContentView(R.layout.activity_login);            //setup the content view for the loginActivity
         Firebase.setAndroidContext(this);                   //set Firebase context
 
@@ -267,9 +266,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(!dataSnapshot.exists()){
-                        addNewUser(userid);       //if user is new add him to database
+                        isNewUser = true;
+                        addNewUser(userid);       //user is new, add him to database
                     }
                     else{
+                        isNewUser = false;
                         new CheckStatusBackground().execute(userid); //if not,see if there is active checkIn
                     }
                 }
@@ -314,7 +315,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             mAuthlogin.removeAuthStateListener(mAuthListener);
                             mAuthsignup.removeAuthStateListener(newAccountListener);
                             mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
+                            Intent intent=null;
+                            if(isNewUser) {
+                                intent = new Intent(LoginActivity.this, TutorialActivity.class); //proceed to help slides
+                            }
+                            else{
+                                intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
+                            }
                             intent.putExtra("userid", userid);
                             intent.putExtra("sendstatus",isCheckedIn);
                             intent.putExtra("startedfrom","login");
@@ -328,7 +335,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             mAuthlogin.removeAuthStateListener(mAuthListener);
                             mAuthsignup.removeAuthStateListener(newAccountListener);
                             mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent
+                            Intent intent=null;
+                            if(isNewUser) {
+                                intent = new Intent(LoginActivity.this, TutorialActivity.class); //proceed to help slides
+                            }
+                            else{
+                                intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
+                            }
                             intent.putExtra("userid", userid);
                             intent.putExtra("sendstatus",isCheckedIn);
                             intent.putExtra("startedfrom","login");
@@ -410,7 +423,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void addNewUser(String userID){
         database = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
         String key = database.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,4,0,0,0); //make a new user object
+        UserDetails user = new UserDetails(firstname,lastname,email,10,0,0,0); //make a new user object
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);

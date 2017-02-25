@@ -25,112 +25,149 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            android:layout_weight="3">
-
-            <com.google.android.gms.maps.MapView
-                android:id="@+id/smap"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                />
+                android:layout_height="0dp"
+                android:orientation="vertical"
+                android:layout_weight="3">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-            <android.support.v7.widget.CardView
-                xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/card_view"
-                android:layout_gravity="top"
-                android:layout_margin="8dp"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                card_view:cardCornerRadius="4dp">
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/smap"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/searchplacefragmentholder"
                     android:orientation="vertical">
+
+                    <android.support.v7.widget.CardView
+                        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                        android:id="@+id/card_view"
+                        android:layout_gravity="top"
+                        android:layout_margin="8dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        card_view:cardCornerRadius="4dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/searchplacefragmentholder"
+                            android:orientation="vertical">
+
+                        </LinearLayout>
+
+                    </android.support.v7.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal"
+                        android:clickable="true"
+                        android:id="@+id/recenter"
+                        android:background="@color/white"
+                        android:layout_marginTop="16dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_recenter"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:paddingLeft="8dp"
+                            android:paddingRight="8dp"
+                            android:text="RECENTER"
+                            android:gravity="center"
+                            android:textSize="12dp"
+                            android:textColor="@color/black"/>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-            </android.support.v7.widget.CardView>
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:orientation="horizontal"
-                android:clickable="true"
-                android:id="@+id/recenter"
-                android:background="@color/white"
-                android:layout_marginTop="16dp">
 
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:src="@drawable/ic_recenter"/>
+                    android:id="@+id/roundsearch"
+                    android:visibility="gone"
+                    android:layout_marginBottom="72dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_gravity="bottom|left"
+                    android:src="@drawable/roundsearch"/>
 
-                <TextView
+                <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:text="RECENTER"
-                    android:gravity="center"
-                    android:textSize="12dp"
-                    android:textColor="@color/black"/>
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|left"
+                    android:layout_marginBottom="32dp"
+                    android:layout_marginLeft="16dp">
 
-            </LinearLayout>
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/gridview"
+                        android:id="@+id/sgridview"
+                        android:visibility="gone"/>
 
-            </LinearLayout>
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/satview"
+                        android:id="@+id/ssatview"/>
 
 
+                </FrameLayout>
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:id="@+id/roundsearch"
-                android:visibility="gone"
-                android:layout_marginBottom="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="bottom|right"
-                android:src="@drawable/roundsearch"/>
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|left"
-                android:layout_marginBottom="32dp"
-                android:layout_marginLeft="16dp">
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center">
 
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/gridview"
-                    android:id="@+id/sgridview"
-                    android:visibility="gone"/>
+                    <ImageView
+                        android:layout_width="128dp"
+                        android:layout_margin="16dp"
+                        android:layout_height="128dp"
+                        android:src="@drawable/startsearch"
+                        android:id="@+id/startsearch"/>
 
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/satview"
-                    android:id="@+id/ssatview"/>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|right">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:background="@color/black"
+                        android:layout_marginBottom="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:textColor="@color/white"
+                        android:padding="8dp"
+                        android:text=" GOT IT"
+                        android:id="@+id/gotit"
+                        android:layout_gravity="center_horizontal"/>
+
+                </FrameLayout>
 
 
             </FrameLayout>
 
-        </FrameLayout>
-
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="100dp">
+                android:id="@+id/searchinfo"
+                android:layout_height="112dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -138,11 +175,13 @@
                     android:orientation="vertical"
                     android:id="@+id/legend">
 
-                    <View
+                    <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/black">
-                    </View>
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:background="@color/black"
+                        android:textColor="@color/white"
+                        android:text="Click on such markers on the map" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -162,17 +201,19 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:layout_marginLeft="-16dp"
-                            android:text="Street parking slot available in x mins"/>
+                            android:text="Available in x mins"/>
 
                         <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
+                            android:layout_marginLeft="-8dp"
                             android:src="@drawable/repver"/>
                         <TextView
                             android:layout_width="0dp"
-                            android:layout_weight="1"
+                            android:layout_weight="1.2"
+                            android:layout_marginLeft="-8dp"
                             android:layout_height="match_parent"
-                            android:text="Verified user reported spot"/>
+                            android:text="Verified user-reported"/>
 
                     </LinearLayout>
                     <LinearLayout
@@ -189,35 +230,96 @@
                             android:layout_width="0dp"
                             android:layout_weight="1"
                             android:layout_height="match_parent"
-                            android:text="ParkWhiz suggested paid parking lot"/>
+                            android:text="Parking lot (ParkWhiz)"/>
                         <ImageView
                             android:layout_width="wrap_content"
+                            android:layout_marginLeft="-8dp"
                             android:layout_height="match_parent"
                             android:src="@drawable/repunver"/>
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:text="Unverified user reported spot"/>
-                    </LinearLayout>
+                            android:layout_weight="1.2"
+                            android:layout_marginLeft="-8dp"
+                            android:text="Unverified user-reported"/>
+
+                        </LinearLayout>
 
                 </LinearLayout>
 
-            <!--  <Button
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Start Search"
-                android:id="@+id/startsearch" />  -->
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_margin="16dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:src="@drawable/startsearch"
-                    android:id="@+id/startsearch"/>
-
             </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:orientation="horizontal"
+                android:id="@+id/fromuntil1"
+                android:background="@color/midnight">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/white"
+                    android:text="FROM"/>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/white"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_horizontal"
+                    android:textColor="@color/white"
+                    android:layout_height="match_parent"
+                    android:text="UNTIL"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:id="@+id/fromuntil2"
+                android:orientation="horizontal"
+                android:background="@color/midnight">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_horizontal"
+                    android:layout_weight="1"
+                    android:id="@+id/displaystart"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="Now"
+                    android:textColor="@color/white" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="@color/white"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/displayend"
+                    android:paddingTop="1dp"
+                    android:paddingStart="8dp"
+                    android:gravity="center_horizontal"
+                    android:text="Next 3 hours"
+                    android:layout_gravity="center_vertical"
+                    android:textColor="@color/white"
+                    android:layout_weight="1" />
+
+
+            </LinearLayout>
+
+
 
         </LinearLayout>
 
@@ -268,21 +370,15 @@
                             android:gravity="center"
                             android:textColor="@color/tab_background_selected"
                             android:textSize="16dp"/>
-                    <TextView
-                        android:id="@+id/rate"
-                        android:layout_width="match_parent"
-                        android:layout_height="58dp"
-                        android:textSize="48dp"
-                        android:gravity="center"
-                        android:textColor="@color/tab_background_selected"/>
+                        <TextView
+                            android:id="@+id/rate"
+                            android:layout_width="match_parent"
+                            android:layout_height="58dp"
+                            android:textSize="48dp"
+                            android:gravity="center"
+                            android:textColor="@color/tab_background_selected"/>
                     </FrameLayout>
-                    <TextView
-                        android:id="@+id/complain"
-                        android:layout_width="match_parent"
-                        android:layout_height="32dp"
-                        android:gravity="center"
-                        android:textColor="@color/blue"
-                        android:text="@string/complain_string"/>
+
 
                 </LinearLayout>
                 <LinearLayout
@@ -290,6 +386,26 @@
                     android:layout_weight="2"
                     android:layout_height="match_parent"
                     android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:id="@+id/feedback">
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginLeft="32dp"
+                            android:src="@drawable/uplight"
+                            android:id="@+id/upvote"/>
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="8dp"
+                            android:src="@drawable/downlight"
+                            android:id="@+id/downvote"/>
+                    </LinearLayout>
 
                     <Button
                         android:layout_width="match_parent"
@@ -305,12 +421,6 @@
                         android:layout_weight="1"
                         android:text="Navigate"/>
 
-                    <Button
-                        android:id="@+id/parkedbutton"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:text="I Parked Here"/>
 
                     <Button
                         android:id="@+id/book"

@@ -8,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.DatePicker;
@@ -24,11 +25,14 @@ import java.util.Calendar;
 public class SearchTimeDialog extends android.support.v4.app.DialogFragment implements View.OnClickListener{
 
 
-    Calendar startcalendar,endcalendar;
-    ImageView psdate,pstime,pedate,petime;
-    SimpleDateFormat mdformat;
-    TextView startdate,starttime,enddate,endtime;
-    Boolean startend;
+    private Calendar startcalendar,endcalendar;
+    private ImageView psdate,pstime,pedate,petime;
+    private TextView startdate,starttime,enddate,endtime;
+    private Boolean startend;
+    private String fromtime="Now",untiltime="Next 3 hours";
+    private Boolean timeset=false;
+    private String TAG="debugger";
+
 
 
 
@@ -43,7 +47,6 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
         final View view = inflater.inflate(R.layout.dialog_searchtime, null);
 
         startcalendar = Calendar.getInstance();
-        mdformat = new SimpleDateFormat("yyyy / MM / dd ");
         startdate = (TextView) view.findViewById(R.id.searchsdate);
         setstartdatetv();
         starttime = (TextView) view.findViewById(R.id.searchstime);
@@ -72,8 +75,14 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Intent i = new Intent();
+                        if(timeset) {
+                            fromtime = startdate.getText() + "  " + starttime.getText();
+                            untiltime = enddate.getText() + "  " + endtime.getText();
+                        }
                         i.putExtra("startcalendar",startcalendar);
                         i.putExtra("endcalendar",endcalendar);
+                        i.putExtra("displaystart",fromtime);
+                        i.putExtra("displayend",untiltime);
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
                     }
                 })
@@ -125,6 +134,7 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
 
+            timeset = true;
             if(startend) {
                 endcalendar.set(Calendar.YEAR, year);
                 endcalendar.set(Calendar.MONTH, monthOfYear);
@@ -147,6 +157,7 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
 
         @Override
         public void onTimeSet(TimePicker view,int hours,int mins){
+            timeset=true;
             if(startend) {
                 endcalendar.set(Calendar.HOUR_OF_DAY, hours);
                 endcalendar.set(Calendar.MINUTE, mins);
@@ -165,15 +176,164 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
     };
 
     private void setstartdatetv(){
-        String strDate = mdformat.format(startcalendar.getTime());
+        String strDate="";
+        int day = startcalendar.get(Calendar.DAY_OF_WEEK);
+
+        switch (day) {
+            case Calendar.SUNDAY:
+                strDate = "Sun";
+                break;
+            case Calendar.MONDAY:
+                strDate = "Mon";
+                break;
+            case Calendar.TUESDAY:
+                strDate = "Tue";
+                break;
+            case Calendar.WEDNESDAY:
+                strDate = "Wed";
+                break;
+            case Calendar.THURSDAY:
+                strDate = "Thu";
+                break;
+            case Calendar.FRIDAY:
+                strDate = "Fri";
+                break;
+            case Calendar.SATURDAY:
+                strDate = "Sat";
+                break;
+        }
+        strDate = strDate + ", ";
+        int month = startcalendar.get(Calendar.MONTH);
+        switch (month) {
+            case Calendar.JANUARY:
+                strDate = strDate+"Jan ";
+                break;
+            case Calendar.FEBRUARY:
+                strDate = strDate+"Feb ";
+                break;
+            case Calendar.MARCH:
+                strDate = strDate+"Mar ";
+                break;
+            case Calendar.APRIL:
+                strDate = strDate+"Apr ";
+                break;
+            case Calendar.MAY:
+                strDate = strDate+"May ";
+                break;
+            case Calendar.JUNE:
+                strDate = strDate+"Jun ";
+                break;
+            case Calendar.JULY:
+                strDate = strDate+"Jul ";
+                break;
+            case Calendar.AUGUST:
+                strDate = strDate+"Aug ";
+                break;
+            case Calendar.SEPTEMBER:
+                strDate = strDate+"Sep ";
+                break;
+            case Calendar.OCTOBER:
+                strDate = strDate+"Oct ";
+                break;
+            case Calendar.NOVEMBER:
+                strDate = strDate+"Nov ";
+                break;
+            case Calendar.DECEMBER:
+                strDate = strDate+"Dec ";
+                break;
+        }
+        strDate = strDate+Integer.toString(startcalendar.get(Calendar.DAY_OF_MONTH));
+
         startdate.setText(strDate);
     }
     private void setenddatetv(){
-        String endDate = mdformat.format(endcalendar.getTime());
-        enddate.setText(endDate);
+        String strDate="";
+        int day = endcalendar.get(Calendar.DAY_OF_WEEK);
+        switch (day) {
+            case Calendar.SUNDAY:
+                strDate = "Sun";
+                break;
+            case Calendar.MONDAY:
+                strDate = "Mon";
+                break;
+            case Calendar.TUESDAY:
+                strDate = "Tue";
+                break;
+            case Calendar.WEDNESDAY:
+                strDate = "Wed";
+                break;
+            case Calendar.THURSDAY:
+                strDate = "Thu";
+                break;
+            case Calendar.FRIDAY:
+                strDate = "Fri";
+                break;
+            case Calendar.SATURDAY:
+                strDate = "Sat";
+                break;
+        }
+        strDate = strDate + ", ";
+        int month = endcalendar.get(Calendar.MONTH);
+        switch (month) {
+            case Calendar.JANUARY:
+                strDate = strDate+"Jan ";
+                break;
+            case Calendar.FEBRUARY:
+                strDate = strDate+"Feb ";
+                break;
+            case Calendar.MARCH:
+                strDate = strDate+"Mar ";
+                break;
+            case Calendar.APRIL:
+                strDate = strDate+"Apr ";
+                break;
+            case Calendar.MAY:
+                strDate = strDate+"May ";
+                break;
+            case Calendar.JUNE:
+                strDate = strDate+"Jun ";
+                break;
+            case Calendar.JULY:
+                strDate = strDate+"Jul ";
+                break;
+            case Calendar.AUGUST:
+                strDate = strDate+"Aug ";
+                break;
+            case Calendar.SEPTEMBER:
+                strDate = strDate+"Sep ";
+                break;
+            case Calendar.OCTOBER:
+                strDate = strDate+"Oct ";
+                break;
+            case Calendar.NOVEMBER:
+                strDate = strDate+"Nov ";
+                break;
+            case Calendar.DECEMBER:
+                strDate = strDate+"Dec ";
+                break;
+        }
+        strDate = strDate+Integer.toString(endcalendar.get(Calendar.DAY_OF_MONTH));
+
+        enddate.setText(strDate);
     }
     private void setstarttimetv(){
-        String strTime = startcalendar.get(Calendar.HOUR)+" : "+startcalendar.get(Calendar.MINUTE)+" ";
+        String strTime;
+        if(startcalendar.get(Calendar.HOUR)!=0) {
+            if(startcalendar.get(Calendar.MINUTE)>9) {
+                strTime = startcalendar.get(Calendar.HOUR) + " : " + startcalendar.get(Calendar.MINUTE) + " ";
+            }
+            else{
+                strTime = startcalendar.get(Calendar.HOUR) + " : 0" + startcalendar.get(Calendar.MINUTE) + " ";
+            }
+        }
+        else{
+            if(startcalendar.get(Calendar.MINUTE)>9) {
+                strTime = " 12: " + startcalendar.get(Calendar.MINUTE) + " ";
+            }
+            else{
+                strTime = " 12: 0" + startcalendar.get(Calendar.MINUTE) + " ";
+            }
+        }
         if(startcalendar.get(Calendar.AM_PM) == Calendar.AM){
             strTime = strTime +"am";
         }
@@ -184,14 +344,30 @@ public class SearchTimeDialog extends android.support.v4.app.DialogFragment impl
 
     }
     private void setendtimetv(){
-        String endTime = endcalendar.get(Calendar.HOUR)+" : "+endcalendar.get(Calendar.MINUTE)+" ";
+        String strTime;
+        if(endcalendar.get(Calendar.HOUR)!=0) {
+            if(endcalendar.get(Calendar.MINUTE)>9) {
+                strTime = endcalendar.get(Calendar.HOUR) + " : " + endcalendar.get(Calendar.MINUTE) + " ";
+            }
+            else{
+                strTime = endcalendar.get(Calendar.HOUR) + " : 0" + endcalendar.get(Calendar.MINUTE) + " ";
+            }
+        }
+        else{
+            if(endcalendar.get(Calendar.MINUTE)>9) {
+                strTime = " 12: " + endcalendar.get(Calendar.MINUTE) + " ";
+            }
+            else{
+                strTime = " 12: 0" + endcalendar.get(Calendar.MINUTE) + " ";
+            }
+        }
         if(endcalendar.get(Calendar.AM_PM) == Calendar.AM){
-            endTime = endTime +"am";
+            strTime = strTime +"am";
         }
         else if(endcalendar.get(Calendar.AM_PM) == Calendar.PM){
-            endTime = endTime +"pm";
+            strTime = strTime +"pm";
         }
-        endtime.setText(endTime);
+        endtime.setText(strTime);
 
     }
 

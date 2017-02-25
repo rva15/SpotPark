@@ -72,6 +72,7 @@
             android:exported="false" />
 
         <activity android:name="com.app.android.sp.HomeScreenActivity" />
+        <activity android:name="com.app.android.sp.TutorialActivity" />
     </application>
 
 </manifest>

@@ -1,19 +1,41 @@
 package com.app.android.sp;
 //All imports
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ruturaj on 1/12/17.
@@ -30,9 +52,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     private HistoryViewHolder historyViewHolder;
     private static RecyclerView recyclerView;
     private View itemView;
+    private Context context;
 
     //constructor
-    public HistoryAdapter(ArrayList historyplace, ArrayList keys, ArrayList bitmaps, FragmentActivity activity,HistoryFragment historyFragment, RecyclerView recyclerView, String UID) {
+    public HistoryAdapter(ArrayList historyplace, ArrayList keys, ArrayList bitmaps, FragmentActivity activity, HistoryFragment historyFragment, RecyclerView recyclerView, String UID, Context context) {
 
         this.historyplace = historyplace;
         this.keys = keys;
@@ -40,6 +63,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         this.activity = activity;
         this.recyclerView = recyclerView;
         this.UID = UID;
+        this.context = context;
         this.historyFragment = historyFragment;
     }
 
@@ -95,8 +119,36 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         public void onClick(View view) {
             if (view.getId() == R.id.addtofavorites) {
                 if (addtofavorites.isChecked()) {
-                    showNamesDialog();
-                    addtofavorites.setEnabled(false);    //disable the checkbox soon as it is clicked
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                    TextView tv = new TextView(context);
+                    tv.setText("Enter a suitable name for this spot");
+                    tv.setGravity(Gravity.CENTER);
+                    final int version = Build.VERSION.SDK_INT;
+                    if (version >= 23) {
+                        tv.setBackgroundColor(ContextCompat.getColor(context,R.color.tab_background_selected));
+                    } else {
+                        tv.setBackgroundColor(context.getResources().getColor(R.color.tab_background_selected));
+                    }
+                    final EditText et = new EditText(context);
+                    alertDialogBuilder.setView(et);
+                    alertDialogBuilder.setCustomTitle(tv);
+                    alertDialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            dialog.cancel();
+                            addtofavorites.setChecked(false);
+                        }
+                    });
+
+                    // Setting Positive "OK" Button
+                    alertDialogBuilder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            favorite(getAdapterPosition(),et.getText().toString());
+                            addtofavorites.setEnabled(false);    //disable the checkbox soon as it is clicked
+                        }
+                    });
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+
                 }
             }
             if(view.getId()==R.id.hiscardnavigate){     //send intent to google maps api
@@ -114,18 +166,48 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
             }
         }
 
-        private void showNamesDialog() {
-            // Create an instance of the dialog fragment and show it
-            Bundle args = new Bundle();
-            args.putDouble("latitude",historyplace.get(getAdapterPosition()).getplatitude());
-            args.putDouble("longitude",historyplace.get(getAdapterPosition()).getplongitude());
-            args.putParcelable("bitmap",bitmaps.get(getAdapterPosition()));
-            args.putString("key",keys.get(getAdapterPosition()));
-            android.support.v4.app.DialogFragment dialog = new NamesDialog();
-            dialog.setArguments(args);
-            dialog.setTargetFragment(historyFragment, 2);       //set target fragment to history fragment
+        private void favorite(int position,String spotname){
 
-            dialog.show(activity.getSupportFragmentManager(),"Names fragment");
+            Double latitude = historyplace.get(getAdapterPosition()).getplatitude();
+            Double longitude = historyplace.get(getAdapterPosition()).getplongitude();
+            Bitmap bitmap   = bitmaps.get(getAdapterPosition());
+            String key      = keys.get(getAdapterPosition());
+
+
+            DatabaseReference database;
+            database = FirebaseDatabase.getInstance().getReference();
+
+            FavoritePlace favoritePlace = new FavoritePlace(latitude,longitude,spotname);
+            Map<String, Object> favoriteMap = favoritePlace.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+            childUpdates.put("/FavoriteKeys/"+UID+"/"+key, favoriteMap);
+            childUpdates.put("/HistoryKeys/"+UID+"/"+key+"/isfavorite",1);
+            database.updateChildren(childUpdates);
+
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] datum = baos.toByteArray();
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+            StorageReference favoriteRef = storageRef.child(UID+"/Favorites/"+key+".jpg");
+
+            UploadTask uploadTask = favoriteRef.putBytes(datum);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                }
+            });
+
+            Toast.makeText(context,"Added this spot to Favorites",Toast.LENGTH_SHORT).show();
+
         }
 
 

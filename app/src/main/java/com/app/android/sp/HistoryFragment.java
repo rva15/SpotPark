@@ -138,7 +138,7 @@ public class HistoryFragment extends Fragment  {
                         i = i + 1;
                         if (i == max) {
                             fetchinghistory.setVisibility(View.GONE);
-                            historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID);
+                            historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID,getContext());
                             recList.setAdapter(historyAdapter);   //set the adapter
                             database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
                         }
@@ -181,48 +181,6 @@ public class HistoryFragment extends Fragment  {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         //fetch information from the dialog and call the checkIn function
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==REQ_CODE){
-            Bundle bundle = data.getExtras();
-            String spotname = bundle.getString("spotname");
-            Double latitude = bundle.getDouble("latitude");
-            Double longitude = bundle.getDouble("longitude");
-            Bitmap bitmap   = bundle.getParcelable("bitmap");
-            String key      = bundle.getString("key");
-
-            FavoritePlace favoritePlace = new FavoritePlace(latitude,longitude,spotname);
-            Map<String, Object> favoriteMap = favoritePlace.toMap();
-            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-            childUpdates.put("/FavoriteKeys/"+UID+"/"+key, favoriteMap);
-            childUpdates.put("/HistoryKeys/"+UID+"/"+key+"/isfavorite",1);
-            database.updateChildren(childUpdates);
-
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-            byte[] datum = baos.toByteArray();
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-            StorageReference favoriteRef = storageRef.child(UID+"/Favorites/"+key+".jpg");
-
-            UploadTask uploadTask = favoriteRef.putBytes(datum);
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                }
-            });
-
-            Toast.makeText(this.getContext(),"Added this spot to Favorites",Toast.LENGTH_SHORT).show();
-
-        }
-
-
     }
 
     private void showdefault(){

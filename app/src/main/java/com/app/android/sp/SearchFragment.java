@@ -19,11 +19,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -100,16 +100,28 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private SpotFinder finder;
     private SlidingUpPanelLayout mLayout;
     private SearchHelperDB helperDB;
-    private TextView category,rate,heading,complain,spotdescription;
-    private boolean isReported = false,isAutoMode=true,searchStarted=false,isComplaint=false;
+    private TextView category,rate,heading,spotdescription;
+    private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private Button button2,book;
+    private Button book;
     private ParkWhizSpots parkWhizSpots;
-    private LinearLayout legend;
     private ImageView roundsearch,startsearch;
     private double cameralatitude,cameralongitude;
     private ImageView ssatview,sgridview;
+    private FrameLayout searchinfo;
+    private TextView gotit;
+    private ImageView upvote,downvote;
+    private Calendar startcalendar, endcalendar;
+    private TextView displaystart,displayend;
+    private LinearLayout fromuntil1,fromuntil2;
+    private boolean showCheckIns=true;
+    private LinearLayout feedback;
+    private static boolean searchStarted=false;
+    private String curLatLng;
+    private String label;
+
+
 
     //--Google Map and Firebase variables
     private GoogleMap searchmap;
@@ -126,8 +138,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     //---------------------------------Fragment Lifecycle Functions---------------------------//
 
-    public static SearchFragment newInstance(int page,String id) {
+    public static SearchFragment newInstance(int page,String id,boolean searchstarted) {
         UID = id;
+        searchStarted = searchstarted;
         Bundle args = new Bundle();
         args.putInt(ARG_PAGE, page);
         SearchFragment fragment = new SearchFragment();
@@ -233,8 +246,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         heading = (TextView) view.findViewById(R.id.heading);
         Button button = (Button) view.findViewById(R.id.navigatebutton);
         button.setOnClickListener(this);
-        button2 = (Button) view.findViewById(R.id.parkedbutton);
-        button2.setOnClickListener(this);
         Button button4 = (Button) view.findViewById(R.id.drawroute);
         button4.setOnClickListener(this);
         startsearch = (ImageView) view.findViewById(R.id.startsearch);
@@ -243,10 +254,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
         recenter.setVisibility(View.GONE);
         recenter.setOnClickListener(this);
-        legend = (LinearLayout) view.findViewById(R.id.legend);
-        legend.setVisibility(View.GONE);
-        complain = (TextView)view.findViewById(R.id.complain);
-        complain.setOnClickListener(this);
         roundsearch = (ImageView) view.findViewById(R.id.roundsearch);
         roundsearch.setOnClickListener(this);
         book = (Button) view.findViewById(R.id.book);
@@ -255,6 +262,23 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         ssatview.setOnClickListener(this);
         sgridview = (ImageView) view.findViewById(R.id.sgridview);
         sgridview.setOnClickListener(this);
+        searchinfo = (FrameLayout) view.findViewById(R.id.searchinfo);
+        searchinfo.setVisibility(View.GONE);
+        upvote = (ImageView) view.findViewById(R.id.upvote);
+        upvote.setOnClickListener(this);
+        downvote = (ImageView) view.findViewById(R.id.downvote);
+        downvote.setOnClickListener(this);
+        gotit = (TextView) view.findViewById(R.id.gotit);
+        gotit.setOnClickListener(this);
+        gotit.setVisibility(View.GONE);
+        displaystart = (TextView) view.findViewById(R.id.displaystart);
+        displayend = (TextView) view.findViewById(R.id.displayend);
+        fromuntil1 = (LinearLayout) view.findViewById(R.id.fromuntil1);
+        fromuntil2 = (LinearLayout) view.findViewById(R.id.fromuntil2);
+        fromuntil1.setVisibility(View.GONE);
+        fromuntil2.setVisibility(View.GONE);
+        feedback= (LinearLayout) view.findViewById(R.id.feedback);
+
 
         IconGenerator iconFactory = new IconGenerator(getContext());   //Create this marker for the legend
         iconFactory.setStyle(IconGenerator.STYLE_PURPLE);
@@ -292,6 +316,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         searchmap.setOnMapClickListener(this);
         searchmap.setOnCameraMoveStartedListener(this);
         searchmap.getUiSettings().setMyLocationButtonEnabled(true);
+        if(searchStarted){
+            startSearch();
+        }
     }
 
 
@@ -342,13 +369,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 searchmap.animateCamera(CameraUpdateFactory.newLatLng(place.getLatLng()));
                 recenter.setVisibility(View.VISIBLE);
                 if(searchStarted){
-                    parkWhizSpots = new ParkWhizSpots(place.getLatLng().latitude,place.getLatLng().longitude,null,null,searchmap,getContext()); //send a single call to ParkWhiz API
-                    parkWhizSpots.getParkWhizspots();
-                    if(finder!=null){
-                        finder.detachListeners();      //detach previous finder's listeners
-                    }
-                    finder = new SpotFinder(place.getLatLng().latitude, place.getLatLng().longitude, searchmap, UID,getContext()); //declare the SpotFinder and pass it user's location and searchmap
-                    finder.addListener();   //call its addListener method
+                    resetParkWhiz(place.getLatLng().latitude,place.getLatLng().longitude);
+                    resetSpotFinder(place.getLatLng().latitude,place.getLatLng().longitude);
                 }
             }
             @Override
@@ -395,6 +417,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         if(v.getId()==R.id.drawroute) {                  //draw a route on the searchmap
             if (currentmarker != null && place != null) {
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                Toast.makeText(getContext(),"Drawing route",Toast.LENGTH_SHORT).show();
                 String url = getUrl(place, currentmarker);
                 FetchUrl FetchUrl = new FetchUrl();
                 FetchUrl.execute(url);
@@ -406,10 +430,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             showSearchDialog();
         }
 
+        if(v.getId()==R.id.gotit){
+            searchinfo.setVisibility(View.GONE);
+            gotit.setVisibility(View.GONE);
+        }
+
         if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
+            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             double lat = currentmarker.latitude;
             double lon = currentmarker.longitude;
-            String label = rate.getText().toString();
             String uriBegin = "geo:" + lat + "," + lon;
             String query = lat + "," + lon + "(" + label + ")";
             String encodedQuery = Uri.encode(query);
@@ -419,28 +448,68 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             getActivity().getApplicationContext().startActivity(intent);
         }
-        if(v.getId()==R.id.parkedbutton){
+        if(v.getId()==R.id.upvote){
             if(!isReported) {
-                // delete the corresponding checkin and update this user's points
-                latlngcode = getLatLngCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
-                getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
-                getcheckin.addChildEventListener(listener1);
-                updatecinfeed();
-                Toast.makeText(getContext(),"Thanks for letting us know. You earned 1 point for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-                homeScreenActivity.getHome();
-                return;
+                //confirm this action with a dialog
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                builder.setMessage("This will send us a feedback that this parking spot is legitimate to the best of your knowledge");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        upvoteCheckin();
+                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+                });
+                android.support.v7.app.AlertDialog dialog = builder.create();
+                dialog.show();
             }
             if(isReported){
-                // add a verification to reported spot and update user's points
-                String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
-                getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
-                getreported.addChildEventListener(listener5);
-                updaterepfeed();
-                Toast.makeText(getContext(),"Thanks for letting us know. You earned 2 points for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-                homeScreenActivity.getHome();
-                return;
+                if(!isUpvoted) {
+                    //confirm this action with a dialog
+                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                    builder.setMessage("This will send us a feedback that this user-reported spot is legitimate to the best of your knowledge");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            upvoteReported(false); // add a verification to reported spot and update user's points
+                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        }
+                    });
+                    android.support.v7.app.AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                else{
+                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                    builder.setMessage("Are you sure you want to remove your upvote?");
+                    builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            registerComplaint(false,true,false);
+                            removeUpvote(key);
+                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        }
+                    });
+                    android.support.v7.app.AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
             }
 
         }
@@ -449,10 +518,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             recenter.setVisibility(View.GONE);
             searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15));
             isAutoMode=true;
+            resetParkWhiz(latitude,longitude);
+            resetSpotFinder(latitude,longitude);
         }
         if(v.getId()==R.id.startsearch){
             //check number of keys
-
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity)getActivity();
+            homeScreenActivity.setStartSearch(true);
+            fromuntil1.setVisibility(View.VISIBLE);
+            fromuntil2.setVisibility(View.VISIBLE);
             database = FirebaseDatabase.getInstance().getReference();
             database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -463,7 +537,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
                         homeScreenActivity.refreshMainAdapter();
                         roundsearch.setVisibility(View.VISIBLE);
-                        Toast.makeText(getContext(),"You have "+Integer.toString(keys-1)+"keys remaining",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(),"You have "+Integer.toString(keys-1)+" keys remaining",Toast.LENGTH_LONG).show();
                         startSearch();
                     }
                     else{
@@ -478,18 +552,42 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             });
 
         }
-        if(v.getId()==R.id.complain){
-            // Create an instance of the dialog fragment and show it
-            DialogFragment dialog = new ComplainDialog();
-            Bundle args = new Bundle();
-            args.putBoolean("isReported",isReported);
-            dialog.setArguments(args);
-            dialog.setTargetFragment(SearchFragment.this, 5);       //set target fragment to this fragment
-            dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
+        if(v.getId()==R.id.downvote){
+            if(!isDownvoted) {
+                // Create an instance of the dialog fragment and show it
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                DialogFragment dialog = new ComplainDialog();
+                Bundle args = new Bundle();
+                args.putBoolean("isReported", isReported);
+                dialog.setArguments(args);
+                dialog.setTargetFragment(SearchFragment.this, 5);       //set target fragment to this fragment
+                dialog.show(this.getActivity().getSupportFragmentManager(), "Search fragment");
+            }
+            else{
+                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                builder.setMessage("Remove your downvote on this spot?");
+                builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        upvoteReported(true);
+                        removeUpvote(key); //serves as remove downvote
+                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+                });
+                android.support.v7.app.AlertDialog dialog = builder.create();
+                dialog.show();
+            }
         }
 
         if(v.getId()==R.id.book){
             //send intent to web browser along with spot's url
+            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             Map PWSpotlinks = parkWhizSpots.getParkWhizlinks();
             String url = (String) PWSpotlinks.get(currentmarker);
             Intent i = new Intent(Intent.ACTION_VIEW);
@@ -521,23 +619,49 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             Boolean nospace = bundle.getBoolean("nospace");
             Boolean notfree = bundle.getBoolean("notfree");
             registerComplaint(notav,nospace,notfree);           //register user's complaint
+            if(isReported){
+                downvoteReported();
+            }
             Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
         }
         if(requestCode==4){
-            Bundle bundle = data.getExtras();
-            Calendar startcalendar = (Calendar)bundle.get("startcalendar");
-            Calendar endcalendar = (Calendar)bundle.get("endcalendar");
-            resetParkWhiz(startcalendar,endcalendar);
+            Bundle bundle = data.getExtras();  //set the range of dates to search in
+            startcalendar = (Calendar)bundle.get("startcalendar");
+            endcalendar = (Calendar)bundle.get("endcalendar");
+            if(startcalendar.getTimeInMillis()>=endcalendar.getTimeInMillis()){
+                showSearchDialog();
+                Toast.makeText(getContext(),"Invalid range of dates!",Toast.LENGTH_LONG).show();
+                return;
+            }
+            displaystart.setText((String)bundle.get("displaystart"));
+            if(bundle.get("displaystart").equals("Now")){
+                showCheckIns=true;
+            }
+            else{
+                showCheckIns=false;
+            }
+            displayend.setText((String)bundle.get("displayend"));
+            resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+            resetParkWhiz(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
         }
     }
 
-    private void resetParkWhiz(Calendar start,Calendar end){
+    private void resetParkWhiz(double curlatitude,double curlongitude){
         if(parkWhizSpots!=null){
             parkWhizSpots.removeParkWhizspots();
         }
-        parkWhizSpots = new ParkWhizSpots(latitude,longitude,start,end,searchmap,getContext()); //send a single call to ParkWhiz API
+        parkWhizSpots = new ParkWhizSpots(curlatitude,curlongitude,startcalendar,endcalendar,searchmap,getContext()); //send a single call to ParkWhiz API
         parkWhizSpots.getParkWhizspots();
 
+    }
+
+    private void resetSpotFinder(double curlatitude,double curlongitude){
+        if(finder!=null){
+            finder.detachListeners();      //detach previous finder's listeners
+        }
+
+        finder = new SpotFinder(curlatitude,curlongitude, searchmap, UID,getContext(),startcalendar,endcalendar,showCheckIns); //declare the SpotFinder and pass it user's location and searchmap
+        finder.addListener();   //call its addListener method
     }
 
     private void showSearchDialog(){
@@ -549,10 +673,18 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     private void startSearch(){
         startsearch.setVisibility(View.GONE);
-        legend.setVisibility(View.VISIBLE);
+        searchinfo.setVisibility(View.VISIBLE);
+        gotit.setVisibility(View.VISIBLE);
+        startcalendar = Calendar.getInstance();
+        Calendar tmp = (Calendar) startcalendar.clone();
+        tmp.add(Calendar.HOUR_OF_DAY, 3);
+        endcalendar = tmp;
         searchStarted=true;
-        parkWhizSpots = new ParkWhizSpots(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude,null,null,searchmap,getContext()); //send a single call to ParkWhiz API
-        parkWhizSpots.getParkWhizspots();
+        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+        resetParkWhiz(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+        fromuntil1.setVisibility(View.VISIBLE);
+        fromuntil2.setVisibility(View.VISIBLE);
+        roundsearch.setVisibility(View.VISIBLE);
     }
 
     private void registerComplaint(Boolean notav,Boolean nospace,Boolean notfree){
@@ -631,6 +763,61 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
 
     // helper functions for updating stuff
+
+    private void upvoteCheckin(){
+        // delete the corresponding checkin and update this user's points
+        latlngcode = getLatLngCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
+        getcheckin = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(key);
+        getcheckin.addChildEventListener(listener1);
+        updatecinfeed();
+        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+        Toast.makeText(getContext(),"Thanks for letting us know. You earned 1 point for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+        return;
+    }
+
+
+    private void upvoteReported(boolean downvoteremoval){
+        String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
+        getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
+        getreported.addChildEventListener(listener5);
+        if(!downvoteremoval) {
+            updaterepfeed();
+        }
+        giveUpvote(key);
+        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+        Toast.makeText(getContext(),"Thanks for letting us know. You earned 2 points for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+        return;
+    }
+
+    private void downvoteReported(){
+        database = FirebaseDatabase.getInstance().getReference();
+        String tempkey = database.child("Feedbacks/"+key).push().getKey();  //add new entry to searcher database
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/Feedbacks/"+key+"/"+UID, -1);
+        database.updateChildren(childUpdates);
+        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+    }
+
+
+    private void giveUpvote(String key){
+        database = FirebaseDatabase.getInstance().getReference();
+        String tempkey = database.child("Feedbacks/"+key).push().getKey();  //add new entry to searcher database
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/Feedbacks/"+key+"/"+UID, 1);
+        database.updateChildren(childUpdates);
+
+    }
+
+    private void removeUpvote(String key){
+        database = FirebaseDatabase.getInstance().getReference();
+        String tempkey = database.child("Feedbacks/"+key).push().getKey();  //add new entry to searcher database
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/Feedbacks/"+key+"/"+UID, null);
+        database.updateChildren(childUpdates);
+        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+    }
+
+
     private void changeVerification(String uid){
         database = FirebaseDatabase.getInstance().getReference();
         database.child("ReportedTimes").child(uid).child(key).child("verification").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -760,22 +947,23 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         // call the spot finder algorithm
         if(searchStarted) {
             if (i == 0) {
-                parkWhizSpots = new ParkWhizSpots(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude,null,null,searchmap,getContext()); //send a single call to ParkWhiz API
-                parkWhizSpots.getParkWhizspots();
+                curLatLng = getLatLngCode(latitude,longitude);
+                resetParkWhiz(cameralatitude,cameralongitude);
                 t = new Timer();
                 t.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        if(finder!=null){
-                            finder.detachListeners();      //detach previous finder's listeners
-                        }
-                        finder = new SpotFinder(cameralatitude,cameralongitude, searchmap, UID,getContext()); //declare the SpotFinder and pass it user's location and searchmap
-                        finder.addListener();   //call its addListener method
+                        resetSpotFinder(cameralatitude,cameralongitude);
                     }
 
-                }, 0, 60000);                    //new spotfinder declared every minute
+                }, 0, 45000);                    //new spotfinder declared every 45 secs
             }
             i = i + 1;
+            String tmpLatLng = getLatLngCode(latitude,longitude);
+            if(!(tmpLatLng.equals(curLatLng))){
+                resetParkWhiz(latitude,longitude);
+                curLatLng = tmpLatLng;
+            }
         }
 
     }
@@ -819,75 +1007,101 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public boolean onMarkerClick(Marker marker){
 
         currentmarker = marker.getPosition(); //get the marker's position and set it to currentmarker
-        Map Keys  =  finder.getKeys();        //get these maps from the spotfinder object
-        Map Times =  finder.getTimes();
-        Map Cats  =  finder.getCats();
-        Map Desc  =  finder.getDesc();
-        Map DriveTime = finder.getDriveTimes();
-        Map PWSpotnames = parkWhizSpots.getPWSpotnames();
-        if(Cats.get(currentmarker)!=null){    //the marker belongs to a reported spot
-            book.setVisibility(View.GONE);
-            button2.setVisibility(View.VISIBLE);
-            complain.setVisibility(View.VISIBLE);
-            isReported=true;
-            heading.setText("Reporter's Description");
-            if((boolean)Cats.get(currentmarker)==true){
-                category.setText("Verified user-reported free parking spot");
-                //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-                //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
-                rate.setVisibility(View.GONE);
-                spotdescription.setVisibility(View.VISIBLE);
-                spotdescription.setText((String)Desc.get(currentmarker));
+        if(finder!=null) {
+            Map Keys = finder.getKeys();        //get these maps from the spotfinder object
+            Map Times = finder.getTimes();
+            Map Cats = finder.getCats();
+            Map Desc = finder.getDesc();
+            Map DriveTime = finder.getDriveTimes();
+            Map UserFeedbacks = finder.getUserFeedbacks();
+            Map PWSpotnames = parkWhizSpots.getPWSpotnames();
+            if (Cats.get(currentmarker) != null) {    //the marker belongs to a reported spot
+                book.setVisibility(View.GONE);
+                feedback.setVisibility(View.VISIBLE);
                 key = (String) Keys.get(currentmarker);
-                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-                return true;
-            }
-            else{
-                category.setText("Unverified user-reported free parking spot");
-                //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-                //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
-                rate.setVisibility(View.GONE);
-                spotdescription.setVisibility(View.VISIBLE);
-                spotdescription.setText((String)Desc.get(currentmarker));
-                key = (String) Keys.get(currentmarker);
-                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-                return true;
-            }
-        }
-        if(Keys.get(currentmarker)!=null) {         //marker belongs to a checkin spot
-            book.setVisibility(View.GONE);
-            button2.setVisibility(View.VISIBLE);
-            complain.setVisibility(View.VISIBLE);
-            isReported=false;
-            key = (String) Keys.get(currentmarker);
-            int time = (int) Times.get(currentmarker);
-            if (key != null) {
-                Cursor res = helperDB.getInfo(key);
-                if (res.getCount() <= 0) {
-                    res.close();
+                if(UserFeedbacks.get(key)==null){
+                    //user did not give a feedback about this spot
+                    isUpvoted=false;
+                    isDownvoted=false;
+                    upvote.setImageResource(R.drawable.uplight);
+                    downvote.setImageResource(R.drawable.downlight);
                 }
-                res.moveToFirst();
-                int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));   //get dollars and cents from phone db
-                int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
-                category.setText("You are " + Integer.toString((int)DriveTime.get(key)) + " mins away from here");
-                rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
-                spotdescription.setVisibility(View.GONE);
-                rate.setVisibility(View.VISIBLE);
+                else{
+                    //user has given feedback
+                    if((int)UserFeedbacks.get(key)==1){
+                        //positive feedback
+                        isUpvoted=true;
+                        isDownvoted=false;
+                        upvote.setImageResource(R.drawable.updark);
+                        downvote.setImageResource(R.drawable.downlight);
+                    }
+                    if((int)UserFeedbacks.get(key)==-1){
+                        //negative feedback
+                        isUpvoted=false;
+                        isDownvoted=true;
+                        upvote.setImageResource(R.drawable.uplight);
+                        downvote.setImageResource(R.drawable.downdark);
+                    }
+                }
+                isReported = true;
+                heading.setText("Reporter's Description");
+                if ((boolean) Cats.get(currentmarker) == true) {
+                    category.setText("Verified user-reported free parking spot");
+                    //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
+                    //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
+                    rate.setVisibility(View.GONE);
+                    spotdescription.setVisibility(View.VISIBLE);
+                    spotdescription.setText((String) Desc.get(currentmarker));
+                    label = (String) Desc.get(currentmarker);
+                    mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                    return true;
+                } else {
+                    category.setText("Unverified user-reported free parking spot");
+                    //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
+                    //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
+                    rate.setVisibility(View.GONE);
+                    spotdescription.setVisibility(View.VISIBLE);
+                    spotdescription.setText((String) Desc.get(currentmarker));
+                    label = (String) Desc.get(currentmarker);
+                    mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                    return true;
+                }
+            }
+            if (Keys.get(currentmarker) != null) {         //marker belongs to a checkin spot
+                book.setVisibility(View.GONE);
+                feedback.setVisibility(View.VISIBLE);
+                label = "SpotPark user Check-In";
+                isReported = false;
+                key = (String) Keys.get(currentmarker);
+                int time = (int) Times.get(currentmarker);
+                if (key != null) {
+                    Cursor res = helperDB.getInfo(key);
+                    if (res.getCount() <= 0) {
+                        res.close();
+                    }
+                    res.moveToFirst();
+                    int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));   //get dollars and cents from phone db
+                    int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
+                    category.setText("You are " + Integer.toString((int) DriveTime.get(key)) + " mins away from here");
+                    rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
+                    spotdescription.setVisibility(View.GONE);
+                    rate.setVisibility(View.VISIBLE);
+                    mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                }
+            }
+            if (PWSpotnames.get(currentmarker) != null) {  //marker belongs to ParkWhiz spot
+                book.setVisibility(View.VISIBLE);
+                feedback.setVisibility(View.GONE);
+                heading.setText("Parking Lot Name");
+                category.setText("ParkWhiz suggested parking spot");
+                //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
+                //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
+                rate.setVisibility(View.GONE);
+                spotdescription.setVisibility(View.VISIBLE);
+                spotdescription.setText((String) PWSpotnames.get(currentmarker));
+                label = (String) PWSpotnames.get(currentmarker);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
             }
-        }
-        if(PWSpotnames.get(currentmarker)!=null){  //marker belongs to ParkWhiz spot
-            book.setVisibility(View.VISIBLE);
-            complain.setVisibility(View.GONE);
-            button2.setVisibility(View.GONE);
-            heading.setText("Parking Lot Name");
-            category.setText("ParkWhiz suggested parking spot");
-            //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-            //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
-            rate.setVisibility(View.GONE);
-            spotdescription.setVisibility(View.VISIBLE);
-            spotdescription.setText((String)PWSpotnames.get(currentmarker));
-            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
         }
         return false;
     }
@@ -1042,7 +1256,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(10);
+                lineOptions.width(7);
                 lineOptions.color(android.graphics.Color.BLUE);
 
             }

@@ -189,7 +189,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         for(int i=0;i<time.size();i++){
             if(time.get(i)>=0 && time.get(i)<=24){
                 if(time.get(i-1)==123.){
-                    if(time.get(i)>=0 && time.get(i)<=12) {
+                    if(time.get(i)>=0 && time.get(i)<12) {
                         TextView t = (TextView) view.findViewById(R.id.starttime);
                         if(time.get(i+1)==0) {
                             t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+"0 am");
@@ -200,7 +200,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         starthour = time.get(i);
                         startmin = time.get(i + 1);
                     }
-                    if(time.get(i)>12 && time.get(i)<=24) {
+                    if(time.get(i)>=12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
                         TextView t = (TextView) view.findViewById(R.id.starttime);
                         if(time.get(i+1)==0) {
@@ -215,7 +215,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
 
                 }
                 else if(time.get(i-1)==243.){
-                    if(time.get(i)>=0 && time.get(i)<=12) {
+                    if(time.get(i)>=0 && time.get(i)<12) {
                         TextView t = (TextView) view.findViewById(R.id.endtime);
                         if(time.get(i+1)==0) {
                             t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+"0 am");
@@ -226,7 +226,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
                         endhour = time.get(i);
                         endmin = time.get(i + 1);
                     }
-                    if(time.get(i)>12 && time.get(i)<=24) {
+                    if(time.get(i)>=12 && time.get(i)<=24) {
                         int hour=time.get(i)-12;
                         TextView t = (TextView) view.findViewById(R.id.endtime);
                         if(time.get(i+1)==0) {
@@ -303,7 +303,13 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
     private void reportspot(){
         if(radioflag==true) {
             if (starthour == 99 || startmin == 99 || endhour == 99 || endmin == 99) {
-                Toast.makeText(this.getContext(), "Please choose a time", Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getContext(), "Please choose a time range", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+        if(!fullweek){
+            if(!(mon.isChecked()||tue.isChecked()||wed.isChecked()||thu.isChecked()||fri.isChecked()||sat.isChecked()||sun.isChecked())){
+                Toast.makeText(getContext(),"Please select the available days",Toast.LENGTH_SHORT).show();
                 return;
             }
         }

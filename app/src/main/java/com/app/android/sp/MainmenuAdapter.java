@@ -111,6 +111,10 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                     homeScreenActivity.getSettings();
                     drawer.closeDrawers();
                 }
+                if(option.equals("Help")){
+                    homeScreenActivity.getHelp();
+                    drawer.closeDrawers();
+                }
                 if (option.equals("Logout")) {
                     homeScreenActivity.backToLogin();
                     drawer.closeDrawers();
@@ -139,6 +143,10 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==6) {
+                    homeScreenActivity.getHelp();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==7) {
                     homeScreenActivity.backToLogin();
                     drawer.closeDrawers();
                 }

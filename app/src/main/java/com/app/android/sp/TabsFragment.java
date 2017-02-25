@@ -22,6 +22,7 @@ public class TabsFragment extends Fragment {
     private static String TAG = "debugger";
     private static String UID;
     private static boolean isCheckedin;
+    static private boolean searchStarted;
     private ViewPager viewPager;
     private TabLayout tabLayout;
 
@@ -35,6 +36,7 @@ public class TabsFragment extends Fragment {
         Bundle extras = getArguments();                 //get userid and active CheckIn status
         UID = extras.getString("userid");
         isCheckedin = extras.getBoolean("isCheckedin");
+        searchStarted = extras.getBoolean("searchstarted");
 
     }
 
@@ -106,7 +108,7 @@ public class TabsFragment extends Fragment {
                 }
             }
             if (position == 1) {
-                return SearchFragment.newInstance(position + 1, UID);
+                return SearchFragment.newInstance(position + 1, UID,searchStarted);
             } else {
                 return ReportFragment.newInstance(position + 1, UID);
             }

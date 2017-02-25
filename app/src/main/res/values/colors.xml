@@ -16,4 +16,7 @@
     <color name="blue">#3933FF</color>
     <color name="yellow">#FFFF00</color>
     <color name="orange">#FFA500</color>
+    <color name="trialgrey">#696969</color>
+    <color name="midnight"> #34282C</color>
+    <color name="dimgrey">#696969</color>
 </resources>

@@ -57,7 +57,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     private GoogleApiClient mGoogleApiClient;
     private  double curlatitude;
     private  double curlongitude;
-    private float zoom = 16;
+    private float zoom = 18;
     private static final String TAG = "Debugger ";
     private Location mCurrentLocation;
     private LatLng place;
@@ -329,6 +329,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
                 }
             };
             rpin.setVisibility(View.GONE);
+            marker.remove();
             position = reportmap.getCameraPosition();
             cameracenter = position.target;
             reportmap.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));

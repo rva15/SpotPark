@@ -505,6 +505,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         };
 
         pin.setVisibility(View.GONE);
+        marker.remove();
         map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
         map.snapshot(callback);
 
