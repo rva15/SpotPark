@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -77,10 +78,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onSaveInstanceState(Bundle outState) {
         //This MUST be done before saving any of your own or your base class's variables
-        final Bundle mapViewSaveState = new Bundle(outState);
-        gMapView.onSaveInstanceState(mapViewSaveState);
-        outState.putBundle("mapViewSaveState", mapViewSaveState);
-        //Add any other variables here.
+        outState.putBoolean("searchStarted",searchStarted);
         super.onSaveInstanceState(outState);
     }
 
@@ -117,7 +115,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private LinearLayout fromuntil1,fromuntil2;
     private boolean showCheckIns=true;
     private LinearLayout feedback;
-    private static boolean searchStarted=false;
+    private static boolean searchStarted;
     private String curLatLng;
     private String label;
 
@@ -152,6 +150,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+
 
 
         ApiClient = new GoogleApiClient.Builder(this.getActivity())   //GoogleApiClient object initialization
@@ -207,6 +206,17 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onDestroy();
         if (null != gMapView)
             gMapView.onDestroy();
+    }
+
+    @Override
+    public void onDestroyView()
+    {
+        super.onDestroyView();
+        if(placeSelection!=null){
+            FragmentTransaction ft = this.getFragmentManager().beginTransaction();
+            ft.remove(placeSelection);
+            ft.commitAllowingStateLoss(); //since this comes after save instance state
+        }
     }
 
     @Override
@@ -353,9 +363,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         65);
             }
         }
-        //if yes, request location updates
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                ApiClient, locationRequest, this);         //location request requests updates periodically
+        else {
+            //if yes, request location updates
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    ApiClient, locationRequest, this);         //location request requests updates periodically
+        }
     }
 
     //--------------------------------Other helper functions-------------------------//
@@ -437,16 +449,18 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            double lat = currentmarker.latitude;
-            double lon = currentmarker.longitude;
-            String uriBegin = "geo:" + lat + "," + lon;
-            String query = lat + "," + lon + "(" + label + ")";
-            String encodedQuery = Uri.encode(query);
-            String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
-            Uri uri = Uri.parse(uriString);
-            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, uri);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            getActivity().getApplicationContext().startActivity(intent);
+            if(currentmarker!=null) {
+                double lat = currentmarker.latitude;
+                double lon = currentmarker.longitude;
+                String uriBegin = "geo:" + lat + "," + lon;
+                String query = lat + "," + lon + "(" + label + ")";
+                String encodedQuery = Uri.encode(query);
+                String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
+                Uri uri = Uri.parse(uriString);
+                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, uri);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getActivity().getApplicationContext().startActivity(intent);
+            }
         }
         if(v.getId()==R.id.upvote){
             if(!isReported) {
@@ -680,8 +694,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         tmp.add(Calendar.HOUR_OF_DAY, 3);
         endcalendar = tmp;
         searchStarted=true;
-        resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
-        resetParkWhiz(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
+        if(searchmap!=null) {
+            resetSpotFinder(searchmap.getCameraPosition().target.latitude, searchmap.getCameraPosition().target.longitude);
+            resetParkWhiz(searchmap.getCameraPosition().target.latitude, searchmap.getCameraPosition().target.longitude);
+        }
         fromuntil1.setVisibility(View.VISIBLE);
         fromuntil2.setVisibility(View.VISIBLE);
         roundsearch.setVisibility(View.VISIBLE);
@@ -928,7 +944,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
 
     private void updateUI() {
-
         latitude = currentLocation.getLatitude();       //get the current latitude
         longitude = currentLocation.getLongitude();     //get the current longitude
         //sendLocation();                                 //update this user's location in searcher database

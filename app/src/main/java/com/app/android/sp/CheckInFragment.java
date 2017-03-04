@@ -201,8 +201,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (null != gMapView)
-            gMapView.onSaveInstanceState(outState);
+        /*if (null != gMapView) {
+           // gMapView.onSaveInstanceState(outState);
+        }*/
     }
 
     @Override
@@ -311,9 +312,11 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                         64);
             }
         }
-        //if yes, request location updates
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
+        else {
+            //if yes, request location updates
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
+        }
     }
 
     //-------------------------------CheckIn Action Related Functions-------------------------//

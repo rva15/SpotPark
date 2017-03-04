@@ -255,9 +255,11 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
-            currholder.Name.setText(userDetails.getfirstname() + " "+userDetails.getlastname());
-            currholder.email.setText(userDetails.getemail());
-            currholder.keys.setText("  "+userDetails.getnumberofkeys());
+            if(userDetails!=null) {
+                currholder.Name.setText(userDetails.getfirstname() + " " + userDetails.getlastname());
+                currholder.email.setText(userDetails.getemail());
+                currholder.keys.setText("  " + userDetails.getnumberofkeys());
+            }
         }
 
         @Override

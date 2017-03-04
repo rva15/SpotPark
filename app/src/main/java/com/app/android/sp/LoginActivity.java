@@ -72,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String firstname = "", email = "", lastname = "";
     private String logoutFlagString = "logoutflag";
     private int count = 0;
-    private boolean isCheckedIn = false,isNewUser=false;
+    private boolean isCheckedIn = false;
     private Bitmap profilepic;
 
     // -- Firebase variables --
@@ -266,11 +266,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(!dataSnapshot.exists()){
-                        isNewUser = true;
                         addNewUser(userid);       //user is new, add him to database
                     }
                     else{
-                        isNewUser = false;
                         new CheckStatusBackground().execute(userid); //if not,see if there is active checkIn
                     }
                 }
@@ -315,13 +313,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             mAuthlogin.removeAuthStateListener(mAuthListener);
                             mAuthsignup.removeAuthStateListener(newAccountListener);
                             mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent=null;
-                            if(isNewUser) {
-                                intent = new Intent(LoginActivity.this, TutorialActivity.class); //proceed to help slides
-                            }
-                            else{
-                                intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
-                            }
+                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
                             intent.putExtra("userid", userid);
                             intent.putExtra("sendstatus",isCheckedIn);
                             intent.putExtra("startedfrom","login");
@@ -330,18 +322,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         }
                         else if(!dataSnapshot.exists()){
                             isCheckedIn=false;
-                            mAuthstart.removeAuthStateListener(mAuthListener);
                             mAuthfb.removeAuthStateListener(newAccountListener);
                             mAuthlogin.removeAuthStateListener(mAuthListener);
                             mAuthsignup.removeAuthStateListener(newAccountListener);
                             mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent=null;
-                            if(isNewUser) {
-                                intent = new Intent(LoginActivity.this, TutorialActivity.class); //proceed to help slides
-                            }
-                            else{
-                                intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
-                            }
+                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
                             intent.putExtra("userid", userid);
                             intent.putExtra("sendstatus",isCheckedIn);
                             intent.putExtra("startedfrom","login");
@@ -387,10 +372,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     if (user != null) {
                         //if someone is already signed in, proceed to check his status
                         new CheckStatusBackground().execute(user.getUid());
+                        mAuthstart.removeAuthStateListener(mAuthListener);
                     } else {
                         // there is no one signed in
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                         findViewById(R.id.mainlayout).setVisibility(View.VISIBLE);
+                        mAuthstart.removeAuthStateListener(mAuthListener);
                     }
                 }
             };
@@ -449,6 +436,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             });
         }
+
+        Intent intent = new Intent(LoginActivity.this, TutorialActivity.class); //send Intent to Tutorial Activity
+        intent.putExtra("userid", userid);
+        intent.putExtra("sendstatus",isCheckedIn);
+        intent.putExtra("startedfrom","login");
+        startActivity(intent);
 
     }
 

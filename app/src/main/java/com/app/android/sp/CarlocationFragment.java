@@ -133,7 +133,9 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         if(mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();  //disconnect apiclient on stop
         }
-        getminstoleave.removeEventListener(listener2);
+        if(getminstoleave!=null) {
+            getminstoleave.removeEventListener(listener2);
+        }
         super.onStop();
     }
 

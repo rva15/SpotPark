@@ -137,6 +137,11 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onDestroyView()
     {
         super.onDestroyView();
+        if(placeSelection!=null){
+            FragmentTransaction ft = this.getFragmentManager().beginTransaction(); //need to remove to fix user bug
+            ft.remove(placeSelection);
+            ft.commitAllowingStateLoss(); //since this comes after save instance state
+        }
     }
 
     @Override
@@ -149,8 +154,9 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (null != sMapView)
-            sMapView.onSaveInstanceState(outState);
+        /*if (null != sMapView) {
+            //sMapView.onSaveInstanceState(outState);
+        }*/
     }
 
     @Override
@@ -275,9 +281,11 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
                         63);
             }
         }
-        //if yes, request location updates
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
+        else {
+            //if yes, request location updates
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    mGoogleApiClient, mLocationRequest, this);         //location request requests updates periodically
+        }
     }
 
 

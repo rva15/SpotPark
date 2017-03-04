@@ -1,6 +1,7 @@
 package com.app.android.sp;
 //All imports
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -770,6 +771,11 @@ public class SpotFinder {
     private boolean analyzeReported(Calendar startcal, Calendar endcal,ReportedTimes reportedTimes){
 
 
+        if(startcal==null || endcal==null) {
+            startcal = Calendar.getInstance();
+            endcal = (Calendar) startcal.clone();
+            endcal.add(Calendar.HOUR_OF_DAY, 3);
+        }
         if(reportedTimes.getfullday()&&reportedTimes.getfullweek()){
             return true;
         }
@@ -787,7 +793,9 @@ public class SpotFinder {
         }
 
         if((!reportedTimes.getfullday())&&(!reportedTimes.getfullweek())){
+            Log.d(TAG,"startcal im here");
             if((!checkTimeRange(startcal,endcal,reportedTimes))||(!checkDayRange(startcal,endcal,reportedTimes))){
+
                 return false;
             }
         }
@@ -812,6 +820,7 @@ public class SpotFinder {
         daysofweek.put(7, reportedTimes.getsat());
         int startday = startcal.get(Calendar.DAY_OF_WEEK); //required beginning day
         int endday = endcal.get(Calendar.DAY_OF_WEEK);   //required end day
+        Log.d(TAG,"startcal "+Boolean.toString(reportedTimes.getsat()));
 
 
         if (endcal.get(Calendar.DAY_OF_YEAR) - startcal.get(Calendar.DAY_OF_YEAR) < 7) {  //are the two days within one week's difference?
@@ -822,7 +831,7 @@ public class SpotFinder {
                     }
                 }
             }
-            if (startday < endday) {  //ex start wed and end mon
+            if (startday > endday) {  //ex start wed and end mon
                 for (int i = startday; i <= 7; i++) {
                     if (!(boolean) daysofweek.get(i)) {
                         return false;
@@ -867,27 +876,34 @@ public class SpotFinder {
             int rependmin = 60 * reportedTimes.getendhours() + reportedTimes.getendmins();
 
             if (startmin <= endmin) { //eg 3pm and 6pm
-                if (!(startmin>=repstartmin && endmin<=rependmin)) {
-                    return false;
+                if (repstartmin <= rependmin) {
+                    if (!(startmin >= repstartmin && endmin <= rependmin)) {
+                        return false;
+                    }
+                }
+                else{
+                    if (!(startmin >= repstartmin && endmin > rependmin)) {
+                        return false;
+                    }
                 }
             } else { //eg 6pm and 6am
                 if (repstartmin <= rependmin) { //eg 3pm and 6pm
-                    if (!(startmin >= repstartmin && endmin <= 24 * 60)) {
-                        return false;
-                    }
+                    return false;
                 } else { //eg 6pm and 6am
                     if (!(startmin >= repstartmin && endmin <= rependmin)) {
                         return false;
                     }
                 }
             }
-
-
         }
 
-
         return true;
+
     }
+
+
+
+
  }
 
 
