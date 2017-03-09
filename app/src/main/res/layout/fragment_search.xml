@@ -103,6 +103,16 @@
                     android:layout_gravity="bottom|left"
                     android:src="@drawable/roundsearch"/>
 
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:id="@+id/refreshspots"
+                    android:layout_marginBottom="110dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_gravity="bottom|left"
+                    android:visibility="gone"
+                    android:src="@drawable/refreshspot"/>
+
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -140,112 +150,6 @@
                         android:id="@+id/startsearch"/>
 
                 </FrameLayout>
-
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|right">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:clickable="true"
-                        android:background="@color/black"
-                        android:layout_marginBottom="4dp"
-                        android:layout_marginEnd="8dp"
-                        android:textColor="@color/white"
-                        android:padding="8dp"
-                        android:text=" GOT IT"
-                        android:id="@+id/gotit"
-                        android:layout_gravity="center_horizontal"/>
-
-                </FrameLayout>
-
-
-            </FrameLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:id="@+id/searchinfo"
-                android:layout_height="112dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:id="@+id/legend">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:background="@color/black"
-                        android:textColor="@color/white"
-                        android:text="Click on such markers on the map" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:layout_marginLeft="-16dp"
-                        android:layout_marginBottom="8dp"
-                        android:layout_marginTop="8dp">
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/markerx"/>
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:layout_marginLeft="-16dp"
-                            android:text="Available in x mins"/>
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="-8dp"
-                            android:src="@drawable/repver"/>
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_weight="1.2"
-                            android:layout_marginLeft="-8dp"
-                            android:layout_height="match_parent"
-                            android:text="Verified user-reported"/>
-
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:id="@+id/custommarker"/>
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
-                            android:layout_height="match_parent"
-                            android:text="Parking lot (ParkWhiz)"/>
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_marginLeft="-8dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/repunver"/>
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1.2"
-                            android:layout_marginLeft="-8dp"
-                            android:text="Unverified user-reported"/>
-
-                        </LinearLayout>
-
-                </LinearLayout>
 
             </FrameLayout>
 
@@ -337,20 +241,17 @@
             <TextView
                 android:id="@+id/category"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="32dp"
                 android:gravity="center"
-                android:background="@color/tab_background_unselected"
+                android:background="@color/dimgrey"
                 android:textColor="#ffffff"/>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_height="match_parent"
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                android:layout_weight="3"
                     android:orientation="vertical">
 
                     <TextView
@@ -367,76 +268,86 @@
                             android:layout_width="match_parent"
                             android:layout_height="58dp"
                             android:id="@+id/spotdescription"
-                            android:gravity="center"
+                            android:gravity="top|center_horizontal"
                             android:textColor="@color/tab_background_selected"
-                            android:textSize="16dp"/>
+                            android:textSize="24dp"/>
                         <TextView
                             android:id="@+id/rate"
                             android:layout_width="match_parent"
                             android:layout_height="58dp"
                             android:textSize="48dp"
-                            android:gravity="center"
+                            android:gravity="top|center_horizontal"
                             android:textColor="@color/tab_background_selected"/>
                     </FrameLayout>
 
 
                 </LinearLayout>
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="2"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:layout_height="0dp"
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:id="@+id/feedback">
+                        android:text="ROUTE"
+                        android:gravity="center"
+                        android:id="@+id/drawroute"
+                        android:background="@color/dimgrey"
+                        android:textColor="@color/white"/>
 
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginLeft="32dp"
-                            android:src="@drawable/uplight"
-                            android:id="@+id/upvote"/>
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_marginEnd="8dp"
-                            android:src="@drawable/downlight"
-                            android:id="@+id/downvote"/>
-                    </LinearLayout>
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/white"/>
 
-                    <Button
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:text="Draw Route"
-                        android:id="@+id/drawroute"/>
-
-                    <Button
+                    <TextView
                         android:id="@+id/navigatebutton"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="Navigate"/>
+                        android:text="NAVIGATE"
+                        android:gravity="center"
+                        android:background="@color/dimgrey"
+                        android:textColor="@color/white"/>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/white"/>
 
 
-                    <Button
+                    <TextView
                         android:id="@+id/book"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:text="Book"/>
+                        android:text="BOOK"
+                        android:gravity="center"
+                        android:background="@color/dimgrey"
+                        android:textColor="@color/white"/>
+
+
+                    <TextView
+                        android:id="@+id/feedback"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="FEEDBACK"
+                        android:gravity="center"
+                        android:background="@color/dimgrey"
+                        android:textColor="@color/white"/>
 
 
 
                 </LinearLayout>
 
 
-            </LinearLayout>
-
         </LinearLayout>
+
+
 
 
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>

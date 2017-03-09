@@ -102,19 +102,16 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private Button book;
+    private TextView book,navigate,route;
     private ParkWhizSpots parkWhizSpots;
-    private ImageView roundsearch,startsearch;
+    private ImageView roundsearch,startsearch,refreshspots;
     private double cameralatitude,cameralongitude;
     private ImageView ssatview,sgridview;
-    private FrameLayout searchinfo;
-    private TextView gotit;
-    private ImageView upvote,downvote;
     private Calendar startcalendar, endcalendar;
     private TextView displaystart,displayend;
     private LinearLayout fromuntil1,fromuntil2;
     private boolean showCheckIns=true;
-    private LinearLayout feedback;
+    private TextView feedback;
     private static boolean searchStarted;
     private String curLatLng;
     private String label;
@@ -254,10 +251,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         rate = (TextView) view.findViewById(R.id.rate);
         spotdescription = (TextView) view.findViewById(R.id.spotdescription);
         heading = (TextView) view.findViewById(R.id.heading);
-        Button button = (Button) view.findViewById(R.id.navigatebutton);
-        button.setOnClickListener(this);
-        Button button4 = (Button) view.findViewById(R.id.drawroute);
-        button4.setOnClickListener(this);
+        navigate = (TextView) view.findViewById(R.id.navigatebutton);
+        navigate.setOnClickListener(this);
+        route = (TextView) view.findViewById(R.id.drawroute);
+        route.setOnClickListener(this);
         startsearch = (ImageView) view.findViewById(R.id.startsearch);
         startsearch.setOnClickListener(this);
         gMapView.setOnClickListener(this);
@@ -266,35 +263,22 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         recenter.setOnClickListener(this);
         roundsearch = (ImageView) view.findViewById(R.id.roundsearch);
         roundsearch.setOnClickListener(this);
-        book = (Button) view.findViewById(R.id.book);
+        book = (TextView) view.findViewById(R.id.book);
         book.setOnClickListener(this);
         ssatview = (ImageView) view.findViewById(R.id.ssatview);
         ssatview.setOnClickListener(this);
         sgridview = (ImageView) view.findViewById(R.id.sgridview);
         sgridview.setOnClickListener(this);
-        searchinfo = (FrameLayout) view.findViewById(R.id.searchinfo);
-        searchinfo.setVisibility(View.GONE);
-        upvote = (ImageView) view.findViewById(R.id.upvote);
-        upvote.setOnClickListener(this);
-        downvote = (ImageView) view.findViewById(R.id.downvote);
-        downvote.setOnClickListener(this);
-        gotit = (TextView) view.findViewById(R.id.gotit);
-        gotit.setOnClickListener(this);
-        gotit.setVisibility(View.GONE);
         displaystart = (TextView) view.findViewById(R.id.displaystart);
         displayend = (TextView) view.findViewById(R.id.displayend);
         fromuntil1 = (LinearLayout) view.findViewById(R.id.fromuntil1);
         fromuntil2 = (LinearLayout) view.findViewById(R.id.fromuntil2);
         fromuntil1.setVisibility(View.GONE);
         fromuntil2.setVisibility(View.GONE);
-        feedback= (LinearLayout) view.findViewById(R.id.feedback);
-
-
-        IconGenerator iconFactory = new IconGenerator(getContext());   //Create this marker for the legend
-        iconFactory.setStyle(IconGenerator.STYLE_PURPLE);
-        iconFactory.setTextAppearance(R.style.iconGenText);
-        ImageView custommarker = (ImageView) view.findViewById(R.id.custommarker);
-        custommarker.setImageBitmap(iconFactory.makeIcon("$xx"));
+        feedback= (TextView) view.findViewById(R.id.feedback);
+        feedback.setOnClickListener(this);
+        refreshspots = (ImageView) view.findViewById(R.id.refreshspots);
+        refreshspots.setOnClickListener(this);
 
         initializeComponents();
 
@@ -442,11 +426,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             showSearchDialog();
         }
 
-        if(v.getId()==R.id.gotit){
-            searchinfo.setVisibility(View.GONE);
-            gotit.setVisibility(View.GONE);
+        if(v.getId()==R.id.refreshspots){
+            if(searchStarted) {
+                resetParkWhiz(cameralatitude, cameralongitude);
+                resetSpotFinder(cameralatitude, cameralongitude);
+                Toast.makeText(getContext(),"Refreshing spots",Toast.LENGTH_SHORT).show();
+            }
         }
-
         if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             if(currentmarker!=null) {
@@ -462,85 +448,23 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 getActivity().getApplicationContext().startActivity(intent);
             }
         }
-        if(v.getId()==R.id.upvote){
-            if(!isReported) {
-                //confirm this action with a dialog
-                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
-                builder.setMessage("This will send us a feedback that this parking spot is legitimate to the best of your knowledge");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        upvoteCheckin();
-                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                    }
-                });
-                android.support.v7.app.AlertDialog dialog = builder.create();
-                dialog.show();
-            }
-            if(isReported){
-                if(!isUpvoted) {
-                    //confirm this action with a dialog
-                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
-                    builder.setMessage("This will send us a feedback that this user-reported spot is legitimate to the best of your knowledge");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            upvoteReported(false); // add a verification to reported spot and update user's points
-                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                        }
-                    });
-                    android.support.v7.app.AlertDialog dialog = builder.create();
-                    dialog.show();
-                }
-                else{
-                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
-                    builder.setMessage("Are you sure you want to remove your upvote?");
-                    builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            registerComplaint(false,true,false);
-                            removeUpvote(key);
-                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                        }
-                    });
-                    android.support.v7.app.AlertDialog dialog = builder.create();
-                    dialog.show();
-                }
-            }
-
-        }
         if(v.getId()==R.id.recenter){
             // animate camera back to user's location
             recenter.setVisibility(View.GONE);
-            searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15));
+            if(searchmap!=null && place!=null) {
+                searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15));
+                if(searchStarted) {
+                    resetParkWhiz(latitude, longitude);
+                    resetSpotFinder(latitude, longitude);
+                }
+            }
             isAutoMode=true;
-            resetParkWhiz(latitude,longitude);
-            resetSpotFinder(latitude,longitude);
         }
         if(v.getId()==R.id.startsearch){
             //check number of keys
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity)getActivity();
             homeScreenActivity.setStartSearch(true);
-            fromuntil1.setVisibility(View.VISIBLE);
-            fromuntil2.setVisibility(View.VISIBLE);
             database = FirebaseDatabase.getInstance().getReference();
             database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -566,37 +490,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             });
 
         }
-        if(v.getId()==R.id.downvote){
-            if(!isDownvoted) {
-                // Create an instance of the dialog fragment and show it
-                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                DialogFragment dialog = new ComplainDialog();
-                Bundle args = new Bundle();
-                args.putBoolean("isReported", isReported);
-                dialog.setArguments(args);
-                dialog.setTargetFragment(SearchFragment.this, 5);       //set target fragment to this fragment
-                dialog.show(this.getActivity().getSupportFragmentManager(), "Search fragment");
-            }
-            else{
-                android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
-                builder.setMessage("Remove your downvote on this spot?");
-                builder.setPositiveButton("Remove", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        upvoteReported(true);
-                        removeUpvote(key); //serves as remove downvote
-                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                        mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                    }
-                });
-                android.support.v7.app.AlertDialog dialog = builder.create();
-                dialog.show();
-            }
+        if(v.getId()==R.id.feedback){
+            // Create an instance of the dialog fragment and show it
+            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            checkFeeedbacks(key);
+
         }
 
         if(v.getId()==R.id.book){
@@ -629,14 +528,26 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode== 5){
             Bundle bundle = data.getExtras();
-            Boolean notav = bundle.getBoolean("notav");
-            Boolean nospace = bundle.getBoolean("nospace");
-            Boolean notfree = bundle.getBoolean("notfree");
-            registerComplaint(notav,nospace,notfree);           //register user's complaint
-            if(isReported){
-                downvoteReported();
+            Boolean yes   = bundle.getBoolean("yes");
+            if(yes){
+                if(isReported){
+                    upvoteReported();
+                }
+                else{
+                    upvoteCheckin();
+                }
             }
-            Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
+            else {
+                Boolean notav = bundle.getBoolean("notav");
+                Boolean nospace = bundle.getBoolean("nospace");
+                Boolean notfree = bundle.getBoolean("notfree");
+                registerComplaint(notav, nospace, notfree);           //register user's complaint
+                if (isReported) {
+                    downvoteReported();
+                }
+                Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
+            }
+
         }
         if(requestCode==4){
             Bundle bundle = data.getExtras();  //set the range of dates to search in
@@ -687,8 +598,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     private void startSearch(){
         startsearch.setVisibility(View.GONE);
-        searchinfo.setVisibility(View.VISIBLE);
-        gotit.setVisibility(View.VISIBLE);
+        fromuntil1.setVisibility(View.VISIBLE);
+        fromuntil2.setVisibility(View.VISIBLE);
+        roundsearch.setVisibility(View.VISIBLE);
+        refreshspots.setVisibility(View.VISIBLE);
+        Toast.makeText(getContext(),"Click on the markers for more info",Toast.LENGTH_LONG).show();
         startcalendar = Calendar.getInstance();
         Calendar tmp = (Calendar) startcalendar.clone();
         tmp.add(Calendar.HOUR_OF_DAY, 3);
@@ -698,15 +612,17 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             resetSpotFinder(searchmap.getCameraPosition().target.latitude, searchmap.getCameraPosition().target.longitude);
             resetParkWhiz(searchmap.getCameraPosition().target.latitude, searchmap.getCameraPosition().target.longitude);
         }
-        fromuntil1.setVisibility(View.VISIBLE);
-        fromuntil2.setVisibility(View.VISIBLE);
-        roundsearch.setVisibility(View.VISIBLE);
+
     }
 
     private void registerComplaint(Boolean notav,Boolean nospace,Boolean notfree){
         if(isReported){
             if(nospace||notfree){
                 //reduce verifications on the reported spot
+                if(nospace){
+                    //register complaint against user if this is not a parking place at all
+                    updatecomplaints();
+                }
                 isComplaint = true;
                 String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
                 getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
@@ -780,6 +696,46 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     // helper functions for updating stuff
 
+    private void showFeedbackDialog(){
+        DialogFragment dialog = new ComplainDialog();
+        Bundle args = new Bundle();
+        args.putBoolean("isReported", isReported);
+        dialog.setArguments(args);
+        dialog.setTargetFragment(SearchFragment.this, 5);       //set target fragment to this fragment
+        dialog.show(this.getActivity().getSupportFragmentManager(), "Search fragment");
+    }
+
+    private void checkFeeedbacks(String key){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("Feedbacks").child(key).child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    //user has already given a feedback
+                    android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+                    builder.setMessage("You have already given a feedback for this spot.");
+                    builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        }
+                    });
+                    android.support.v7.app.AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                else{
+                    showFeedbackDialog();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     private void upvoteCheckin(){
         // delete the corresponding checkin and update this user's points
         latlngcode = getLatLngCode((int)Math.round(currentmarker.latitude*100),(int)Math.round(currentmarker.longitude*100));
@@ -787,25 +743,24 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         getcheckin.addChildEventListener(listener1);
         updatecinfeed();
         resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
-        Toast.makeText(getContext(),"Thanks for letting us know. You earned 1 point for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(),"Thanks for letting us know. You earned 1 point for this action.",Toast.LENGTH_SHORT).show();
         return;
     }
 
 
-    private void upvoteReported(boolean downvoteremoval){
+    private void upvoteReported(){
         String code = getLatLngCode(currentmarker.latitude,currentmarker.longitude);
         getreported = database.child("ReportedDetails").child(code).orderByKey().equalTo(key);
         getreported.addChildEventListener(listener5);
-        if(!downvoteremoval) {
-            updaterepfeed();
-        }
+        updaterepfeed();
         giveUpvote(key);
         resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
-        Toast.makeText(getContext(),"Thanks for letting us know. You earned 2 points for this action. You can see your points in the 'Contributions' tab.",Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(),"Thanks for letting us know. You earned 2 points for this action.",Toast.LENGTH_SHORT).show();
         return;
     }
 
     private void downvoteReported(){
+        updaterepfeed();
         database = FirebaseDatabase.getInstance().getReference();
         String tempkey = database.child("Feedbacks/"+key).push().getKey();  //add new entry to searcher database
         Map<String, Object> childUpdates = new HashMap<>();
@@ -1038,8 +993,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                     //user did not give a feedback about this spot
                     isUpvoted=false;
                     isDownvoted=false;
-                    upvote.setImageResource(R.drawable.uplight);
-                    downvote.setImageResource(R.drawable.downlight);
                 }
                 else{
                     //user has given feedback
@@ -1047,21 +1000,17 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         //positive feedback
                         isUpvoted=true;
                         isDownvoted=false;
-                        upvote.setImageResource(R.drawable.updark);
-                        downvote.setImageResource(R.drawable.downlight);
                     }
                     if((int)UserFeedbacks.get(key)==-1){
                         //negative feedback
                         isUpvoted=false;
                         isDownvoted=true;
-                        upvote.setImageResource(R.drawable.uplight);
-                        downvote.setImageResource(R.drawable.downdark);
                     }
                 }
                 isReported = true;
                 heading.setText("Reporter's Description");
                 if ((boolean) Cats.get(currentmarker) == true) {
-                    category.setText("Verified user-reported free parking spot");
+                    category.setText("Verified user-reported no cost spot");
                     //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                     //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                     rate.setVisibility(View.GONE);
@@ -1071,7 +1020,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                     mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                     return true;
                 } else {
-                    category.setText("Unverified user-reported free parking spot");
+                    category.setText("Unverified user-reported no cost spot");
                     //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                     //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                     rate.setVisibility(View.GONE);
@@ -1108,7 +1057,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 book.setVisibility(View.VISIBLE);
                 feedback.setVisibility(View.GONE);
                 heading.setText("Parking Lot Name");
-                category.setText("ParkWhiz suggested parking spot");
+                category.setText("Parking lot (from ParkWhiz)");
                 //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                 //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                 rate.setVisibility(View.GONE);

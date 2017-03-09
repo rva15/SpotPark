@@ -7,6 +7,7 @@ import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.RadioButton;
@@ -28,9 +29,29 @@ public class ComplainDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         final View view = inflater.inflate(R.layout.dialog_complain, null);
         Bundle mArgs = getArguments();
-        final Boolean isReported = mArgs.getBoolean("isReported");
+        final Boolean isReported = mArgs.getBoolean("isReported");   //ask questions based on type of spot
+
+        //Get UI elements and set their listeners
+        final CardView fbackcard2 = (CardView) view.findViewById(R.id.fbackcard2);
+        final RadioButton fbackyes = (RadioButton) view.findViewById(R.id.fbackyes);
+        fbackyes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fbackcard2.setVisibility(View.GONE);      //show card2 based on answer for card1
+            }
+        });
+        RadioButton fbackno = (RadioButton) view.findViewById(R.id.fbackno);
+        fbackno.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                fbackcard2.setVisibility(View.VISIBLE);
+            }
+        });
+
+        //choose questions based on type of spot
         final RadioButton radioButton = (RadioButton)view.findViewById(R.id.reportonly);
         final RadioButton radioButton1 = (RadioButton)view.findViewById(R.id.notav);
+        final RadioButton radioButton2 = (RadioButton) view.findViewById(R.id.nospace);
         if(!isReported){
             radioButton.setVisibility(View.GONE);
         }
@@ -38,21 +59,21 @@ public class ComplainDialog extends DialogFragment {
             radioButton1.setVisibility(View.GONE);
         }
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
+
         builder.setView(view)
                 // Add action buttons
                 .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
+                        Boolean yes   = fbackyes.isChecked();
                         Boolean notav = radioButton1.isChecked();
-                        final RadioButton radioButton2 = (RadioButton) view.findViewById(R.id.nospace);
                         Boolean nospace = radioButton2.isChecked();
                         Boolean notfree = false;
                         if(isReported){
-                            notfree = radioButton.isChecked();
+                            notfree = radioButton.isChecked();  //this button only valid for reported spots
                         }
                         Intent i = new Intent();
+                        i.putExtra("yes",yes);
                         i.putExtra("notav",notav);
                         i.putExtra("nospace",nospace);
                         i.putExtra("notfree",notfree);

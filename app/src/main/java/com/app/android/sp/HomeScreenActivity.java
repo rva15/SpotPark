@@ -300,7 +300,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         historyFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, historyFragment);
+        fragmentTransaction.replace(R.id.fragment_container, historyFragment,"history");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -315,7 +315,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         tabsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, tabsFragment);
+        fragmentTransaction.replace(R.id.fragment_container, tabsFragment,"home");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -328,7 +328,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         favoriteFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, favoriteFragment);
+        fragmentTransaction.replace(R.id.fragment_container, favoriteFragment,"favorites");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -342,7 +342,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         contributionsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, contributionsFragment);
+        fragmentTransaction.replace(R.id.fragment_container, contributionsFragment,"contributions");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -355,7 +355,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         settingsFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, settingsFragment);
+        fragmentTransaction.replace(R.id.fragment_container, settingsFragment,"settings");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -382,7 +382,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         postCheckinFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment);
+        fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment,"postcheckin");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -398,7 +398,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         reportFormFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, reportFormFragment);
+        fragmentTransaction.replace(R.id.fragment_container, reportFormFragment,"reportform");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -413,20 +413,26 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         postReportFragment.setArguments(data);
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, postReportFragment);
+        fragmentTransaction.replace(R.id.fragment_container, postReportFragment,"postreport");
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)  {
-        if (keyCode == KeyEvent.KEYCODE_BACK ) {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            TabsFragment tabsFragment = (TabsFragment) getSupportFragmentManager().findFragmentByTag("home");
+            if (tabsFragment != null && tabsFragment.isVisible()) {
+                // add your code here
+                moveTaskToBack(true);
+            }
+            else{
+                getHome();
+            }
             return true;
         }
-
         return super.onKeyDown(keyCode, event);
     }
-
 
 
     //--------------------------------Helper Functions----------------------------------------//

@@ -346,7 +346,9 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if(v.getId()==R.id.reportrecenter){
             reportcenter.setVisibility(View.GONE);
-            reportmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            if(reportmap!=null && place!=null) {
+                reportmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            }
         }
         if(v.getId() == R.id.satview){
             satview.setVisibility(View.GONE);

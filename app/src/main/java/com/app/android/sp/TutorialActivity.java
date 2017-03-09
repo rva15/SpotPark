@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -52,5 +53,19 @@ public class TutorialActivity extends AppCompatActivity {
         //Bind the title indicator to the adapter
         CirclePageIndicator titleIndicator = (CirclePageIndicator) findViewById(R.id.circle_indicator);
         titleIndicator.setViewPager(mPager);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            //return to home after pressing back key
+            Intent intent = new Intent(TutorialActivity.this, HomeScreenActivity.class); //send Intent
+            intent.putExtra("userid", UID);
+            intent.putExtra("sendstatus",isCheckedin);
+            intent.putExtra("startedfrom","login");
+            startActivity(intent);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

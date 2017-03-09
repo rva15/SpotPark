@@ -37,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -72,7 +73,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private LinearLayout recenter;
     private String time="",latlngcode,checkinkey;
     private TextView timeview;
-    private Button informbutton;
+    private LinearLayout informbutton;
     private com.google.firebase.database.Query getcheckin,getminstoleave;
     private FrameLayout othersknow;
     //--Google API variables
@@ -157,8 +158,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (null != nMapView)
-            nMapView.onSaveInstanceState(outState);
     }
 
     @Override
@@ -198,7 +197,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         //Get the TextView and inform buttons
         othersknow = (FrameLayout)view.findViewById(R.id.othersknow);
         timeview = (TextView) view.findViewById(R.id.couttime);
-        informbutton = (Button) view.findViewById(R.id.informbutton);
+        informbutton = (LinearLayout) view.findViewById(R.id.informbutton);
         informbutton.setOnClickListener(this);
 
 
@@ -272,6 +271,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     private void informaction(){
         informbutton.setVisibility(View.GONE);
+        Toast.makeText(getContext(),"You earned two keys by letting other users know!",Toast.LENGTH_SHORT).show();
         Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
         servIntent.putExtra("started_from", "navigation");
         this.getActivity().startService(servIntent);
@@ -281,7 +281,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     private void confirminform() {   //show a confirmation dialog before deleting the spot
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("This will notify other users that a legal parking spot is being vacated soon. You will be rewarded 2 more keys.");
+        builder.setMessage("This will notify other users that a legal parking spot is being vacated soon.");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 informaction();
@@ -477,8 +477,10 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         }
         if(v.getId()==R.id.recenter){
             recenter.setVisibility(View.GONE);
-            navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
-            isAutoMode=true;
+            if(navigationmap!=null && place!=null) {
+                navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
+            }
+            isAutoMode = true;
         }
     }
 
