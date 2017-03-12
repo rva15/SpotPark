@@ -834,6 +834,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     public void backToLogin(){
         String message1 = "1";
+
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(       //signout google
                 new ResultCallback<Status>() {
                     @Override
