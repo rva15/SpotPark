@@ -239,8 +239,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false); //inflate the view
         gMapView = (MapView) view.findViewById(R.id.smap);
-        final Bundle mapViewSavedInstanceState = savedInstanceState != null ? savedInstanceState.getBundle("mapViewSaveState") : null;
-        gMapView.onCreate(mapViewSavedInstanceState);
+        gMapView.onCreate(savedInstanceState);
         gMapView.onResume();                                                      //get mapView and initialize it
         MapsInitializer.initialize(getActivity());
         gMapView.getMapAsync(this);
@@ -1130,7 +1129,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             ParserTask parserTask = new ParserTask();
 
             // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
+            if(result!=null) {
+                parserTask.execute(result);
+            }
 
         }
     }

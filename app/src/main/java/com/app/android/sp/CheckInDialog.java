@@ -87,6 +87,14 @@ public class CheckInDialog extends DialogFragment {
                                 remindmsg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":" + Integer.toString(selectedMinute) + "am");
                             }
                         }
+                        else if(selectedHour==12){
+                            if(selectedMinute<10) {
+                                remindmsg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":0" + Integer.toString(selectedMinute) + "pm");
+                            }
+                            else{
+                                remindmsg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":" + Integer.toString(selectedMinute) + "pm");
+                            }
+                        }
                         else {
                             if(selectedMinute<10) {
                                 remindmsg.setText("Reminder scheduled for " + Integer.toString(selectedHour-12) + ":0" + Integer.toString(selectedMinute) + "pm");

@@ -13,6 +13,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -137,34 +138,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
 
-        // Check if gps is on, otherwise display message to user
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
-        final PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
-                        builder.build());
-
-        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
-                final Status status = locationSettingsResult.getStatus();
-                final LocationSettingsStates locationSettingsStates = locationSettingsResult.getLocationSettingsStates();
-                switch (status.getStatusCode()) {
-                    case LocationSettingsStatusCodes.SUCCESS:
-                        break;
-                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                        try {
-                            // Show the dialog by calling startResolutionForResult(),
-                            // and check the result in onActivityResult().
-                            status.startResolutionForResult(getActivity(),12);
-                        } catch (IntentSender.SendIntentException e) {
-                            // Ignore the error.
-                        }
-                        break;
-                }
-            }
-        });
-
 
     }
 
@@ -274,7 +247,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         map.getUiSettings().setMyLocationButtonEnabled(true);
 
     }
-
 
     protected void stopLocationUpdates() {
         if(mGoogleApiClient.isConnected()) {

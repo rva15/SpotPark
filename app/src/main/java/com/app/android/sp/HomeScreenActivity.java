@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -56,6 +57,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.app.android.sp.SPApplication.getContext;
 
 public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, EditCheckInDialog.EditCheckInDialogListener {
 
@@ -154,6 +157,16 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         mDrawerToggle.syncState();
         mAdapter = new MainmenuAdapter(TITLES,ICONS,this,Drawer,UID);
         mRecyclerView.setAdapter(mAdapter);
+
+        // Check if gps is on, otherwise display message to user
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            buildAlertMessageNoGps();
+        }
+
+        //checkAwards();
+
 
     }
 
@@ -301,7 +314,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, historyFragment,"history");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -316,7 +329,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, tabsFragment,"home");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -329,7 +342,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, favoriteFragment,"favorites");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -343,7 +356,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, contributionsFragment,"contributions");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -356,7 +369,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, settingsFragment,"settings");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -383,7 +396,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment,"postcheckin");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -399,7 +412,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, reportFormFragment,"reportform");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -414,7 +427,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, postReportFragment,"postreport");
-        fragmentTransaction.addToBackStack(null);
+        //fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
@@ -436,6 +449,64 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
 
     //--------------------------------Helper Functions----------------------------------------//
+
+    private void checkAwards(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        database.child("ReportedTimes").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
+                if((reportedTimes.getverification()>1)){
+                    if((!reportedTimes.getawarded()) || ((Boolean)reportedTimes.getawarded()==null)){
+                        awardKeys();
+                        dataSnapshot.child("awarded").getRef().setValue(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void awardKeys(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long keys = (long) dataSnapshot.getValue();
+                keys = keys+5;
+                dataSnapshot.getRef().setValue(keys);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("SpotPark needs GPS service, should we enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
 
     public void showEditCheckInDialog() {
         // Create an instance of the EditCheckIn Dialog fragment and show it

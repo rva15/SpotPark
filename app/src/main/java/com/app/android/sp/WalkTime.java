@@ -77,7 +77,9 @@ public class WalkTime {
 
             ParserTask parserTask = new ParserTask();
             // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
+            if(result!=null) {
+                parserTask.execute(result);
+            }
 
         }
     }

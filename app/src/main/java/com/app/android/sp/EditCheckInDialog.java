@@ -71,7 +71,15 @@ public class EditCheckInDialog extends DialogFragment {
                 } else {
                     msg.setText("Reminder scheduled for " + Integer.toString(couthours) + ":" + Integer.toString(coutmins) + "am");
                 }
-            } else {
+            }
+            else if(couthours==12){
+                if (coutmins < 10) {
+                    msg.setText("Reminder scheduled for " + Integer.toString(couthours) + ":0" + Integer.toString(coutmins) + "pm");
+                } else {
+                    msg.setText("Reminder scheduled for " + Integer.toString(couthours) + ":" + Integer.toString(coutmins) + "pm");
+                }
+            }
+            else {
                 if (couthours < 10) {
                     msg.setText("Reminder scheduled for " + Integer.toString(couthours - 12) + ":0" + Integer.toString(coutmins) + "am");
                 } else {
@@ -106,6 +114,14 @@ public class EditCheckInDialog extends DialogFragment {
                             }
                             else{
                                 msg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":" + Integer.toString(selectedMinute) + "am");
+                            }
+                        }
+                        else if(selectedHour==12){
+                            if(selectedMinute<10) {
+                                msg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":0" + Integer.toString(selectedMinute) + "pm");
+                            }
+                            else{
+                                msg.setText("Reminder scheduled for " + Integer.toString(selectedHour) + ":" + Integer.toString(selectedMinute) + "pm");
                             }
                         }
                         else {

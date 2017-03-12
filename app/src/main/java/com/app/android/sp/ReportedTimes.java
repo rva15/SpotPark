@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by ruturaj on 9/8/16.
  */
 public class ReportedTimes implements Parcelable {
-    boolean fullday,fullweek,mon,tue,wed,thu,fri,sat,sun;
+    boolean fullday,fullweek,mon,tue,wed,thu,fri,sat,sun,awarded;
     int starthours,startmins,endhours,endmins;
     double latitude,longitude;
     int verification;
@@ -22,7 +22,7 @@ public class ReportedTimes implements Parcelable {
 
     public ReportedTimes(){}
 
-    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun,String description,String latlngcode){
+    public ReportedTimes(double latitude,double longitude,int verification,boolean fullday,int starthours,int startmins,int endhours,int endmins,boolean fullweek,boolean mon,boolean tue, boolean wed,boolean thu,boolean fri,boolean sat, boolean sun,String description,String latlngcode,boolean awarded){
         this.latitude=latitude;
         this.longitude=longitude;
         this.verification=verification;
@@ -41,6 +41,7 @@ public class ReportedTimes implements Parcelable {
         this.sun=sun;
         this.description = description;
         this.latlngcode = latlngcode;
+        this.awarded = awarded;
     }
 
     public double getlatitude(){return this.latitude;}
@@ -59,6 +60,7 @@ public class ReportedTimes implements Parcelable {
     public boolean getfri(){return this.fri;}
     public boolean getsat(){return this.sat;}
     public boolean getsun(){return this.sun;}
+    public boolean getawarded(){return this.awarded;}
     public String getdescription(){return this.description;}
     public String getlatlngcode(){return this.latlngcode;}
 
@@ -83,6 +85,7 @@ public class ReportedTimes implements Parcelable {
         result.put("sun",this.sun);
         result.put("description",this.description);
         result.put("latlngcode",this.latlngcode);
+        result.put("awarded",this.awarded);
 
         return result;
     }

@@ -1,11 +1,13 @@
 package com.app.android.sp;
 //All imports
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -27,6 +30,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.app.android.sp.R.id.remindmsg;
+import static com.app.android.sp.R.id.start;
+
 /**
  * Created by ruturaj on 1/13/17.
  */
@@ -34,11 +40,10 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
 
     //All imports
     private static final String TAG = "Debugger ";
-    private ArrayList<Integer> time = new ArrayList<Integer>();
     private RadioGroup radioGroup1,radioGroup2;
     private RadioButton allweek,allday,choosedays,choosetimes;
-    private int starthour=99,startmin=99,endhour=99,endmin=99;
-    private boolean fullday=false,fullweek=false,radioflag;
+    private int starthour=0,startmin=0,endhour=0,endmin=0;
+    private boolean fullday=false,fullweek=false,radioflag,pickedstart=false,pickedend=false;
     private double latitude=0.0,longitude=0.0;
     private String UID="";
     private CheckBox mon,tue,wed,thu,fri,sat,sun;
@@ -47,6 +52,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
     private byte[] bytearray;
     private EditText description;
     private View view;
+    private TextView starttime,endtime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,17 +76,21 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         radioGroup1 = (RadioGroup) view.findViewById(R.id.timesgroup);
         getdays();
         getButtons();   // initialize objects
+        setButtonsState(false);
+        setDaysState(false);
         radioGroup1.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 if(checkedId == R.id.allday) {
                     radioflag=false;
                     fullday = true;
+                    setButtonsState(false);
                 }
                 else if(checkedId == R.id.choosetime) {
                     fullday = false;
                     radioflag=true;
-                    if(starthour==99 || startmin==99 || endhour==99 || endmin==99){
+                    setButtonsState(true);
+                    if(!(pickedstart & pickedend)){
                         Toast.makeText(getContext(),"Please choose a time",Toast.LENGTH_LONG).show(); //notify user that he needs to choose a time
                     }
                 }
@@ -98,12 +108,11 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
 
                 if(checkedId == R.id.allweek) {
                     fullweek = true;
+                    setDaysState(false);
                 }
                 else if(checkedId == R.id.choosedays) {
                     fullweek = false;
-                }
-                else {
-
+                    setDaysState(true);
                 }
 
             }
@@ -120,6 +129,9 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         allweek.setOnClickListener(this);
         choosedays.setOnClickListener(this);
         choosetimes.setOnClickListener(this);
+        starttime = (TextView)view.findViewById(R.id.starttime);
+        endtime = (TextView)view.findViewById(R.id.endtime);
+
         return view;
     }
 
@@ -128,18 +140,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         super.onStop();
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //fetch information from the dialog
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==7) {
-
-            Bundle bundle = data.getExtras();
-            time.add(bundle.getInt("hour"));
-            time.add(bundle.getInt("mins"));
-            printtime();
-        }
-    }
 
     @Override
     public void onClick(View v) {
@@ -149,174 +149,171 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
         if(v.getId()==R.id.chooseEnd){
             showEndDialog();
         }
-        if(v.getId()==R.id.allweek){
-            deactivateDays();
-        }
-        if(v.getId()==R.id.allday){
-            deactivateButtons();
-        }
-        if(v.getId()==R.id.choosedays){
-            activateDays();
-        }
-        if(v.getId()==R.id.choosetime){
-            activateButtons();
-        }
         if(v.getId()==R.id.reportspot){
             reportspot();
         }
     }
 
     private void showStartDialog() {
-        // Create an instance of the dialog fragment and show it
-        time.add(123);
-        DialogFragment dialog = new ReportFormDialog();
-        dialog.setTargetFragment(ReportFormFragment.this, 7);       //
-        dialog.show(this.getActivity().getSupportFragmentManager(),"ReportFragment");
+        TimePickerDialog mTimePicker;
+        mTimePicker = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                pickedstart = true;
+                starthour = selectedHour;
+                startmin = selectedMinute;
+                printtime(starthour,startmin,endhour,endmin);
+
+            }
+        }, starthour,startmin, false);
+        mTimePicker.setTitle("Pick a start time");
+        mTimePicker.show();
 
     }
 
     private void showEndDialog() {
-        // Create an instance of the dialog fragment and show it
-        time.add(243);
-        DialogFragment dialog = new ReportFormDialog();
-        dialog.setTargetFragment(ReportFormFragment.this, 7);
-        dialog.show(this.getActivity().getSupportFragmentManager(),"ReportFragment");
+        TimePickerDialog mTimePicker;
+        mTimePicker = new TimePickerDialog(getContext(), new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                pickedend = true;
+                endhour = selectedHour;
+                endmin = selectedMinute;
+                printtime(starthour,startmin,endhour,endmin);
+
+            }
+        }, endhour, endmin, false);
+        mTimePicker.setTitle("Pick an end time");
+        mTimePicker.show();
 
     }
 
     // function that prints user selected times on screen
-    private void printtime(){
-        for(int i=0;i<time.size();i++){
-            if(time.get(i)>=0 && time.get(i)<=24){
-                if(time.get(i-1)==123.){
-                    if(time.get(i)>=0 && time.get(i)<12) {
-                        TextView t = (TextView) view.findViewById(R.id.starttime);
-                        if(time.get(i+1)==0) {
-                            t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+"0 am");
-                        }
-                        else{
-                            t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+" am");
-                        }
-                        starthour = time.get(i);
-                        startmin = time.get(i + 1);
-                    }
-                    if(time.get(i)>=12 && time.get(i)<=24) {
-                        int hour=time.get(i)-12;
-                        TextView t = (TextView) view.findViewById(R.id.starttime);
-                        if(time.get(i+1)==0) {
-                            t.setText(Integer.toString(hour) + ":" + Integer.toString(time.get(i + 1))+"0 pm");
-                        }
-                        else{
-                            t.setText(Integer.toString(hour) + ":" + Integer.toString(time.get(i + 1))+" pm");
-                        }
-                        starthour = time.get(i);
-                        startmin = time.get(i + 1);
-                    }
-
-                }
-                else if(time.get(i-1)==243.){
-                    if(time.get(i)>=0 && time.get(i)<12) {
-                        TextView t = (TextView) view.findViewById(R.id.endtime);
-                        if(time.get(i+1)==0) {
-                            t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+"0 am");
-                        }
-                        else{
-                            t.setText(Integer.toString(time.get(i)) + ":" + Integer.toString(time.get(i + 1))+" am");
-                        }
-                        endhour = time.get(i);
-                        endmin = time.get(i + 1);
-                    }
-                    if(time.get(i)>=12 && time.get(i)<=24) {
-                        int hour=time.get(i)-12;
-                        TextView t = (TextView) view.findViewById(R.id.endtime);
-                        if(time.get(i+1)==0) {
-                            t.setText(Integer.toString(hour) + ":" + Integer.toString(time.get(i + 1))+"0 pm");
-                        }
-                        else{
-                            t.setText(Integer.toString(hour) + ":" + Integer.toString(time.get(i + 1))+" pm");
-                        }
-                        endhour = time.get(i);
-                        endmin = time.get(i + 1);
-                    }
-                }
+    private void printtime(int starthour,int startmin,int endhour,int endmin){
+        //set start time text
+        String stime,etime;
+        if(starthour<12) {
+            if(startmin<10) {
+                stime = Integer.toString(starthour) + ":0" + Integer.toString(startmin) + "am";
             }
+            else{
+                stime = Integer.toString(starthour) + ":" + Integer.toString(startmin) + "am";
+            }
+        }
+        else if(starthour==12){
+            if(startmin<10) {
+                stime = Integer.toString(starthour) + ":0" + Integer.toString(startmin) + "pm";
+            }
+            else{
+                stime = Integer.toString(starthour) + ":" + Integer.toString(startmin) + "pm";
+            }
+        }
+        else {
+            if(startmin<10) {
+                stime = Integer.toString(starthour-12) + ":0" + Integer.toString(startmin) + "pm";
+            }
+            else{
+                stime = Integer.toString(starthour-12) + ":" + Integer.toString(startmin) + "pm";
+            }
+        }
+
+        //set end time text
+        if(endhour<12) {
+            if(endmin<10) {
+                etime = Integer.toString(endhour) + ":0" + Integer.toString(endmin) + "am";
+            }
+            else{
+                etime = Integer.toString(endhour) + ":" + Integer.toString(endmin) + "am";
+            }
+        }
+        else if(endhour==12){
+            if(endmin<10) {
+                etime = Integer.toString(endhour) + ":0" + Integer.toString(endmin) + "pm";
+            }
+            else{
+                etime = Integer.toString(endhour) + ":" + Integer.toString(endmin) + "pm";
+            }
+        }
+        else {
+            if(endmin<10) {
+                etime = Integer.toString(endhour-12) + ":0" + Integer.toString(endmin) + "pm";
+            }
+            else{
+                etime = Integer.toString(endhour-12) + ":" + Integer.toString(endmin) + "pm";
+            }
+        }
+        if(pickedstart) {
+            starttime.setText(stime);
+        }
+        if(pickedend) {
+            if ((60 * starthour + startmin) < (60 * endhour + endmin)) {
+                etime = "Same day, " + etime;
+            } else {
+                etime = "Next day, " + etime;
+            }
+            endtime.setText(etime);
         }
     }
 
 
     private void getdays(){
         mon = (CheckBox) view.findViewById(R.id.mon);
-        mon.setEnabled(false);
         tue = (CheckBox) view.findViewById(R.id.tue);
-        tue.setEnabled(false);
         wed = (CheckBox) view.findViewById(R.id.wed);
-        wed.setEnabled(false);
         thu = (CheckBox) view.findViewById(R.id.thu);
-        thu.setEnabled(false);
         fri = (CheckBox) view.findViewById(R.id.fri);
-        fri.setEnabled(false);
         sat = (CheckBox) view.findViewById(R.id.sat);
-        sat.setEnabled(false);
         sun = (CheckBox) view.findViewById(R.id.sun);
-        sun.setEnabled(false);
     }
 
-    private void activateDays(){
-        mon.setEnabled(true);
-        tue.setEnabled(true);
-        wed.setEnabled(true);
-        thu.setEnabled(true);
-        fri.setEnabled(true);
-        sat.setEnabled(true);
-        sun.setEnabled(true);
+    private void setDaysState(boolean b){
+        mon.setEnabled(b);
+        tue.setEnabled(b);
+        wed.setEnabled(b);
+        thu.setEnabled(b);
+        fri.setEnabled(b);
+        sat.setEnabled(b);
+        sun.setEnabled(b);
     }
 
-    private void deactivateDays(){
-        mon.setEnabled(false);
-        tue.setEnabled(false);
-        wed.setEnabled(false);
-        thu.setEnabled(false);
-        fri.setEnabled(false);
-        sat.setEnabled(false);
-        sun.setEnabled(false);
+    private void setButtonsState(boolean b){
+        start.setEnabled(b);
+        end.setEnabled(b);
     }
+
 
     private void getButtons(){
         start = (Button) view.findViewById(R.id.chooseStart);
         start.setOnClickListener(this);
-        start.setEnabled(false);
         end   = (Button) view.findViewById(R.id.chooseEnd);
         end.setOnClickListener(this);
-        end.setEnabled(false);
-    }
-
-    private void activateButtons(){
-        start.setEnabled(true);
-        end.setEnabled(true);
-    }
-
-    private void deactivateButtons(){
-        start.setEnabled(false);
-        end.setEnabled(false);
     }
 
     private void reportspot(){
+        if(radioGroup1.getCheckedRadioButtonId()== -1){
+            Toast.makeText(this.getContext(), "Please choose a time range", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(radioGroup2.getCheckedRadioButtonId()== -1){
+            Toast.makeText(this.getContext(), "Please pick at least one day of the week", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if(radioflag==true) {
-            if (starthour == 99 || startmin == 99 || endhour == 99 || endmin == 99) {
+            if ((!pickedstart) || (!pickedend)) {
                 Toast.makeText(this.getContext(), "Please choose a time range", Toast.LENGTH_SHORT).show();
                 return;
             }
         }
         if(!fullweek){
             if(!(mon.isChecked()||tue.isChecked()||wed.isChecked()||thu.isChecked()||fri.isChecked()||sat.isChecked()||sun.isChecked())){
-                Toast.makeText(getContext(),"Please select the available days",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),"Please pick at least one day of the week",Toast.LENGTH_SHORT).show();
                 return;
             }
         }
         database = FirebaseDatabase.getInstance().getReference();
         String LatLngCode = getLatLngCode(latitude,longitude);
         ReportedTimes reportedTimes = new ReportedTimes(latitude,longitude,0,fullday,starthour,startmin,endhour,endmin,fullweek,mon.isChecked(),tue.isChecked(),wed.isChecked(),
-                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),description.getText().toString(),LatLngCode);
+                thu.isChecked(),fri.isChecked(),sat.isChecked(),sun.isChecked(),description.getText().toString(),LatLngCode,false);
         Map<String,Object> reportedTimesMap = reportedTimes.toMap();
         String key = database.child("ReportedDetails/"+LatLngCode).push().getKey();
         Map<String, Object> childUpdates = new HashMap<>();
@@ -338,7 +335,6 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
             }
         });
 

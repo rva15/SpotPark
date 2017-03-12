@@ -71,7 +71,9 @@ public class SpotFinder {
     private com.google.firebase.database.Query getReported;
     private Calendar calendar, start, end;
     private Context context;
-    private boolean showCheckIns;
+    private boolean showCheckIns,checkWholeWeek=false,morethanaday=false;
+    private Calendar obj1s,obj1e,obj2s,obj2e,obj3s,obj3e;
+    private int days,daye;
 
 
     public SpotFinder() {
@@ -771,43 +773,158 @@ public class SpotFinder {
     private boolean analyzeReported(Calendar startcal, Calendar endcal,ReportedTimes reportedTimes){
 
 
-        if(startcal==null || endcal==null) {
+        if(startcal==null || endcal==null) {    //if any of the calendars is null by mistake
             startcal = Calendar.getInstance();
             endcal = (Calendar) startcal.clone();
             endcal.add(Calendar.HOUR_OF_DAY, 3);
         }
-        if(reportedTimes.getfullday()&&reportedTimes.getfullweek()){
+        if(reportedTimes.getfullday()&&reportedTimes.getfullweek()){  //return true if the spot is always available
             return true;
         }
 
-        if(reportedTimes.getfullday()&&(!reportedTimes.getfullweek())){
-            if(!checkDayRange(startcal,endcal,reportedTimes)){
+
+
+        if(reportedTimes.getfullday()&&(!reportedTimes.getfullweek())){ //another simple enough case
+            if(checkDayRange(startcal,endcal,reportedTimes)){
+                return true;
+            }
+            else{
                 return false;
             }
         }
+
 
         if(reportedTimes.getfullweek()&&(!reportedTimes.getfullday())){
-            if(!checkTimeRange(startcal,endcal,reportedTimes)){
+            if(checkTimeRange(startcal,endcal,reportedTimes)){
+                return true;
+            }
+            else{
                 return false;
             }
         }
 
-        if((!reportedTimes.getfullday())&&(!reportedTimes.getfullweek())){
-            Log.d(TAG,"startcal im here");
-            if((!checkTimeRange(startcal,endcal,reportedTimes))||(!checkDayRange(startcal,endcal,reportedTimes))){
+        createCalObjects(startcal,endcal);   //divide search range into 3objects if none of above 3 applicable
 
-                return false;
+        if((!reportedTimes.getfullday())&&(!reportedTimes.getfullweek())){
+            int startmin = 60 * startcal.get(Calendar.HOUR_OF_DAY) + startcal.get(Calendar.MINUTE);
+            int endmin = 60 * endcal.get(Calendar.HOUR_OF_DAY) + endcal.get(Calendar.MINUTE);
+            int repstartmin = 60 * reportedTimes.getstarthours() + reportedTimes.getstartmins();
+            int rependmin = 60 * reportedTimes.getendhours() + reportedTimes.getendmins();
+            if(repstartmin<rependmin){ //proper diff
+                if(obj2s!=null){
+                    return false;  //since you are asking non-proper range
+                }
+                else{
+                    if(checkDayRange(startcal,endcal,reportedTimes)&&(checkTimeRange(startcal,endcal,reportedTimes))){
+                        return true;
+                    }
+                    else{
+                        return false;
+                    }
+                }
+            }
+            else{  //improper difference
+                Map daysofweek = new HashMap();
+                daysofweek.put(1, reportedTimes.getsun());
+                daysofweek.put(2, reportedTimes.getmon());
+                daysofweek.put(3, reportedTimes.gettue());
+                daysofweek.put(4, reportedTimes.getwed());
+                daysofweek.put(5, reportedTimes.getthu());
+                daysofweek.put(6, reportedTimes.getfri());
+                daysofweek.put(7, reportedTimes.getsat());
+                if(morethanaday){   //searching for more than a day
+                    morethanaday = false;
+                    return false;
+                }
+                if(startmin<=endmin) { //searching proper difference
+                    if (!(boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK))) { //day of search is unavailable
+                        if((boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK)-1)){ //but its previous day is available
+                            if(endmin<=rependmin){
+                                return true;
+                            }
+                            else{
+                                return false;
+                            }
+                        }
+                        else{ //previous day also not available
+                            return false;
+                        }
+                    }
+                    else{
+                        if((startmin>=repstartmin)&&(endmin<=24*60)){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+                else{ //searching improper difference
+                    if (!(boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK))){//day of search unavailable
+                        return false;
+                    }
+                    else{
+                        if((startmin>=repstartmin)&&(endmin<=rependmin)){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    }
+                }
+
+
             }
         }
         return true;
     }
 
+    private void createCalObjects(Calendar startcal, Calendar endcal){
+
+        int startday = startcal.get(Calendar.DAY_OF_YEAR);
+        int endday   = endcal.get(Calendar.DAY_OF_YEAR);
+        int startyear = startcal.get(Calendar.YEAR);
+        int endyear  = endcal.get(Calendar.YEAR);
+        int startmonth = startcal.get(Calendar.MONTH);
+        int endmonth = endcal.get(Calendar.MONTH);
+        int startdayofmonth = startcal.get(Calendar.DAY_OF_MONTH);
+        int enddayofmonth = endcal.get(Calendar.DAY_OF_MONTH);
+
+        if(endday==startday){
+            obj1s = startcal;
+            obj1e = endcal;
+        }
+        else if(endday==startday+1){
+            obj1s = startcal;
+            obj1e = Calendar.getInstance();
+            obj2s = Calendar.getInstance();
+            obj1e.set(startyear,startmonth,startdayofmonth,23,59);
+            obj2s.set(endyear,endmonth,enddayofmonth,0,1);
+            obj2e = endcal;
+        }
+        else{
+            if(endday>=startday+7){
+                checkWholeWeek = true;
+            }
+            else{
+                morethanaday = true;
+                obj1s = startcal;
+                obj1e = Calendar.getInstance();
+                obj2s = Calendar.getInstance();
+                obj1e.set(startyear,startmonth,startdayofmonth,23,59);
+                obj2s.set(endyear,endmonth,enddayofmonth,0,1);
+                obj2e = endcal;
+                days = startcal.get(Calendar.DAY_OF_WEEK)+1;
+                daye = endcal.get(Calendar.DAY_OF_WEEK)-1;
+            }
+        }
+
+    }
+
     //function that checks if the reported spot is available on the required days
     private boolean checkDayRange(Calendar startcal, Calendar endcal, ReportedTimes reportedTimes) {
 
-        if (reportedTimes.getfullweek()) {  //no need to do anything
-            return true;
-        }
+        //this function is called when the spot has fullweek = false. So we need to explicitly check the days
 
         //get the info about days availability of the spot and put it in a map
         Map daysofweek = new HashMap();
@@ -819,8 +936,7 @@ public class SpotFinder {
         daysofweek.put(6, reportedTimes.getfri());
         daysofweek.put(7, reportedTimes.getsat());
         int startday = startcal.get(Calendar.DAY_OF_WEEK); //required beginning day
-        int endday = endcal.get(Calendar.DAY_OF_WEEK);   //required end day
-        Log.d(TAG,"startcal "+Boolean.toString(reportedTimes.getsat()));
+        int endday = endcal.get(Calendar.DAY_OF_WEEK);     //required end day
 
 
         if (endcal.get(Calendar.DAY_OF_YEAR) - startcal.get(Calendar.DAY_OF_YEAR) < 7) {  //are the two days within one week's difference?
@@ -833,12 +949,12 @@ public class SpotFinder {
             }
             if (startday > endday) {  //ex start wed and end mon
                 for (int i = startday; i <= 7; i++) {
-                    if (!(boolean) daysofweek.get(i)) {
+                    if (!(boolean) daysofweek.get(i)) {  //check wed to sun
                         return false;
                     }
                 }
                 for (int i = 1; i <= endday; i++) {
-                    if (!(boolean) daysofweek.get(i)) {
+                    if (!(boolean) daysofweek.get(i)) {  //and then sun to mon
                         return false;
                     }
                 }
@@ -857,17 +973,15 @@ public class SpotFinder {
 
     private boolean checkTimeRange(Calendar startcal, Calendar endcal, ReportedTimes reportedTimes) {
 
-        if (reportedTimes.getfullday()) {  //no need to do anything
-            return true;
-        }
+        //this function is called when the spot has fullday = false. So we need to explicitly check the time range
 
         int starthour = 24 * startcal.get(Calendar.DAY_OF_YEAR) - (24 - startcal.get(Calendar.HOUR_OF_DAY)); //get hour difference
         int endhour = 24 * endcal.get(Calendar.DAY_OF_YEAR) - (24 - endcal.get(Calendar.HOUR_OF_DAY));
         int hourdiff = endhour - starthour;
 
         if (hourdiff > 24) { //if greater than a day, full day has to be true
-            if (!reportedTimes.getfullday()) {
-                return false;
+            if (reportedTimes.getfullday()) {
+                return true;
             }
         } else { //else convert everything to mins
             int startmin = 60 * startcal.get(Calendar.HOUR_OF_DAY) + startcal.get(Calendar.MINUTE);
@@ -877,27 +991,27 @@ public class SpotFinder {
 
             if (startmin <= endmin) { //eg 3pm and 6pm
                 if (repstartmin <= rependmin) {
-                    if (!(startmin >= repstartmin && endmin <= rependmin)) {
-                        return false;
+                    if (startmin >= repstartmin && endmin <= rependmin) {
+                        return true;
                     }
                 }
                 else{
-                    if (!(startmin >= repstartmin && endmin > rependmin)) {
-                        return false;
+                    if (startmin >= repstartmin && endmin > rependmin) {
+                        return true;
                     }
                 }
             } else { //eg 6pm and 6am
                 if (repstartmin <= rependmin) { //eg 3pm and 6pm
                     return false;
                 } else { //eg 6pm and 6am
-                    if (!(startmin >= repstartmin && endmin <= rependmin)) {
-                        return false;
+                    if (startmin >= repstartmin && endmin <= rependmin) {
+                        return true;
                     }
                 }
             }
         }
 
-        return true;
+        return false;
 
     }
 
