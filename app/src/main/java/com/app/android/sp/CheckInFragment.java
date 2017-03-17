@@ -411,9 +411,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 return;
             }
             scheduleNotification(getAlertNotification(), delay, 1);              //schedule alert notification for ticket expiring
-            //if(otherspark) {
-             //   scheduleNotification(getInformNotification(), delay + 12000, 23);    //ask user if he wants to inform others by this notification
-            //}
+            if(otherspark) {
+                scheduleNotification(getInformNotification(), delay + 180000, 23);    //ask user if he wants to inform others by this notification
+            }
         }
 
         // Proceed to make database entries
@@ -556,13 +556,13 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         Intent buttonIntent = new Intent(getContext(), CancelNotification.class);
         buttonIntent.putExtra("notificationId",23);
         PendingIntent btPendingIntent = PendingIntent.getBroadcast(getContext(), 0, buttonIntent,0);
-        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", btPendingIntent).build();
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.clear, "No", btPendingIntent).build();
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this.getActivity());
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this.getContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
-        builder.setContentText("Will you be vacating the parking space soon?");
+        builder.setContentText("Walking back to vacate parking spot?");
         builder.addAction(accept);
         builder.addAction(cancel);
         builder.setAutoCancel(true);

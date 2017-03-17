@@ -671,9 +671,9 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             alarmManager2.cancel(pendingIntent2);
 
             scheduleNotification(getAlertNotification(), delay, 1);              //schedule new alert notification for ticket expiring
-            //if(otherspark) {
-            //   scheduleNotification(getInformNotification(), delay + 12000, 23);    //ask user if he wants to inform others by this notification
-            //}
+            if(otherspark) {
+               scheduleNotification(getInformNotification(), delay + 180000, 23);    //ask user if he wants to inform others by this notification
+            }
         }
         else{ //just cancel previous alarms if no new alarm set
             stopService(new Intent(HomeScreenActivity.this,LocationService.class)); //Stop services
@@ -759,7 +759,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     //construct notification asking users to inform others
-    private Notification getInformNotification(int mins) {
+    private Notification getInformNotification() {
 
         Intent serviceintent = new Intent(this,DirectionService.class);
         serviceintent.putExtra("started_from","checkin");
@@ -768,14 +768,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         Intent buttonIntent = new Intent(getApplicationContext(), CancelNotification.class);
         buttonIntent.putExtra("notificationId",23);
         PendingIntent btPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, buttonIntent,0);
-        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.cancel, "No", btPendingIntent).build();
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.clear, "No", btPendingIntent).build();
 
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this, R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
-        builder.setContentText("Inform other users that you're leaving in about "+Integer.toString(mins)+"mins ?");
+        builder.setContentText("Walking back to vacate parking spot?");
         builder.addAction(accept);
         builder.addAction(cancel);
         builder.setAutoCancel(true);
