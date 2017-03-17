@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -76,6 +77,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private LinearLayout informbutton;
     private com.google.firebase.database.Query getcheckin,getminstoleave;
     private FrameLayout othersknow;
+    private ImageView editcin,deletecin;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -189,6 +191,11 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         MapsInitializer.initialize(getActivity());
         nMapView.getMapAsync(this);
 
+        editcin = (ImageView) view.findViewById(R.id.editcin);
+        editcin.setOnClickListener(this);
+        deletecin = (ImageView) view.findViewById(R.id.deletecin);
+        deletecin.setOnClickListener(this);
+
         //get the recenter button and set visibility to gone
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
         recenter.setVisibility(View.GONE);
@@ -281,13 +288,13 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     private void confirminform() {   //show a confirmation dialog before deleting the spot
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("This will notify other users that a legal parking spot is being vacated soon.");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setMessage("Are you walking back to the parking spot to vacate it?");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 informaction();
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
             }
@@ -481,6 +488,14 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 navigationmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 16));
             }
             isAutoMode = true;
+        }
+        if(v.getId()==R.id.editcin) {
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.showEditCheckInDialog();
+        }
+        if(v.getId()==R.id.deletecin) {
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.deletedialog();
         }
     }
 

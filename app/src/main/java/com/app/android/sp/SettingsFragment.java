@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.support.v4.app.Fragment;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
@@ -60,7 +61,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private static String UID;
     private View view;
     private TextView fullname, email;
-    private ImageView dp;
+    private ImageView dp,contactemail,icons8;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private int logintype = 0;
@@ -73,6 +74,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private DatabaseReference database;
     private Bitmap bmp;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
+    private LinearLayout profileinfo;
 
 
     @Override
@@ -108,10 +110,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         email = (TextView) view.findViewById(R.id.email);
         loginicon = (ImageView) view.findViewById(R.id.logintype);
         changepswd = (Button) view.findViewById(R.id.changepass);
-        editprofile = (ImageView)view.findViewById(R.id.editprofile);
         dp = (ImageView) view.findViewById(R.id.dp);
+        dp.setOnClickListener(this);
         changepswd.setOnClickListener(this);
-        editprofile.setOnClickListener(this);
+        profileinfo = (LinearLayout)view.findViewById(R.id.profileinfo);
+        profileinfo.setOnClickListener(this);
+        contactemail = (ImageView)view.findViewById(R.id.contactemail);
+        contactemail.setOnClickListener(this);
+        icons8 = (ImageView) view.findViewById(R.id.icons8);
+        icons8.setOnClickListener(this);
         database.child("UserInformation").child(UID).addListenerForSingleValueEvent(listener1);
         setdp();
         return view;
@@ -173,8 +180,35 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         if (v.getId() == R.id.changepass) {
             showPswdDialog();
         }
-        if (v.getId() == R.id.editprofile){
+        if(v.getId() == R.id.dp){
+            selectImage();
+        }
+        if(v.getId() == R.id.profileinfo){
             showProfileDialog();
+        }
+        if(v.getId() == R.id.contactemail){
+           sendEmail();
+        }
+        if(v.getId() == R.id.icons8){
+            icons8();
+        }
+    }
+
+    private void icons8(){
+        String url = "https://icons8.com";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
+
+    private void sendEmail(){
+        Intent i = new Intent(Intent.ACTION_SEND);
+        i.setType("message/rfc822");
+        i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"ruturaj.iitb@gmail.com"});
+        try {
+            startActivity(Intent.createChooser(i, "Send mail..."));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(getActivity(), "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -304,7 +338,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
                 home.refreshMainAdapter();
@@ -371,7 +404,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                Uri downloadUrl = taskSnapshot.getDownloadUrl();
                 HomeScreenActivity home = (HomeScreenActivity)getActivity();
                 home.getSettings();
                 home.refreshMainAdapter();
@@ -386,51 +418,49 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 3) {
             Bundle bundle = data.getExtras();
-            if(!bundle.getBoolean("changedp")) {
-                if (bundle.getString("oldpswd") != null) {
-                    String old = bundle.getString("oldpswd");
-                    final String new1 = bundle.getString("newpswd1");
-                    String new2 = bundle.getString("newpswd2");
-                    if (!new1.equals(new2)) {
-                        Toast.makeText(getContext(), "Passwords dont match!", Toast.LENGTH_SHORT).show();
-                        showPswdDialog();
-                    } else {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                        AuthCredential credential = EmailAuthProvider
-                                .getCredential(currentemail, old);
-                        user.reauthenticate(credential)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        if (!new1.equals("")) {
-                                            updatePassword(new1);
-                                        } else {
-                                            Toast.makeText(getContext(), "new password cannot be blank", Toast.LENGTH_SHORT).show();
-                                            showPswdDialog();
-                                        }
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(getContext(), "Incorrect Current Password", Toast.LENGTH_SHORT).show();
-                                showPswdDialog();
-                            }
-                        });
-
-
-                    }
+            if (bundle.getString("oldpswd") != null) {
+                String old = bundle.getString("oldpswd");
+                final String new1 = bundle.getString("newpswd1");
+                String new2 = bundle.getString("newpswd2");
+                if (!new1.equals(new2)) {
+                    Toast.makeText(getContext(), "Passwords dont match!", Toast.LENGTH_SHORT).show();
+                    showPswdDialog();
                 } else {
-                    String fn = bundle.getString("fn");
-                    String ln = bundle.getString("ln");
-                    String email = bundle.getString("email");
-                    updateEmail(fn, ln, email);
-                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-                    homeScreenActivity.refreshMainAdapter();
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    AuthCredential credential = EmailAuthProvider
+                            .getCredential(currentemail, old);
+                    user.reauthenticate(credential)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    if (!new1.equals("")) {
+                                        updatePassword(new1);
+                                    } else {
+                                        Toast.makeText(getContext(), "new password cannot be blank", Toast.LENGTH_SHORT).show();
+                                        showPswdDialog();
+                                    }
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getContext(), "Incorrect Current Password", Toast.LENGTH_SHORT).show();
+                            showPswdDialog();
+                        }
+                    });
+
+
                 }
+            } else {
+                String fn = bundle.getString("fn");
+                String ln = bundle.getString("ln");
+                String newemail = bundle.getString("email");
+                fullname.setText(fn+" "+ln);
+                email.setText(newemail);
+                updateEmail(fn, ln, newemail);
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+                homeScreenActivity.refreshMainAdapter();
             }
-            else{
-                selectImage();
-            }
+
         }
         if(requestCode==1){
             onCaptureImageResult(data);

@@ -1,6 +1,7 @@
 package com.app.android.sp;
 //All imports
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Html;
@@ -21,6 +22,7 @@ public class PostCheckinFragment extends Fragment {
     //Variable Declarations
     private String UID;
     private View view;
+    private byte[] bytearray;
     private Bitmap mapimage;
     private ImageView cinmap;
     private int width,sub;
@@ -36,7 +38,8 @@ public class PostCheckinFragment extends Fragment {
 
         Bundle extras = getArguments();                 //get required data from intent
         UID = extras.getString("userid");
-        mapimage = extras.getParcelable("mapimage");
+        bytearray = extras.getByteArray("mapimage");
+        mapimage = BitmapFactory.decodeByteArray(bytearray, 0, bytearray.length);
         width = extras.getInt("width");
         hours = extras.getDouble("hours");
         mins  = extras.getDouble("mins");
@@ -68,7 +71,7 @@ public class PostCheckinFragment extends Fragment {
             couttime.setText(time);
         }
         TextView earnmore = (TextView) view.findViewById(R.id.earnmore);
-        String s = "You just earned 2 keys by checking-in to this place. Earn <b> 2 more keys by letting us know </b> when you leave!";
+        String s = "Earn 2 more keys just by letting us know <b> when you start walking back </b> to get your car out";
         earnmore.setText(fromHtml(s));
 
         // Initialize the Ad unit

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import com.google.android.gms.maps.GoogleMap;
@@ -109,7 +110,7 @@ public class SpotFinder {
 
         //make the markers the right size
         for (int i = 0; i < markerimage.size(); i++) {
-            BitmapDrawable bitmapdraw = (BitmapDrawable) context.getResources().getDrawable(markerimage.get(i), null);
+            BitmapDrawable bitmapdraw = (BitmapDrawable) ContextCompat.getDrawable(context,markerimage.get(i));
             Bitmap b = bitmapdraw.getBitmap();
             markerbitmaps.add(Bitmap.createScaledBitmap(b, dpToPx(40), dpToPx(40), false));
         }
@@ -335,7 +336,8 @@ public class SpotFinder {
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             ReportedTimes times = dataSnapshot.getValue(ReportedTimes.class);
             beServerRep(times, dataSnapshot.getKey());
-            if (analyzeReported(start,end,times)) { //see if the reported spot's timings match present time and day
+
+            if (analyzeReported(start, end, times)) { //see if the reported spot's timings match present time and day
                 spotplace = new LatLng(times.getlatitude(), times.getlongitude());
                 Marker marker = (Marker) markerlocations.get(spotplace);
                 if (marker != null) {
@@ -362,7 +364,6 @@ public class SpotFinder {
             if (count2 == reportnum) {
                 getFeedbacks();
             }
-
 
         }
 
@@ -778,6 +779,7 @@ public class SpotFinder {
             endcal = (Calendar) startcal.clone();
             endcal.add(Calendar.HOUR_OF_DAY, 3);
         }
+
         if(reportedTimes.getfullday()&&reportedTimes.getfullweek()){  //return true if the spot is always available
             return true;
         }
@@ -838,7 +840,15 @@ public class SpotFinder {
                 }
                 if(startmin<=endmin) { //searching proper difference
                     if (!(boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK))) { //day of search is unavailable
-                        if((boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK)-1)){ //but its previous day is available
+                        boolean previousday;
+                        //making sure sunday case does not crash
+                        if(startcal.get(Calendar.DAY_OF_WEEK)-1==0){
+                            previousday = (boolean)daysofweek.get(7);
+                        }
+                        else{
+                            previousday = (boolean) daysofweek.get(startcal.get(Calendar.DAY_OF_WEEK)-1);
+                        }
+                        if(previousday){ //but its previous day is available
                             if(endmin<=rependmin){
                                 return true;
                             }

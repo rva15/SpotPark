@@ -331,7 +331,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
                 public void onSnapshotReady(Bitmap snapshot) {
                     bitmap = snapshot;
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
                     byte[] data = baos.toByteArray();
                     showForm(data, cameracenter.latitude, cameracenter.longitude);
                 }

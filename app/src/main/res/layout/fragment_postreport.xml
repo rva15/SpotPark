@@ -18,10 +18,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Your Reported Spot has been saved to our database"
+                android:layout_margin="16dp"
                 android:gravity="center"
-                android:textColor="@color/black"
-                android:layout_margin="16dp"/>
+                android:text="Your Reported Spot has been saved"
+                android:textColor="@color/black" />
 
             <View
                 android:layout_width="fill_parent"
@@ -53,7 +53,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thank you for reporting this no cost legal parking spot. You have earned 2 points by doing so. "/>
+                    android:text="Thank you for reporting this no cost legal parking spot. " />
 
 
             </LinearLayout>
@@ -92,7 +92,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Once this spot gets verified by other users, you will gain 5 keys and 5 more points!"/>
+                    android:text="Once this spot gets verified by other users, you will gain 5 keys." />
 
             </LinearLayout>
 

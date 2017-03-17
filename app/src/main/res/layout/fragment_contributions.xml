@@ -20,13 +20,26 @@
             android:layout_marginBottom="16dp"
             android:textColor="@color/white"
             android:background="@color/darkgrey"
-            android:text="POINTS TALLY" />
+            android:text="KEYS TALLY" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="16dp"
-            android:layout_marginBottom="8dp"
-            android:id="@+id/currentpoints"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="16dp"
+                android:id="@+id/currentpoints"
+                android:layout_gravity="center_vertical"/>
+
+            <ImageView
+                android:layout_width="16dp"
+                android:paddingTop="4dp"
+                android:layout_height="16dp"
+                android:src="@drawable/key"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

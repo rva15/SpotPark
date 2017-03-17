@@ -26,6 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/contrepname"
+            android:layout_marginBottom="8dp"
             android:gravity="center"
             android:textColor="@color/black"
             android:textSize="16dp"/>
@@ -41,26 +42,40 @@
                 android:paddingBottom="8dp"
                 android:layout_alignParentRight="true"
                 android:id="@+id/crstatus"/>
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@+id/crstatus"
-                android:id="@+id/points"
-                android:textSize="12dp"
-                android:layout_marginTop="12dp"
-                android:paddingRight="8dp"
-                android:textColor="@color/green"/>
+                android:orientation="horizontal"
+                android:layout_toLeftOf="@+id/crstatus">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/points"
+                    android:textSize="16dp"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/tab_background_selected"/>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginLeft="-4dp"
+                    android:id="@+id/keyicon"
+                    android:src="@drawable/key"/>
+
+            </LinearLayout>
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="8dp"
-                android:paddingBottom="8dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="8dp"
                 android:src="@drawable/delete"
                 android:id="@+id/crdeleteicon"
                 android:layout_alignParentLeft="true"/>
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@drawable/edit"
                 android:id="@+id/crediticon"
                 android:layout_toRightOf="@+id/crdeleteicon"/>

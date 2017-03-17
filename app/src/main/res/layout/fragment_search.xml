@@ -91,23 +91,11 @@
 
                 </LinearLayout>
 
-
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:id="@+id/roundsearch"
-                    android:visibility="gone"
-                    android:layout_marginBottom="72dp"
-                    android:layout_marginLeft="16dp"
-                    android:layout_gravity="bottom|left"
-                    android:src="@drawable/roundsearch"/>
-
                 <ImageView
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:id="@+id/refreshspots"
-                    android:layout_marginBottom="110dp"
+                    android:layout_marginBottom="72dp"
                     android:layout_marginLeft="16dp"
                     android:layout_gravity="bottom|left"
                     android:visibility="gone"
@@ -189,7 +177,7 @@
                 android:layout_height="24dp"
                 android:id="@+id/fromuntil2"
                 android:orientation="horizontal"
-                android:background="@color/midnight">
+                android:background="@color/darkgrey">
 
                 <TextView
                     android:layout_width="0dp"

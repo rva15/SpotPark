@@ -19,8 +19,8 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
             android:textColor="@color/white"
             android:background="@color/dimgrey"
             android:text="Reminder"
@@ -28,8 +28,7 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_height="wrap_content"
             android:textSize="16dp"
             android:textStyle="bold"
             android:id="@+id/couttime"
@@ -53,6 +52,24 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             />
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/edit"
+            android:id="@+id/editcin"
+            android:layout_marginRight="40dp"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="top|right"/>
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/delete"
+            android:id="@+id/deletecin"
+            android:layout_marginTop="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_gravity="top|right"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -103,7 +120,7 @@
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="Inform others you are leaving"/>
+                android:text="Walking back to vacate this spot"/>
 
                 <ImageView
                     android:layout_width="24dp"
@@ -123,8 +140,6 @@
         </FrameLayout>
 
     </FrameLayout>
-
-
 
 
 

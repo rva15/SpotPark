@@ -58,11 +58,14 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
         contactViewHolder.spotname.setText(crtimes.get(i).getdescription());
         if(crtimes.get(i).getverification()<2) {
             contactViewHolder.category.setImageResource(R.drawable.uver);
-            contactViewHolder.points.setText("2 points");
+            contactViewHolder.keyicon.setVisibility(View.GONE);
+            contactViewHolder.points.setVisibility(View.GONE);
         }
         else{
             contactViewHolder.category.setImageResource(R.drawable.ver);
-            contactViewHolder.points.setText("5 points");
+            contactViewHolder.keyicon.setVisibility(View.VISIBLE);
+            contactViewHolder.points.setVisibility(View.VISIBLE);
+            contactViewHolder.points.setText("5");
         }
         contactViewHolder.spotimage.setImageBitmap(crimage.get(i));
     }
@@ -84,7 +87,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
     public class ContactViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         protected TextView spotname,points;
-        protected ImageView spotimage;
+        protected ImageView spotimage,keyicon;
         protected ImageView category;
 
 
@@ -94,6 +97,7 @@ public class CRAdapter extends RecyclerView.Adapter<CRAdapter.ContactViewHolder>
             spotimage = (ImageView) v.findViewById(R.id.contrepimage);
             category = (ImageView) v.findViewById(R.id.crstatus);
             points = (TextView) v.findViewById(R.id.points);
+            keyicon = (ImageView) v.findViewById(R.id.keyicon);
             spotimage.setOnClickListener(this);
             ImageView deleteview = (ImageView) v.findViewById(R.id.crdeleteicon);
             ImageView editview = (ImageView) v.findViewById(R.id.crediticon);

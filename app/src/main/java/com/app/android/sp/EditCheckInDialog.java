@@ -95,8 +95,8 @@ public class EditCheckInDialog extends DialogFragment {
         if(msg.getText().equals("Reminder not set")){
             clear.setVisibility(View.GONE);
         }
-        ImageView alarm = (ImageView)view.findViewById(R.id.editalarm);
-        alarm.setOnClickListener(new View.OnClickListener() {
+        CardView card = (CardView) view.findViewById(R.id.editcincard1);
+        card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {   //listener for setting alarm
                 final Calendar c = Calendar.getInstance();

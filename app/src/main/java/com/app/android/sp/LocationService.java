@@ -151,7 +151,7 @@ public class LocationService extends android.app.Service{
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
-        builder.setContentText("Inform others that you're leaving?");
+        builder.setContentText("Vacating your parking spot soon?");
         builder.addAction(accept);
         builder.setAutoCancel(true);
 

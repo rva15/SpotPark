@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +37,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
@@ -58,6 +60,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.app.android.sp.R.id.addtofavorites;
 import static com.app.android.sp.SPApplication.getContext;
 
 public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, EditCheckInDialog.EditCheckInDialogListener {
@@ -74,6 +77,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     private int couthours,coutmins;
     private int dollars,cents;
     private boolean searchstarted=false;
+    private int awardcount=0;
 
 
     // Google and Firebase
@@ -165,7 +169,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             buildAlertMessageNoGps();
         }
 
-        //checkAwards();
+        checkAwards();
 
 
     }
@@ -255,9 +259,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             getSettings();
         }
         if(id == R.id.delete){
-            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-            getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);   //Attach listener to Checkinusers
-            getcheckin.addListenerForSingleValueEvent(listener2);
+            deletedialog();
         }
         if(id == R.id.edit){
             showEditCheckInDialog();
@@ -271,7 +273,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // ----------- Main Menu Functions-----------------//
 
-    private void deletedialog() {   //show a confirmation dialog before deleting the spot
+    public void deletedialog() {   //show a confirmation dialog before deleting the spot
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Are you sure you want to delete this Check-In?");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
@@ -291,6 +293,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // Delete the checkin
     public void delete(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        getcheckin = database.child("CheckInUsers").orderByKey().equalTo(UID);   //Attach listener to Checkinusers
         stopService(new Intent(HomeScreenActivity.this,LocationService.class)); //Stop services
         stopService(new Intent(HomeScreenActivity.this,DirectionService.class));
         Intent cancelaction = new Intent(this, NotificationPublisher.class);    //Cancel notifications
@@ -382,11 +386,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     // Get the checked in fragment
-    public void getCheckedin(Bitmap mapimage,double hours,double mins,int sub){
+    public void getCheckedin(byte[] mapimage,double hours,double mins,int sub){
         isCheckedin=true;
         Bundle data = new Bundle();
         data.putString("userid",UID);
-        data.putParcelable("mapimage",mapimage);
+        data.putByteArray("mapimage",mapimage);
         data.putDouble("hours",hours);
         data.putDouble("mins",mins);
         data.putInt("sub",sub);
@@ -450,11 +454,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     //--------------------------------Helper Functions----------------------------------------//
 
-    private void checkAwards(){
+    private void checkAwards() {
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        database.child("ReportedTimes").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+        database.child("ReportedTimes").child(UID).addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG,"datachange");
                 ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
                 if((reportedTimes.getverification()>1)){
                     if((!reportedTimes.getawarded()) || ((Boolean)reportedTimes.getawarded()==null)){
@@ -465,13 +470,61 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             }
 
             @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
             public void onCancelled(DatabaseError databaseError) {
 
             }
         });
+
     }
 
     private void awardKeys(){
+        if(awardcount==0){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            TextView tv = new TextView(this);
+            tv.setText("You've earned Keys !!");
+            tv.setPadding(0,10,0,10);
+            tv.setGravity(Gravity.CENTER);
+            final int version = Build.VERSION.SDK_INT;
+            final TextView et = new TextView(this);
+            et.setText("Some of your reported spots just got verified.");
+            et.setPadding(0,10,0,0);
+            if (version >= 23) {
+                tv.setTextColor(ContextCompat.getColor(this,R.color.white));
+                et.setTextColor(ContextCompat.getColor(this,R.color.black));
+                tv.setBackgroundColor(ContextCompat.getColor(this,R.color.tab_background_selected));
+            } else {
+                tv.setTextColor(getResources().getColor(R.color.white));
+                et.setTextColor(getResources().getColor(R.color.black));
+                tv.setBackgroundColor(this.getResources().getColor(R.color.tab_background_selected));
+            }
+            alertDialogBuilder.setView(et);
+            et.setGravity(Gravity.CENTER);
+            alertDialogBuilder.setCustomTitle(tv);
+            // Setting Positive "OK" Button
+            alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+            awardcount=1;
+        }
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -779,7 +832,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             key = user.getkey();
             deletedata();
             getcheckin.removeEventListener(listener1);
-            getcheckin.removeEventListener(listener2);
 
         }
 
@@ -796,23 +848,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         @Override
         public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-    };
-
-    ValueEventListener listener2 = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            if(!dataSnapshot.exists()){
-                Toast.makeText(getApplicationContext(),"There is no active CheckIn",Toast.LENGTH_SHORT).show();
-            }
-            else{
-                deletedialog();
-            }
         }
 
         @Override

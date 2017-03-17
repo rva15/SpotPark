@@ -25,6 +25,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -453,10 +454,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             public void onSnapshotReady(Bitmap snapshot) {
 
                 bitmap = snapshot;
-                showPostCheckin(LatLngCode,key);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
                 byte[] data = baos.toByteArray();
+                showPostCheckin(LatLngCode,key,data);
                 FirebaseStorage storage = FirebaseStorage.getInstance();
                 StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
                 StorageReference historyRef = storageRef.child(userid+"/History/"+cikey+".jpg");
@@ -499,14 +500,14 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    private void showPostCheckin(String latlngcode,String key){
+    private void showPostCheckin(String latlngcode,String key,byte[] mapimage){
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //pass information to homescreen activity
         homeScreenActivity.setLatlngcode(latlngcode);
         homeScreenActivity.setLatitude(cameracenter.latitude);
         homeScreenActivity.setLongitude(cameracenter.longitude);
         homeScreenActivity.setCheckinkey(key);
         homeScreenActivity.setRate(dollars,cents);
-        homeScreenActivity.getCheckedin(bitmap,hours,mins,sub); //display the post checkin screen
+        homeScreenActivity.getCheckedin(mapimage,hours,mins,sub); //display the post checkin screen
     }
 
     //---------------------------Notifications Related Functions---------------------------//

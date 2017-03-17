@@ -23,7 +23,7 @@
             android:layout_column="2"
             android:background="@drawable/customborder"/>
         <TextView
-            android:text="Points Earned"
+            android:text="Keys Earned"
             android:textStyle="bold"
             android:layout_column="3"
             android:background="@drawable/customborder"/>
@@ -34,7 +34,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:text="Checkins"
+            android:text="Checkouts"
             android:layout_column="1"
             android:background="@drawable/customborder"/>
         <TextView
@@ -81,36 +81,9 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:gravity="top|center_horizontal"
-        android:layout_height="wrap_content"
-        android:text="\u25CF "/>
-
-    <TextView
-        android:layout_width="wrap_content"
         android:gravity="left"
         android:layout_height="wrap_content"
-        android:text="Earn 1 point every time you press the 'I parked' button when you park at a spot declared by another user."/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_margin="16dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:gravity="top|center_horizontal"
-            android:layout_height="wrap_content"
-            android:text="\u25CF "/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:gravity="left"
-            android:layout_height="wrap_content"
-            android:text="Earn 2 points every time you press the 'I parked' button when you park at a user reported no cost spot. This helps us verify the authenticity of such spots."/>
-
+        android:text="Earn keys everytime you give a feedback for spots reported by other users. "/>
 
     </LinearLayout>
 

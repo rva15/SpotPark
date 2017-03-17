@@ -35,27 +35,12 @@ public class EditProfileDialog extends DialogFragment {
         final String firstname = mArgs.getString("fn");
         final String lastname = mArgs.getString("ln");
         final String emailid = mArgs.getString("email");
-        final Bitmap bmp = mArgs.getParcelable("dp");
         final EditText editfn = (EditText) view.findViewById(R.id.editfn);
         editfn.setText(firstname);
         final EditText editln = (EditText) view.findViewById(R.id.editln);
         editln.setText(lastname);
         final EditText editemail = (EditText) view.findViewById(R.id.editemail);
         editemail.setText(emailid);
-        final ImageView dialogdp = (ImageView) view.findViewById(R.id.dialogdp);
-        dialogdp.setImageBitmap(bmp);
-        dialogdp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent();
-                i.putExtra("fn", editfn.getText().toString());
-                i.putExtra("ln", editln.getText().toString());
-                i.putExtra("email", editemail.getText().toString());
-                i.putExtra("changedp",true);
-                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
-                EditProfileDialog.this.getDialog().cancel();
-            }
-        });
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout

@@ -46,14 +46,14 @@
                 android:layout_alignParentRight="true"
                 android:id="@+id/favcardbutton"/>
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@drawable/delete"
                 android:id="@+id/deleteicon"
                 android:layout_alignParentLeft="true"/>
             <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@drawable/edit"
                 android:id="@+id/editicon"
                 android:layout_toRightOf="@+id/deleteicon"/>

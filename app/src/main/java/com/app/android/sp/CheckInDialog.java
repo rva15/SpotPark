@@ -42,7 +42,7 @@ public class CheckInDialog extends DialogFragment {
     private ImageView alarm,clear;
     private EditText cph;
     private int selecthour=123,selectmin=123;
-    private CardView cincard3;
+    private CardView cincard3,cincard1;
 
 
     public CheckInDialog(){}
@@ -63,10 +63,11 @@ public class CheckInDialog extends DialogFragment {
         clear = (ImageView) view.findViewById(R.id.clear);
         clear.setVisibility(View.GONE);
         cincard3 = (CardView) view.findViewById(R.id.cincard3);
+        cincard1 = (CardView) view.findViewById(R.id.cincard1);
         free = (RadioButton) view.findViewById(R.id.free);
         cph = (EditText) view.findViewById(R.id.cph);
         costly = (RadioButton) view.findViewById(R.id.costly);
-        alarm.setOnClickListener(new View.OnClickListener() {
+        cincard1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {     //open time picker if alarm image is clicked
                 final Calendar c = Calendar.getInstance();

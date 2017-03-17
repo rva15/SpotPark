@@ -104,7 +104,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private LinearLayout recenter;
     private TextView book,navigate,route;
     private ParkWhizSpots parkWhizSpots;
-    private ImageView roundsearch,startsearch,refreshspots;
+    private ImageView startsearch,refreshspots;
     private double cameralatitude,cameralongitude;
     private ImageView ssatview,sgridview;
     private Calendar startcalendar, endcalendar;
@@ -115,6 +115,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private static boolean searchStarted;
     private String curLatLng;
     private String label;
+    private ArrayList<String> array = new ArrayList<String>();
 
 
 
@@ -260,8 +261,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
         recenter.setVisibility(View.GONE);
         recenter.setOnClickListener(this);
-        roundsearch = (ImageView) view.findViewById(R.id.roundsearch);
-        roundsearch.setOnClickListener(this);
         book = (TextView) view.findViewById(R.id.book);
         book.setOnClickListener(this);
         ssatview = (ImageView) view.findViewById(R.id.ssatview);
@@ -274,6 +273,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         fromuntil2 = (LinearLayout) view.findViewById(R.id.fromuntil2);
         fromuntil1.setVisibility(View.GONE);
         fromuntil2.setVisibility(View.GONE);
+        fromuntil2.setOnClickListener(this);
         feedback= (TextView) view.findViewById(R.id.feedback);
         feedback.setOnClickListener(this);
         refreshspots = (ImageView) view.findViewById(R.id.refreshspots);
@@ -421,7 +421,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
 
-        if(v.getId()==R.id.roundsearch){
+        if(v.getId()==R.id.fromuntil2){
             showSearchDialog();
         }
 
@@ -473,7 +473,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         dataSnapshot.getRef().setValue(keys-1);
                         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
                         homeScreenActivity.refreshMainAdapter();
-                        roundsearch.setVisibility(View.VISIBLE);
                         Toast.makeText(getContext(),"You have "+Integer.toString(keys-1)+" keys remaining",Toast.LENGTH_LONG).show();
                         startSearch();
                     }
@@ -493,8 +492,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         if(v.getId()==R.id.feedback){
             // Create an instance of the dialog fragment and show it
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            checkFeeedbacks(key);
-
+            checkFeedbacks(key);
         }
 
         if(v.getId()==R.id.book){
@@ -544,8 +542,16 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 if (isReported) {
                     downvoteReported();
                 }
-                Toast.makeText(this.getContext(),"Thank You for your feedback!",Toast.LENGTH_SHORT).show();
             }
+            if(isReported){
+                giveKeys(2);
+                Toast.makeText(getContext(),"You've earned 2 keys for this feedback!",Toast.LENGTH_SHORT).show();
+            }
+            else{
+                giveKeys(1);
+                Toast.makeText(getContext(),"You've earned 1 key for this feedback!",Toast.LENGTH_SHORT).show();
+            }
+
 
         }
         if(requestCode==4){
@@ -599,7 +605,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         startsearch.setVisibility(View.GONE);
         fromuntil1.setVisibility(View.VISIBLE);
         fromuntil2.setVisibility(View.VISIBLE);
-        roundsearch.setVisibility(View.VISIBLE);
         refreshspots.setVisibility(View.VISIBLE);
         Toast.makeText(getContext(),"Click on the markers for more info",Toast.LENGTH_LONG).show();
         startcalendar = Calendar.getInstance();
@@ -695,6 +700,24 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
     // helper functions for updating stuff
 
+    private void giveKeys(final int numkeys){
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Integer keys = dataSnapshot.getValue(Integer.class);
+                dataSnapshot.getRef().setValue(keys+numkeys);
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                homeScreenActivity.refreshMainAdapter();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     private void showFeedbackDialog(){
         DialogFragment dialog = new ComplainDialog();
         Bundle args = new Bundle();
@@ -704,7 +727,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         dialog.show(this.getActivity().getSupportFragmentManager(), "Search fragment");
     }
 
-    private void checkFeeedbacks(String key){
+    private void checkFeedbacks(String key){
         database = FirebaseDatabase.getInstance().getReference();
         database.child("Feedbacks").child(key).child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -742,7 +765,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         getcheckin.addChildEventListener(listener1);
         updatecinfeed();
         resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
-        Toast.makeText(getContext(),"Thanks for letting us know. You earned 1 point for this action.",Toast.LENGTH_SHORT).show();
         return;
     }
 
@@ -754,7 +776,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         updaterepfeed();
         giveUpvote(key);
         resetSpotFinder(searchmap.getCameraPosition().target.latitude,searchmap.getCameraPosition().target.longitude);
-        Toast.makeText(getContext(),"Thanks for letting us know. You earned 2 points for this action.",Toast.LENGTH_SHORT).show();
         return;
     }
 
@@ -1034,6 +1055,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 book.setVisibility(View.GONE);
                 feedback.setVisibility(View.VISIBLE);
                 label = "SpotPark user Check-In";
+                heading.setText("Cost per Hour");
                 isReported = false;
                 key = (String) Keys.get(currentmarker);
                 int time = (int) Times.get(currentmarker);
@@ -1045,7 +1067,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                     res.moveToFirst();
                     int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));   //get dollars and cents from phone db
                     int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
-                    category.setText("You are " + Integer.toString((int) DriveTime.get(key)) + " mins away from here");
+                    category.setText("Vacating in : "+Integer.toString((int)Times.get(currentmarker))+"mins  |  Travel time : " + Integer.toString((int) DriveTime.get(key)) + "mins");
                     rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
                     spotdescription.setVisibility(View.GONE);
                     rate.setVisibility(View.VISIBLE);
@@ -1057,8 +1079,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 feedback.setVisibility(View.GONE);
                 heading.setText("Parking Lot Name");
                 category.setText("Parking lot (from ParkWhiz)");
-                //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
-                //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                 rate.setVisibility(View.GONE);
                 spotdescription.setVisibility(View.VISIBLE);
                 spotdescription.setText((String) PWSpotnames.get(currentmarker));
