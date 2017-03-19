@@ -74,13 +74,7 @@ import java.util.TimerTask;
  */
 public class SearchFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener,GoogleMap.OnMarkerClickListener,View.OnClickListener,GoogleMap.OnMapClickListener,GoogleMap.OnCameraMoveStartedListener {
 
-    //This function SHOULD NOT be moved from this position
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        //This MUST be done before saving any of your own or your base class's variables
-        outState.putBoolean("searchStarted",searchStarted);
-        super.onSaveInstanceState(outState);
-    }
+
 
 
     //Variable Declaration
@@ -233,6 +227,14 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if (null != gMapView){
             gMapView.onResume();}
+    }
+
+    //This function SHOULD NOT be moved from this position
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //This MUST be done before saving any of your own or your base class's variables
+        outState.putBoolean("searchStarted",searchStarted);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
