@@ -61,7 +61,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private static String UID;
     private View view;
     private TextView fullname, email;
-    private ImageView dp,contactemail,icons8;
+    private ImageView dp,contactemail,icons8,contactfb;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private int logintype = 0;
@@ -117,6 +117,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         profileinfo.setOnClickListener(this);
         contactemail = (ImageView)view.findViewById(R.id.contactemail);
         contactemail.setOnClickListener(this);
+        contactfb = (ImageView)view.findViewById(R.id.contactfb);
+        contactfb.setOnClickListener(this);
         icons8 = (ImageView) view.findViewById(R.id.icons8);
         icons8.setOnClickListener(this);
         database.child("UserInformation").child(UID).addListenerForSingleValueEvent(listener1);
@@ -187,7 +189,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             showProfileDialog();
         }
         if(v.getId() == R.id.contactemail){
-           sendEmail();
+            sendEmail();
+        }
+        if(v.getId() == R.id.contactfb){
+            sendFbMsg();
         }
         if(v.getId() == R.id.icons8){
             icons8();
@@ -210,6 +215,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         } catch (android.content.ActivityNotFoundException ex) {
             Toast.makeText(getActivity(), "There are no email clients installed.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void sendFbMsg(){
+        String url = "https://www.facebook.com/thespotparkapp/";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
     }
 
     private void showProfileDialog(){
