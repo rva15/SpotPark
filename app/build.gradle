@@ -8,8 +8,8 @@ android {
         applicationId "com.app.android.sp"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 17
-        versionName "1.5.11"
+        versionCode 19
+        versionName "1.5.13"
         multiDexEnabled true
     }
     buildTypes {

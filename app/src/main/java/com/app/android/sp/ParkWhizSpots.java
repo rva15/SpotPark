@@ -122,7 +122,7 @@ public class ParkWhizSpots {
 
         protected void onPostExecute(String response) {
             if (response == null) {
-                response = "THERE WAS AN ERROR";
+                return;
             }
 
             try { //get the parking lot names and their prices
