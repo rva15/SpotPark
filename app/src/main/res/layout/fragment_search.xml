@@ -146,7 +146,7 @@
                 android:layout_height="16dp"
                 android:orientation="horizontal"
                 android:id="@+id/fromuntil1"
-                android:background="@color/midnight">
+                android:background="@color/darkgrey">
 
                 <TextView
                     android:layout_width="0dp"

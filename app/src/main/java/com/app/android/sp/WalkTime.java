@@ -137,6 +137,7 @@ public class WalkTime {
                 // Starts parsing data
                 totalmins = parser.parse(jObject);  //get mins required to walk to destination
 
+
                 if(totalmins>10){
                     //do nothing
                 }
