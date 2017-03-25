@@ -138,7 +138,7 @@ public class HistoryFragment extends Fragment  {
                         i = i + 1;
                         if (i == max) {
                             fetchinghistory.setVisibility(View.GONE);
-                            historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID,getContext());
+                            historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID,getContext(),max);
                             recList.setAdapter(historyAdapter);   //set the adapter
                             database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
                         }

@@ -53,9 +53,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     private static RecyclerView recyclerView;
     private View itemView;
     private Context context;
+    private int max;
 
     //constructor
-    public HistoryAdapter(ArrayList historyplace, ArrayList keys, ArrayList bitmaps, FragmentActivity activity, HistoryFragment historyFragment, RecyclerView recyclerView, String UID, Context context) {
+    public HistoryAdapter(ArrayList historyplace, ArrayList keys, ArrayList bitmaps, FragmentActivity activity, HistoryFragment historyFragment, RecyclerView recyclerView, String UID, Context context,int max) {
 
         this.historyplace = historyplace;
         this.keys = keys;
@@ -65,6 +66,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
         this.UID = UID;
         this.context = context;
         this.historyFragment = historyFragment;
+        this.max = max;
     }
 
     @Override
@@ -75,10 +77,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     @Override
     public void onBindViewHolder(HistoryViewHolder historyViewHolder, int i) {
         this.historyViewHolder = historyViewHolder;
-        historyViewHolder.date.setText(historyplace.get(9-i).getdate());      //set the ArrayList elements to the views
-        historyViewHolder.time.setText(historyplace.get(9-i).gettime());
-        historyViewHolder.hisspotimage.setImageBitmap(bitmaps.get(9-i));
-        if(historyplace.get(9-i).getisfavorite()==1){
+        historyViewHolder.date.setText(historyplace.get(max-1-i).getdate());      //set the ArrayList elements to the views
+        historyViewHolder.time.setText(historyplace.get(max-1-i).gettime());
+        historyViewHolder.hisspotimage.setImageBitmap(bitmaps.get(max-1-i));
+        if(historyplace.get(max-1-i).getisfavorite()==1){
             historyViewHolder.addtofavorites.setChecked(true);
             historyViewHolder.addtofavorites.setEnabled(false);
         }
