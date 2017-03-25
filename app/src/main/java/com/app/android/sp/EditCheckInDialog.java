@@ -31,8 +31,9 @@ public class EditCheckInDialog extends DialogFragment {
     private TextView msg;
     private CardView cincard3;
     private RadioButton free,costly;
-    private EditText rate;
+    private EditText rate,cinnotes;
     private RadioButton othersyes,othersno;
+    private String notes;
 
 
     public EditCheckInDialog(){}   //empty constructor
@@ -49,12 +50,15 @@ public class EditCheckInDialog extends DialogFragment {
         final String cents = Integer.toString(args.getInt("cents"));
         couthours = args.getInt("couthours");  // and the reminder time
         coutmins = args.getInt("coutmins");
+        notes = args.getString("cinnotes");
         othersyes = (RadioButton) view.findViewById(R.id.editothersyes);
         othersno = (RadioButton) view.findViewById(R.id.editothersno);
         cincard3 = (CardView) view.findViewById(R.id.editcincard3);
         free = (RadioButton) view.findViewById(R.id.editfree);
         rate = (EditText) view.findViewById(R.id.editcph);
         costly = (RadioButton) view.findViewById(R.id.editcostly);
+        cinnotes = (EditText) view.findViewById(R.id.editcinnotes);
+        cinnotes.setText(notes);
 
         rate = (EditText) view.findViewById(R.id.editcph); //set the previous rate to edittext
         if(Integer.parseInt(cents)<10) {

@@ -357,13 +357,14 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             int min  = bundle.getInt("mins");
             Boolean otherspark = bundle.getBoolean("otherspark");
             Boolean free = bundle.getBoolean("free");
+            String cinnotes = bundle.getString("cinnotes");
 
-            checkIn(rate,hour,min,otherspark,free);
+            checkIn(rate,hour,min,otherspark,free,cinnotes);
         }
     }
 
 
-    private void checkIn(String parkrate,int parkhour,int parkmin,boolean otherspark,boolean free) {
+    private void checkIn(String parkrate, int parkhour, int parkmin, boolean otherspark, boolean free, final String cinnotes) {
 
         // Initialize all required data for checking in
         position = map.getCameraPosition();                 //get the camera position
@@ -422,19 +423,13 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         if(!otherspark){  //set this value if others cannot park
             walktimedef = 20041;
         }
-        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef,strDate,(int)checkinhour,(int)checkinmin);
+        CheckInDetails checkInDetails = new CheckInDetails(cameracenter.latitude,cameracenter.longitude,dollars,cents,UID,walktimedef,strDate,(int)checkinhour,(int)checkinmin,cinnotes);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(cameracenter.latitude,cameracenter.longitude,(int)hours,(int)mins,LatLngCode,key);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
 
         // Make the entries
         Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-
-        // Make an entry in user's history saying it has not been favorited
-        HistoryPlace historyPlace = new HistoryPlace(cameracenter.latitude,cameracenter.longitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
-        Map<String, Object> historyMap = historyPlace.toMap();
-        childUpdates.put("/HistoryKeys/"+UID+"/"+key,historyMap);
-
         childUpdates.put("/CheckInKeys/"+LatLngCode+"/"+key, checkInDetailsMap);
         childUpdates.put("/CheckInUsers/"+UID,userMap);
 
@@ -457,7 +452,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
                 byte[] data = baos.toByteArray();
-                showPostCheckin(LatLngCode,key,data);
+                showPostCheckin(LatLngCode,key,data,cinnotes);
                 FirebaseStorage storage = FirebaseStorage.getInstance();
                 StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
                 StorageReference historyRef = storageRef.child(userid+"/History/"+cikey+".jpg");
@@ -500,13 +495,14 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
     }
 
-    private void showPostCheckin(String latlngcode,String key,byte[] mapimage){
+    private void showPostCheckin(String latlngcode,String key,byte[] mapimage,String cinnotes){
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //pass information to homescreen activity
         homeScreenActivity.setLatlngcode(latlngcode);
         homeScreenActivity.setLatitude(cameracenter.latitude);
         homeScreenActivity.setLongitude(cameracenter.longitude);
         homeScreenActivity.setCheckinkey(key);
         homeScreenActivity.setRate(dollars,cents);
+        homeScreenActivity.setNotes(cinnotes);
         homeScreenActivity.getCheckedin(mapimage,hours,mins,sub); //display the post checkin screen
     }
 
@@ -606,38 +602,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
             }
         });
-    }
-
-    private String gettimeformat(String hour,String min){
-        int hours = Integer.parseInt(hour);
-        int mins  = Integer.parseInt(min);
-        String time="";
-        if(hours>12){
-            if(mins <10) {
-                time = Integer.toString(hours - 12) + ":0" + Integer.toString(mins) + " pm";
-            }
-            else{
-                time = Integer.toString(hours - 12) + ":" + Integer.toString(mins) + " pm";
-            }
-        }
-        if(hours<12){
-            if(mins<10) {
-                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " am";
-            }
-            else{
-                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " am";
-            }
-        }
-        if(hours==12){
-            if(mins <10) {
-                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " pm";
-            }
-            else{
-                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " pm";
-            }
-        }
-        return time;
-
     }
 
     private Double toDouble(String var){                                   //convert String to Double

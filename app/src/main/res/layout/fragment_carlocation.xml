@@ -56,6 +56,14 @@
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
+            android:src="@drawable/notes"
+            android:id="@+id/notes"
+            android:layout_marginRight="80dp"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="top|right"/>
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:src="@drawable/edit"
             android:id="@+id/editcin"
             android:layout_marginRight="40dp"
@@ -70,7 +78,6 @@
             android:layout_marginTop="8dp"
             android:layout_marginRight="8dp"
             android:layout_gravity="top|right"/>
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -79,7 +86,7 @@
             android:clickable="true"
             android:id="@+id/recenter"
             android:background="@color/white"
-            android:layout_marginTop="24dp">
+            android:layout_marginTop="8dp">
 
             <ImageView
                 android:layout_width="32dp"
@@ -98,12 +105,27 @@
 
         </LinearLayout>
 
-        <FrameLayout
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/othersknow"
-            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|right"
             android:layout_margin="8dp">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/plus"
+                android:id="@+id/newcheckin"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="right"/>
+
+
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/othersknow">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -138,6 +160,8 @@
             </LinearLayout>
 
         </FrameLayout>
+
+        </LinearLayout>
 
     </FrameLayout>
 

@@ -1,5 +1,7 @@
 package com.app.android.sp;
 //All imports
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,9 +55,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static android.R.attr.id;
+import static android.content.Context.ALARM_SERVICE;
+import static com.app.android.sp.R.id.cinnotes;
+import static com.facebook.internal.CallbackManagerImpl.RequestCodeOffset.Login;
 
 /**
  * Created by ruturaj on 9/16/16.
@@ -72,12 +83,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     public static final String ARG_PAGE = "ARG_PAGE";
     private static final String TAG = "Debugger ";
     private LinearLayout recenter;
-    private String time="",latlngcode,checkinkey;
+    private String time="",latlngcode,checkinkey,checkinnote="";
     private TextView timeview;
     private LinearLayout informbutton;
-    private com.google.firebase.database.Query getcheckin,getminstoleave;
+    private com.google.firebase.database.Query getcheckin,getminstoleave,getcheckin2;
     private FrameLayout othersknow;
-    private ImageView editcin,deletecin;
+    private ImageView editcin,deletecin,newcin,notes;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -118,7 +129,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //get the small sized car marker
-        BitmapDrawable bitmapdraw=(BitmapDrawable)getResources().getDrawable(R.drawable.car,null);
+        BitmapDrawable bitmapdraw=(BitmapDrawable)ContextCompat.getDrawable(getContext(),R.drawable.car);
         Bitmap b=bitmapdraw.getBitmap();
         carMarker = Bitmap.createScaledBitmap(b, dpToPx(32), dpToPx(32), false);
 
@@ -195,6 +206,10 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         editcin.setOnClickListener(this);
         deletecin = (ImageView) view.findViewById(R.id.deletecin);
         deletecin.setOnClickListener(this);
+        newcin = (ImageView) view.findViewById(R.id.newcheckin);
+        newcin.setOnClickListener(this);
+        notes = (ImageView) view.findViewById(R.id.notes);
+        notes.setOnClickListener(this);
 
         //get the recenter button and set visibility to gone
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
@@ -275,6 +290,115 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     }
 
     //-----------------------------Helper functions----------------------------//
+
+    private void addtoHistory(){
+        // Make an entry in user's history saying it has not been favorited
+        Calendar calendar = Calendar.getInstance();                    //get current time
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
+        String checkinTime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
+        String[] timearray = checkinTime.split(":");               //split the time into hours and mins
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
+        String strDate = mdformat.format(calendar.getTime());
+        HistoryPlace historyPlace = new HistoryPlace(carlatitude,carlongitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
+        Map<String, Object> historyMap = historyPlace.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+        childUpdates.put("/HistoryKeys/"+UID+"/"+checkinkey,historyMap);
+        database = FirebaseDatabase.getInstance().getReference();
+        database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
+    }
+
+    private void newdialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setMessage("Make a new Check-In and push the current one to History?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                addtoHistory();
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                homeScreenActivity.delete();
+                Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showNotes(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        TextView tv = new TextView(getContext());
+        tv.setText("Your Note");
+        tv.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int px = dpToPx(4);
+        llp.setMargins(0, px, 0, 2*px); // llp.setMargins(left, top, right, bottom);
+        tv.setLayoutParams(llp);
+        if(checkinnote.equals("")){
+            checkinnote = "You haven't written any note";
+        }
+        TextView note = new TextView(getContext());
+        note.setText(checkinnote);
+        note.setTextSize(dpToPx(8));
+        note.setGravity(Gravity.CENTER_HORIZONTAL);
+        final int version = Build.VERSION.SDK_INT;
+        if (version >= 23) {
+            note.setTextColor(ContextCompat.getColor(getContext(),R.color.tab_background_selected));
+        } else {
+            note.setTextColor(getContext().getResources().getColor(R.color.tab_background_selected));
+        }
+        LinearLayout.LayoutParams llp2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        llp.setMargins(px, 2*px, px, 0); // llp.setMargins(left, top, right, bottom);
+        note.setLayoutParams(llp2);
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(tv);
+        layout.addView(note);
+        builder.setView(layout);
+        builder.setNegativeButton("Dismiss", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    private String gettimeformat(String hour,String min){
+        int hours = Integer.parseInt(hour);
+        int mins  = Integer.parseInt(min);
+        String time="";
+        if(hours>12){
+            if(mins <10) {
+                time = Integer.toString(hours - 12) + ":0" + Integer.toString(mins) + " pm";
+            }
+            else{
+                time = Integer.toString(hours - 12) + ":" + Integer.toString(mins) + " pm";
+            }
+        }
+        if(hours<12){
+            if(mins<10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " am";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " am";
+            }
+        }
+        if(hours==12){
+            if(mins <10) {
+                time = Integer.toString(hours) + ":0" + Integer.toString(mins) + " pm";
+            }
+            else{
+                time = Integer.toString(hours) + ":" + Integer.toString(mins) + " pm";
+            }
+        }
+        return time;
+
+    }
 
     private void informaction(){
         informbutton.setVisibility(View.GONE);
@@ -367,16 +491,8 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             coutmins  = user.getcoutmins();
             latlngcode = user.getlatlngcode();
             checkinkey = user.getkey();
-            // pass information to home screen to make edit checkin active
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-            homeScreenActivity.setCheckinkey(checkinkey);
-            homeScreenActivity.setLatitude(carlatitude);
-            homeScreenActivity.setLongitude(carlongitude);
-            homeScreenActivity.setLatlngcode(latlngcode);
-            homeScreenActivity.setCoutTime(couthours,coutmins);
-            timeview.setText(gettime(couthours,coutmins));
-            drawroute(carlatitude,carlongitude);
-            checkInformed();
+            getcheckin2 = database.child("CheckInKeys").child(latlngcode).orderByKey().equalTo(checkinkey);
+            getcheckin2.addChildEventListener(listener3);
             getcheckin.removeEventListener(listener1);
         }
 
@@ -387,6 +503,53 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {                 //currently all these functions have been left empty
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+    ChildEventListener listener3 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
+            if(checkInDetails.getnotes()!=null) {
+                checkinnote = checkInDetails.getnotes();   //hopefully ensuring no crash between versions
+            }
+            int dollars = checkInDetails.getdollars();
+            int cents = checkInDetails.getcents();
+            // pass information to home screen to make edit checkin active
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.setCheckinkey(checkinkey);
+            homeScreenActivity.setLatitude(carlatitude);
+            homeScreenActivity.setLongitude(carlongitude);
+            homeScreenActivity.setLatlngcode(latlngcode);
+            homeScreenActivity.setCoutTime(couthours,coutmins);
+            if(checkinnote!=null) {
+                homeScreenActivity.setNotes(checkinnote);  //hopefully ensuring no crash between versions
+            }
+            homeScreenActivity.setRate(dollars,cents);
+            timeview.setText(gettime(couthours,coutmins));
+            drawroute(carlatitude,carlongitude);
+            checkInformed();
+            getcheckin2.removeEventListener(listener3);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
 
         }
 
@@ -496,6 +659,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         if(v.getId()==R.id.deletecin) {
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
             homeScreenActivity.deletedialog();
+        }
+        if(v.getId()==R.id.newcheckin){
+            newdialog();
+        }
+        if(v.getId()==R.id.notes){
+            showNotes();
         }
     }
 

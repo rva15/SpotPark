@@ -12,7 +12,7 @@ public class CheckInDetails {
     private double longitude=0.0,latitude=0.0;
     private String id = "";
     private int minstoleave = 0;
-    private String updatedate;
+    private String updatedate,notes;
     private int updatehour,updatemin;
 
 
@@ -20,7 +20,7 @@ public class CheckInDetails {
     public CheckInDetails(){}
 
 
-    public CheckInDetails(double latitude,double longitude, int dollars,int cents,String id,int minstoleave,String updatedate,int updatehour,int updatemin){
+    public CheckInDetails(double latitude,double longitude, int dollars,int cents,String id,int minstoleave,String updatedate,int updatehour,int updatemin,String notes){
 
         this.longitude=longitude;
         this.latitude = latitude;
@@ -31,6 +31,7 @@ public class CheckInDetails {
         this.updatedate = updatedate;
         this.updatehour= updatehour;
         this.updatemin=updatemin;
+        this.notes = notes;
 
     }
 
@@ -44,6 +45,7 @@ public class CheckInDetails {
     public String   getupdatedate(){return this.updatedate;}
     public int      getupdatehour(){return this.updatehour;}
     public int      getupdatemin(){return this.updatemin;}
+    public String   getnotes(){return this.notes;}
 
     @Exclude
     public Map<String, Object> toMap() {
@@ -57,6 +59,7 @@ public class CheckInDetails {
         result.put("updatedate",this.updatedate);
         result.put("updatehour",this.updatehour);
         result.put("updatemin",this.updatemin);
+        result.put("notes",this.notes);
 
         return result;
     }

@@ -71,7 +71,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     private String UID="",starter="",latlngcode,key;
     private Boolean isCheckedin,inputerror=false;
     private LinearLayout fragmentcontainer;
-    private String TAG="debugger",locationcode,checkinkey;
+    private String TAG="debugger",locationcode,checkinkey,cinnotes="";
     private final static String logoutFlagString = "logoutflag";
     private double latitude,longitude;
     private int couthours,coutmins;
@@ -279,7 +279,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 delete();
-
+                Toast.makeText(getContext(),"Checkin deleted",Toast.LENGTH_SHORT).show(); //Show a message to user
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -569,6 +569,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         args.putInt("cents",cents);
         args.putInt("couthours",couthours);
         args.putInt("coutmins",coutmins);
+        args.putString("cinnotes",cinnotes);
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(),"Edit Checkin fragment");
     }
@@ -600,6 +601,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         this.coutmins = coutmins;
     }
 
+    public void setNotes(String cinnotes){
+        this.cinnotes = cinnotes;
+    }
+
     public void setStartSearch(boolean searchstarted){
         this.searchstarted = searchstarted;
     }
@@ -615,12 +620,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         RadioButton otherspark = (RadioButton) dialogView.findViewById(R.id.editothersyes);
         RadioButton free   = (RadioButton) dialogView.findViewById(R.id.editfree);
         String hourlyrate = cph.getText().toString();
+        EditText cinnotes = (EditText) dialogView.findViewById(R.id.editcinnotes);
+        String notes = cinnotes.getText().toString();
 
 
-        checkIn(hourlyrate,couthours,coutmins,otherspark.isChecked(),free.isChecked());
+        checkIn(hourlyrate,couthours,coutmins,otherspark.isChecked(),free.isChecked(),notes);
     }
 
-    private void checkIn(String parkrate,int parkhour,int parkmin,boolean otherspark,boolean free) {
+    private void checkIn(String parkrate,int parkhour,int parkmin,boolean otherspark,boolean free,String notes) {
 
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         Calendar calendar = Calendar.getInstance();                    //get current time
@@ -698,7 +705,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         else{
             walktimedef = 10031;
         }
-        CheckInDetails checkInDetails = new CheckInDetails(latitude,longitude,dollars,cents,UID,walktimedef,strDate,(int)currenthour,(int)currentmin);
+        CheckInDetails checkInDetails = new CheckInDetails(latitude,longitude,dollars,cents,UID,walktimedef,strDate,(int)currenthour,(int)currentmin,notes);
         Map<String, Object> checkInDetailsMap = checkInDetails.toMap(); //call its toMap method
         CheckInUser user = new CheckInUser(latitude,longitude,(int)couthours,(int)coutmins,locationcode,checkinkey);  // construct the CheckInUser object
         Map<String, Object> userMap = user.toMap();                    //call its toMap method
@@ -862,7 +869,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         childUpdates.put("/CheckInKeys/"+latlngcode+"/"+key, null);
         childUpdates.put("/CheckInUsers/"+UID,null);                   //Remove the entries from CheckInKeys and CheckInUsers
         database.updateChildren(childUpdates);
-        Toast.makeText(this,"Checkin deleted",Toast.LENGTH_LONG).show(); //Show a message to user
         isCheckedin=false;
         getHome();
     }

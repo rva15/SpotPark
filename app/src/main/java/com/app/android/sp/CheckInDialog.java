@@ -40,7 +40,7 @@ public class CheckInDialog extends DialogFragment {
     private TextView remindmsg;
     private RadioButton othersyes,othersno,free,costly;
     private ImageView alarm,clear;
-    private EditText cph;
+    private EditText cph,cinnotes;
     private int selecthour=123,selectmin=123;
     private CardView cincard3,cincard1;
 
@@ -62,6 +62,7 @@ public class CheckInDialog extends DialogFragment {
         alarm = (ImageView) view.findViewById(R.id.alarm);
         clear = (ImageView) view.findViewById(R.id.clear);
         clear.setVisibility(View.GONE);
+        cinnotes = (EditText) view.findViewById(R.id.cinnotes);
         cincard3 = (CardView) view.findViewById(R.id.cincard3);
         cincard1 = (CardView) view.findViewById(R.id.cincard1);
         free = (RadioButton) view.findViewById(R.id.free);
@@ -165,6 +166,7 @@ public class CheckInDialog extends DialogFragment {
                         i.putExtra("otherspark",othersyes.isChecked());
                         i.putExtra("free",free.isChecked());
                         i.putExtra("cph",cph.getText().toString());
+                        i.putExtra("cinnotes",cinnotes.getText().toString());
                         getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, i);
 
 

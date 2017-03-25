@@ -75,10 +75,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
     @Override
     public void onBindViewHolder(HistoryViewHolder historyViewHolder, int i) {
         this.historyViewHolder = historyViewHolder;
-        historyViewHolder.date.setText(historyplace.get(i).getdate());      //set the ArrayList elements to the views
-        historyViewHolder.time.setText(historyplace.get(i).gettime());
-        historyViewHolder.hisspotimage.setImageBitmap(bitmaps.get(i));
-        if(historyplace.get(i).getisfavorite()==1){
+        historyViewHolder.date.setText(historyplace.get(9-i).getdate());      //set the ArrayList elements to the views
+        historyViewHolder.time.setText(historyplace.get(9-i).gettime());
+        historyViewHolder.hisspotimage.setImageBitmap(bitmaps.get(9-i));
+        if(historyplace.get(9-i).getisfavorite()==1){
             historyViewHolder.addtofavorites.setChecked(true);
             historyViewHolder.addtofavorites.setEnabled(false);
         }
@@ -202,7 +202,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+
                 }
             });
 
