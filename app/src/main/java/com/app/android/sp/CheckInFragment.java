@@ -215,11 +215,11 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         cgridview.setOnClickListener(this);
 
         // Initialize the Ad unit
-        NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.cinadView);
+        /*NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.cinadView);
         AdRequest request = new AdRequest.Builder()
                 .addTestDevice(getResources().getString(R.string.test_device_ID))
                 .build();
-        adView.loadAd(request);
+        adView.loadAd(request);*/
         return view;
     }
 

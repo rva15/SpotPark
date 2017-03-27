@@ -172,13 +172,13 @@
         android:layout_height="1dip"
         android:background="@color/black" />
 
-    <com.google.android.gms.ads.NativeExpressAdView
+   <!-- <com.google.android.gms.ads.NativeExpressAdView
         android:id="@+id/carlocadView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         ads:adUnitId="@string/carlocation_ad_unit_id"
         ads:adSize="360x100">
-    </com.google.android.gms.ads.NativeExpressAdView>
+    </com.google.android.gms.ads.NativeExpressAdView> -->
 
 
 
