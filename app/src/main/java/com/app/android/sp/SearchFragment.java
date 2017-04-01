@@ -1244,7 +1244,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(7);
-                lineOptions.color(android.graphics.Color.BLUE);
+                lineOptions.color(ContextCompat.getColor(getContext(),R.color.statusbarcolor));
 
             }
 

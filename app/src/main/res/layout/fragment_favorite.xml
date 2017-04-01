@@ -8,17 +8,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Favorite Spots"
-        android:layout_marginBottom="16dp"
-        android:padding="8dp"
-        android:textColor="@color/white"
-        android:gravity="center"
-        android:background="@color/darkgrey"
-        android:textSize="16dp"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:id="@+id/newuserfavorites"
         android:text="Spots that you 'favorite' will appear here."
@@ -30,11 +19,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp"
         android:id="@+id/fetchingfavorites"
         android:text="Fetching favorites ... "
         android:gravity="center"
         android:layout_gravity="center_horizontal"
         android:visibility="gone"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/fav_progressbar"/>
 
 
     <android.support.v7.widget.RecyclerView
@@ -42,6 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginLeft="16dp"
         />
 

@@ -14,6 +14,7 @@ import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
@@ -34,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Spinner;
@@ -78,6 +80,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     private int dollars,cents;
     private boolean searchstarted=false;
     private int awardcount=0;
+    private Handler mHandler;
 
 
     // Google and Firebase
@@ -118,6 +121,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             nMgr.cancel(1);
         }
         setContentView(R.layout.activity_home_screen);
+        mHandler = new Handler();
 
 
         GoogleSignInOptions checkingso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN) //Google signin options
@@ -311,128 +315,218 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // Get History Fragment
     public void getHistory(){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        HistoryFragment historyFragment = new HistoryFragment();
-        historyFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, historyFragment,"history");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                HistoryFragment historyFragment = new HistoryFragment();
+                historyFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, historyFragment, "history");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("History");
+        }
     }
 
     // Reload TabsFragment
     public void getHome(){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        data.putBoolean("isCheckedin",isCheckedin);
-        data.putBoolean("searchstarted",searchstarted);
-        TabsFragment tabsFragment = new TabsFragment();
-        tabsFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, tabsFragment,"home");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                data.putBoolean("isCheckedin", isCheckedin);
+                data.putBoolean("searchstarted", searchstarted);
+                TabsFragment tabsFragment = new TabsFragment();
+                tabsFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, tabsFragment, "home");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("home");
+        }
     }
 
     // Get the Favorites Fragment
     public void getFavorite(){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        FavoriteFragment favoriteFragment = new FavoriteFragment();
-        favoriteFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, favoriteFragment,"favorites");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                FavoriteFragment favoriteFragment = new FavoriteFragment();
+                favoriteFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, favoriteFragment, "favorites");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("Favorites");
+        }
     }
 
     // Get the Contributions Fragment
     public void getContri(){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        data.putInt("width",fragmentcontainer.getWidth());
-        ContributionsFragment contributionsFragment = new ContributionsFragment();
-        contributionsFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, contributionsFragment,"contributions");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                data.putInt("width", fragmentcontainer.getWidth());
+                ContributionsFragment contributionsFragment = new ContributionsFragment();
+                contributionsFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, contributionsFragment, "contributions");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("Contributions");
+        }
+
     }
 
     // Get the settings fragment
     public void getSettings(){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        SettingsFragment settingsFragment = new SettingsFragment();
-        settingsFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, settingsFragment,"settings");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                SettingsFragment settingsFragment = new SettingsFragment();
+                settingsFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, settingsFragment, "settings");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("Settings");
+        }
+
     }
 
     public void getHelp(){
-        Intent intent = new Intent(this, TutorialActivity.class); //send Intent
-        intent.putExtra("userid",UID);
-        intent.putExtra("sendstatus",isCheckedin);
-        intent.putExtra("startedfrom",starter);
-        startActivity(intent);
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(getContext(), TutorialActivity.class); //send Intent
+                intent.putExtra("userid", UID);
+                intent.putExtra("sendstatus", isCheckedin);
+                intent.putExtra("startedfrom", starter);
+                startActivity(intent);
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+        }
     }
 
     // Get the checked in fragment
-    public void getCheckedin(byte[] mapimage,double hours,double mins,int sub){
-        isCheckedin=true;
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        data.putByteArray("mapimage",mapimage);
-        data.putDouble("hours",hours);
-        data.putDouble("mins",mins);
-        data.putInt("sub",sub);
-        data.putInt("width",fragmentcontainer.getWidth());
-        PostCheckinFragment postCheckinFragment = new PostCheckinFragment();
-        postCheckinFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment,"postcheckin");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+    public void getCheckedin(final byte[] mapimage,final double hours,final double mins,final int sub){
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                isCheckedin = true;
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                data.putByteArray("mapimage", mapimage);
+                data.putDouble("hours", hours);
+                data.putDouble("mins", mins);
+                data.putInt("sub", sub);
+                data.putInt("width", fragmentcontainer.getWidth());
+                PostCheckinFragment postCheckinFragment = new PostCheckinFragment();
+                postCheckinFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment, "postcheckin");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("home");
+        }
     }
 
     // Get the Report Form fragment
-    public void getReportForm(byte[] mapimage,double latitude,double longitude){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        data.putByteArray("mapimage",mapimage);
-        data.putDouble("latitude",latitude);
-        data.putDouble("longitude",longitude);
-        ReportFormFragment reportFormFragment = new ReportFormFragment();
-        reportFormFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, reportFormFragment,"reportform");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+    public void getReportForm(final byte[] mapimage,final double latitude,final double longitude){
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                data.putByteArray("mapimage", mapimage);
+                data.putDouble("latitude", latitude);
+                data.putDouble("longitude", longitude);
+                ReportFormFragment reportFormFragment = new ReportFormFragment();
+                reportFormFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, reportFormFragment, "reportform");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("home");
+        }
     }
 
-    public void getPostReport(byte[] mapimage){
-        Bundle data = new Bundle();
-        data.putString("userid",UID);
-        data.putByteArray("repmapimage",mapimage);
-        data.putInt("width",fragmentcontainer.getWidth());
-        data.putInt("width",fragmentcontainer.getWidth());
-        PostReportFragment postReportFragment = new PostReportFragment();
-        postReportFragment.setArguments(data);
-        android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, postReportFragment,"postreport");
-        //fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+    public void getPostReport(final byte[] mapimage){
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                data.putByteArray("repmapimage", mapimage);
+                data.putInt("width", fragmentcontainer.getWidth());
+                data.putInt("width", fragmentcontainer.getWidth());
+                PostReportFragment postReportFragment = new PostReportFragment();
+                postReportFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, postReportFragment, "postreport");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupTitleBar("home");
+        }
     }
 
     @Override
@@ -453,6 +547,24 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
 
     //--------------------------------Helper Functions----------------------------------------//
+
+
+    private void setupTitleBar(String title){
+        TextView title1 = (TextView) findViewById(R.id.title1);
+        TextView title2 = (TextView) findViewById(R.id.title2);
+        ImageView logo  = (ImageView) findViewById(R.id.logo);
+        if(title.equals("home")){
+            logo.setVisibility(View.VISIBLE);
+            title2.setVisibility(View.VISIBLE);
+            title1.setText("SPOT  ");
+            title2.setText("  PARK");
+        }
+        else{
+            logo.setVisibility(View.GONE);
+            title2.setVisibility(View.GONE);
+            title1.setText(title);
+        }
+    }
 
     private void checkAwards() {
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
@@ -874,7 +986,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     public void backToLogin(){
-        String message1 = "1";
+        final String message1 = "1";
 
         Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(       //signout google
                 new ResultCallback<Status>() {
@@ -883,10 +995,19 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
                     }
                 });
-        Intent intent = new Intent(HomeScreenActivity.this, LoginActivity.class);  //pass intent to login activity
-        intent.putExtra(logoutFlagString, message1);  //put the boolean string into it
-        startActivity(intent); //start login activity and kill itself
-        finish();
+
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(HomeScreenActivity.this, LoginActivity.class);  //pass intent to login activity
+                intent.putExtra(logoutFlagString, message1);  //put the boolean string into it
+                startActivity(intent); //start login activity and kill itself
+                finish();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+        }
 
     }
 

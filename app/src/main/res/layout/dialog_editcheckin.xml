@@ -48,7 +48,7 @@
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
                         android:id="@+id/editneedreminder"
-                        android:text="Set a reminder before your parking expires?"/>
+                        android:text="Set a reminder to alert you before parking expires?"/>
 
 
                 </LinearLayout>
@@ -122,7 +122,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:text="Is this a spot where other users could park after you leave?"/>
+                        android:text="Can other users park at this spot after you leave?"/>
 
 
                 </LinearLayout>
@@ -186,7 +186,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:text="Enter its cost/hr"/>
+                        android:text="Please enter the cost/hour for this spot"/>
 
 
                 </LinearLayout>
@@ -263,7 +263,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:text="You can add some notes below"/>
+                        android:text="You may want to add some notes below"/>
 
                 </LinearLayout>
 

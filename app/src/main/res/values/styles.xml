@@ -12,11 +12,11 @@
     <style name="Theme.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorPrimaryDark">@color/statusbarcolor</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>
-        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">false</item>
     </style>
@@ -24,13 +24,13 @@
     <style name="Base.Widget.Design.TabLayout" parent="Widget.Design.TabLayout">
         <item name="tabBackground">@drawable/tab_color_selector</item>
         <item name="tabTextAppearance">@style/MyCustomTabText</item>
-        <item name="tabSelectedTextColor">#ffffff</item>
-        <item name="tabIndicatorColor">@color/darkgrey</item>
+        <item name="tabSelectedTextColor">@color/newuiorange</item>
+        <item name="tabIndicatorColor">@color/newuiorange</item>
         <item name="tabIndicatorHeight">2dp</item>
     </style>
 
     <style name="MyCustomTabText" parent="TextAppearance.AppCompat.Button">
-        <item name="android:textColor">#ffffff</item>
+        <item name="android:textColor">@color/newuiorange</item>
     </style>
 
 

@@ -6,40 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dip"
-            android:background="@color/black" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="12dp"
-            android:textColor="@color/white"
-            android:background="@color/dimgrey"
-            android:text="Reminder"
-            android:gravity="center"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16dp"
-            android:textStyle="bold"
-            android:id="@+id/couttime"
-            android:gravity="center"
-            android:background="@color/dimgrey"
-            android:textColor="@color/white"/>
-
-
-    </LinearLayout>
-
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -53,40 +19,85 @@
             android:layout_centerInParent="true"
             />
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/notes"
-            android:id="@+id/notes"
-            android:layout_marginRight="80dp"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="top|right"/>
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/edit"
-            android:id="@+id/editcin"
-            android:layout_marginRight="40dp"
-            android:layout_marginTop="8dp"
-            android:layout_gravity="top|right"/>
 
-        <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/delete"
-            android:id="@+id/deletecin"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_gravity="top|right"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/white"
+                android:layout_gravity="top|center_horizontal"
+                android:layout_margin="8dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/notes"
+                    android:id="@+id/notes"
+                    android:layout_margin="8dp"
+                    android:layout_alignParentLeft="true"/>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_centerHorizontal="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12dp"
+                        android:textColor="@color/black"
+                        android:text="Reminder"
+                        android:layout_gravity="center_horizontal"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16dp"
+                        android:textStyle="bold"
+                        android:id="@+id/couttime"
+                        android:textColor="@color/black"
+                        android:layout_gravity="center_horizontal"/>
+
+                </LinearLayout>
+
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/delete"
+                    android:id="@+id/deletecin"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_alignParentRight="true"/>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/edit"
+                    android:id="@+id/editcin"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_toLeftOf="@+id/deletecin"/>
+
+            </RelativeLayout>
+
+
+
+
+
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top|center_horizontal"
+            android:layout_gravity="bottom|center_horizontal"
             android:orientation="horizontal"
             android:clickable="true"
             android:id="@+id/recenter"
             android:background="@color/white"
-            android:layout_marginTop="8dp">
+            android:layout_marginBottom="56dp">
 
             <ImageView
                 android:layout_width="32dp"
@@ -112,13 +123,24 @@
             android:layout_gravity="bottom|right"
             android:layout_margin="8dp">
 
-            <ImageView
+            <!--<ImageView
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/plus"
                 android:id="@+id/newcheckin"
                 android:layout_marginBottom="8dp"
-                android:layout_gravity="right"/>
+                android:layout_gravity="right"/> -->
+
+            <android.support.design.widget.FloatingActionButton
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_margin="8dp"
+                android:src="@drawable/plus"
+                android:id="@+id/fab"
+                app:backgroundTint="@color/newuiorange"
+                android:clickable="true"/>
 
 
 

@@ -3,16 +3,20 @@ package com.app.android.sp;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,6 +51,7 @@ public class HistoryFragment extends Fragment  {
     private HistoryAdapter historyAdapter;
     private View view;
     private TextView fetchinghistory;
+    private ProgressBar progressBar;
 
     //----Fragment Lifecycle Functions----------//
 
@@ -70,6 +75,8 @@ public class HistoryFragment extends Fragment  {
         recList.setLayoutManager(llm);
         mv = (LinearLayout) view.findViewById(R.id.hisfragmv);
         fetchinghistory = (TextView) view.findViewById(R.id.fetchinghistory);
+        progressBar = (ProgressBar) view.findViewById(R.id.his_progressbar);
+        progressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(getContext(),R.color.newuiorange), PorterDuff.Mode.MULTIPLY);
         getHistoryData();                                                         //get user's history
 
 
@@ -137,6 +144,7 @@ public class HistoryFragment extends Fragment  {
                         keys.add(dataSnapshot.getKey());
                         i = i + 1;
                         if (i == max) {
+                            progressBar.setVisibility(View.GONE);
                             fetchinghistory.setVisibility(View.GONE);
                             historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID,getContext(),max);
                             recList.setAdapter(historyAdapter);   //set the adapter
@@ -186,6 +194,7 @@ public class HistoryFragment extends Fragment  {
     private void showdefault(){
         TextView message = (TextView)view.findViewById(R.id.newuserhistory);
         fetchinghistory.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
         message.setVisibility(View.VISIBLE);
     }
 

@@ -9,17 +9,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Your Check-In History"
-        android:layout_marginBottom="16dp"
-        android:padding="8dp"
-        android:textColor="@color/white"
-        android:gravity="center"
-        android:background="@color/darkgrey"
-        android:textSize="16dp"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:id="@+id/newuserhistory"
         android:text="Your Check-In history will appear here."
@@ -32,11 +21,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:layout_marginBottom="32dp"
         android:id="@+id/fetchinghistory"
         android:text="Fetching history ... "
         android:gravity="center"
         android:layout_gravity="center_horizontal"
         android:visibility="gone"/>
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/his_progressbar"/>
 
 
 
@@ -44,6 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginLeft="16dp"
         android:id="@+id/hisfraglist">
 

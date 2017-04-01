@@ -2,15 +2,18 @@ package com.app.android.sp;
 //All imports
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -40,6 +43,7 @@ public class FavoriteFragment extends Fragment {
     private RecyclerView recList;
     private View view;
     private TextView fetchingfavorites;
+    private ProgressBar progressBar;
 
 
     //--------------Fragment Lifecycle Functions----------//
@@ -69,6 +73,8 @@ public class FavoriteFragment extends Fragment {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
         fetchingfavorites = (TextView) view.findViewById(R.id.fetchingfavorites);
+        progressBar = (ProgressBar) view.findViewById(R.id.fav_progressbar);
+        progressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(getContext(),R.color.newuiorange), PorterDuff.Mode.MULTIPLY);
         getFavoriteData();
         mv = (LinearLayout) view.findViewById(R.id.favmv);
         return view;
@@ -130,6 +136,7 @@ public class FavoriteFragment extends Fragment {
                     i=i+1;
                     if(i==max){
                         fetchingfavorites.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.GONE);
                         FavoritesAdapter ca = new FavoritesAdapter(getresult(),getActivity(),recList,UID); //set the adapter
                         recList.setAdapter(ca);
                         database.child("FavoriteKeys").child(UID).orderByKey().removeEventListener(listener1);
@@ -173,6 +180,7 @@ public class FavoriteFragment extends Fragment {
     private void showdefault(){
         TextView message = (TextView)view.findViewById(R.id.newuserfavorites);
         fetchingfavorites.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
         message.setVisibility(View.VISIBLE);
     }
 

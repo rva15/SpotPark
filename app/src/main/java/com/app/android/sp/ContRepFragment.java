@@ -2,15 +2,18 @@ package com.app.android.sp;
 //All imports
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -42,6 +45,7 @@ public class ContRepFragment extends Fragment {
     private int max,width,i=0;
     private View view;
     private TextView fetchingrep;
+    private ProgressBar progressBar;
 
     //-----Fragment Lifecycle Functions-----------------//
 
@@ -72,6 +76,8 @@ public class ContRepFragment extends Fragment {
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recList.setLayoutManager(llm);
         fetchingrep = (TextView) view.findViewById(R.id.fetchingrep);
+        progressBar = (ProgressBar) view.findViewById(R.id.contrep_progressbar);
+        progressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(getContext(),R.color.newuiorange), PorterDuff.Mode.MULTIPLY);
         getcontrepdata();
         mv = (LinearLayout) view.findViewById(R.id.contmv);
         return view;
@@ -139,6 +145,7 @@ public class ContRepFragment extends Fragment {
                     i=i+1;
                     if(i==max){
                         fetchingrep.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.GONE);
                         CRAdapter ca = new CRAdapter(crimage,crtimes,crkey,getActivity(),recList,UID);
                         recList.setAdapter(ca);
                         database.child("ReportedTimes").child(UID).orderByKey().removeEventListener(listener1);
@@ -179,6 +186,7 @@ public class ContRepFragment extends Fragment {
     public void showdefaultmessage(){
         TextView message = (TextView) view.findViewById(R.id.newusermessage);
         fetchingrep.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
         message.setVisibility(View.VISIBLE);
     }
 

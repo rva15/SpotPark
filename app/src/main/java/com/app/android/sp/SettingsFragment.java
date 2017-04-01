@@ -238,9 +238,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private void showPswdDialog() {
         // Create an instance of the dialog fragment and show it
-        DialogFragment dialog = new ChangePswdDialog();
-        dialog.setTargetFragment(SettingsFragment.this, REQ_CODE);       //set target fragment to this fragment
-        dialog.show(this.getActivity().getSupportFragmentManager(),"ChangePswd fragment");
+        //DialogFragment dialog = new ChangePswdDialog();
+        //dialog.setTargetFragment(SettingsFragment.this, REQ_CODE);       //set target fragment to this fragment
+        //dialog.show(this.getActivity().getSupportFragmentManager(),"ChangePswd fragment");
     }
 
     //function that allows setting of display picture

@@ -158,8 +158,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         //Setup initial state of progress bar
         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
+        //ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        //progressBar.getIndeterminateDrawable().setColorFilter(Color.WHITE, PorterDuff.Mode.MULTIPLY);
 
         //Async some initialization tasks
         new ActivityStartBackground().execute();

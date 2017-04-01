@@ -12,6 +12,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -88,7 +89,8 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private LinearLayout informbutton;
     private com.google.firebase.database.Query getcheckin,getminstoleave,getcheckin2;
     private FrameLayout othersknow;
-    private ImageView editcin,deletecin,newcin,notes;
+    private ImageView editcin,deletecin,notes;
+    private FloatingActionButton fab;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -206,8 +208,8 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         editcin.setOnClickListener(this);
         deletecin = (ImageView) view.findViewById(R.id.deletecin);
         deletecin.setOnClickListener(this);
-        newcin = (ImageView) view.findViewById(R.id.newcheckin);
-        newcin.setOnClickListener(this);
+        fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(this);
         notes = (ImageView) view.findViewById(R.id.notes);
         notes.setOnClickListener(this);
 
@@ -660,7 +662,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
             homeScreenActivity.deletedialog();
         }
-        if(v.getId()==R.id.newcheckin){
+        if(v.getId()==R.id.fab){
             newdialog();
         }
         if(v.getId()==R.id.notes){
@@ -790,7 +792,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(7);
-                lineOptions.color(Color.BLUE);
+                lineOptions.color(ContextCompat.getColor(getContext(),R.color.statusbarcolor));
 
             }
 
