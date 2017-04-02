@@ -171,11 +171,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
     public void onLowMemory() {
         super.onLowMemory();
         if (null != nMapView)

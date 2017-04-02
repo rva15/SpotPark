@@ -229,14 +229,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             gMapView.onResume();}
     }
 
-    //This function SHOULD NOT be moved from this position
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        //This MUST be done before saving any of your own or your base class's variables
-        outState.putBoolean("searchStarted",searchStarted);
-        super.onSaveInstanceState(outState);
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -378,7 +370,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         FragmentManager mgr = getFragmentManager();
         FragmentTransaction transaction = mgr.beginTransaction();
         transaction.replace(R.id.searchplacefragmentholder,placeSelection, "AutoSearchFragment");
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     @Override

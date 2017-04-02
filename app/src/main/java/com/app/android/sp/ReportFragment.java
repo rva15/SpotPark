@@ -152,14 +152,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        /*if (null != sMapView) {
-            //sMapView.onSaveInstanceState(outState);
-        }*/
-    }
-
-    @Override
     public void onLowMemory() {
         super.onLowMemory();
         if (null != sMapView)

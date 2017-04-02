@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
 
@@ -11,6 +12,7 @@
 
     <!-- Base application theme. -->
     <style name="Theme.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:alertDialogTheme">@style/AlertDialogCustom</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/statusbarcolor</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -31,6 +33,13 @@
 
     <style name="MyCustomTabText" parent="TextAppearance.AppCompat.Button">
         <item name="android:textColor">@color/newuiorange</item>
+    </style>
+
+
+
+    <style name="AlertDialogCustom" parent="android:Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorPrimary">@color/colorAccent</item>
+        <item name="android:colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="iconGenText">
