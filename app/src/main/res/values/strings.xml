@@ -66,4 +66,9 @@
     <string name="howto2"></string>
     <string name="howto3"></string>
 
+    <string name="fulllist1">
+        <u>See full list</u>
+    </string>
+
+
 </resources>

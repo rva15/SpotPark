@@ -16,10 +16,11 @@ public class UserDetails {
     private int reportfeed =0;
     private int checkinfeed=0;
     private int complaints = 0;
+    private boolean singletouch = true;
 
     public UserDetails(){}
 
-    public UserDetails(String firstname,String lastname, String email, int numberofkeys, int reportfeed,int checkinfeed,int complaints){
+    public UserDetails(String firstname,String lastname, String email, int numberofkeys, int reportfeed,int checkinfeed,int complaints,boolean singletouch){
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
@@ -27,6 +28,7 @@ public class UserDetails {
         this.reportfeed = reportfeed;
         this.checkinfeed = checkinfeed;
         this.complaints = complaints;
+        this.singletouch = singletouch;
     }
 
     public String getfirstname(){
@@ -55,6 +57,8 @@ public class UserDetails {
 
     public int getcomplaints() {return this.complaints;}
 
+    public boolean getsingletouch() {return this.singletouch;}
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -65,6 +69,7 @@ public class UserDetails {
         result.put("reportfeed",this.reportfeed);
         result.put("checkinfeed",this.checkinfeed);
         result.put("complaints",this.complaints);
+        result.put("singletouch",this.singletouch);
 
         return result;
     }

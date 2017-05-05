@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -33,14 +32,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 import android.support.v7.widget.Toolbar;
 import com.google.android.gms.auth.api.Auth;
@@ -62,7 +58,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.app.android.sp.R.id.addtofavorites;
 import static com.app.android.sp.SPApplication.getContext;
 
 public class HomeScreenActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, EditCheckInDialog.EditCheckInDialogListener {
@@ -114,11 +109,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         super.onCreate(savedInstanceState);
         Intent intent1 = getIntent();           //Receive intent from loginActivity
         UID     = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
-        isCheckedin = intent1.getExtras().getBoolean("sendstatus"); //true if user has active CheckIn
         starter=intent1.getStringExtra("startedfrom");
-        if(starter.equals("notification")){       //check if it was opened from a notification
+        if(starter!=null && starter.equals("notification")){       //check if it was opened from a notification
             NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-            nMgr.cancel(1);
+            nMgr.cancel(1);  //remove the notifications that started this
+            nMgr.cancel(13);
         }
         setContentView(R.layout.activity_home_screen);
         mHandler = new Handler();
@@ -133,8 +128,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 .addApi(Auth.GOOGLE_SIGN_IN_API, checkingso)
                 .build();
 
-        // Load the TabsFragment
-        getHome();
         fragmentcontainer = (LinearLayout) findViewById(R.id.fragment_container);
 
         // Get the toolbar and remove it's default title
@@ -163,19 +156,29 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         Drawer.addDrawerListener(mDrawerToggle); // Drawer Listener set to the Drawer toggle
         mDrawerToggle.syncState();
-        mAdapter = new MainmenuAdapter(TITLES,ICONS,this,Drawer,UID);
+        mAdapter = new MainmenuAdapter(TITLES,ICONS,this,Drawer,UID,getContext());
         mRecyclerView.setAdapter(mAdapter);
 
         // Check if gps is on, otherwise display message to user
         final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
 
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-            buildAlertMessageNoGps();
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) && !manager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
+            buildAlertMessageNoLocation();
         }
 
-        checkAwards();
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER )) {
+            buildAlertMessageNoGPS();
+        }
 
+        checkAwards();  //see if the user has been awarded keys
+        initsingletouch(); //(re)start the singletouch service
+        checkExistingCin(); //check if there is an active checkin
 
+    }
+
+    private void setView(){
+        // Load the TabsFragment
+        getHome();
     }
 
 
@@ -230,12 +233,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater inflater = getMenuInflater();
-        if(isCheckedin){
-            inflater.inflate(R.menu.checkinmenu, menu); //inflate menu
-        }
-        else{
-            inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
-        }
+        inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -243,12 +241,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public boolean onPrepareOptionsMenu (Menu menu) {
         menu.clear();
         MenuInflater inflater = getMenuInflater();
-        if(isCheckedin){
-            inflater.inflate(R.menu.checkinmenu, menu); //inflate menu
-        }
-        else{
-            inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
-        }
+        inflater.inflate(R.menu.activity_main_actions, menu); //inflate menu
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -315,6 +308,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // Get History Fragment
     public void getHistory(){
+        //the runnables ensure a smooth transition
         Runnable mPendingRunnable = new Runnable() {
             @Override
             public void run() {
@@ -332,7 +326,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("History");
+            setupActionBar("History");
         }
     }
 
@@ -357,7 +351,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("home");
+            setupActionBar("home");
         }
     }
 
@@ -380,7 +374,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("Favorites");
+            setupActionBar("Favorites");
         }
     }
 
@@ -404,7 +398,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("Contributions");
+            setupActionBar("Contributions");
         }
 
     }
@@ -428,7 +422,31 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("Settings");
+            setupActionBar("Settings");
+        }
+
+    }
+
+    // Get the single touch settings fragment
+    public void getSTSettings(){
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Bundle data = new Bundle();
+                data.putString("userid", UID);
+                STSettingsFragment stsettingsFragment = new STSettingsFragment();
+                stsettingsFragment.setArguments(data);
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, stsettingsFragment, "stsettings");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commit();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupActionBar("Single Touch Settings");
         }
 
     }
@@ -474,7 +492,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("home");
+            setupActionBar("home");
         }
     }
 
@@ -500,7 +518,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("home");
+            setupActionBar("home");
         }
     }
 
@@ -525,7 +543,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupTitleBar("home");
+            setupActionBar("home");
         }
     }
 
@@ -533,12 +551,16 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             TabsFragment tabsFragment = (TabsFragment) getSupportFragmentManager().findFragmentByTag("home");
+            STSettingsFragment stSettingsFragment = (STSettingsFragment) getSupportFragmentManager().findFragmentByTag("stsettings");
             if (tabsFragment != null && tabsFragment.isVisible()) {
                 // add your code here
                 moveTaskToBack(true);
             }
+            else if (stSettingsFragment!=null && stSettingsFragment.isVisible()){ //if current page is STsettings
+                getSettings();  //go to settings page with back button
+            }
             else{
-                getHome();
+                getHome(); //otherwise go to home
             }
             return true;
         }
@@ -548,8 +570,51 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     //--------------------------------Helper Functions----------------------------------------//
 
+    private void checkExistingCin(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        database.child("CheckInUsers").orderByKey().equalTo(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                isCheckedin = dataSnapshot.exists();
+                setView();
+            }
 
-    private void setupTitleBar(String title){
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void initsingletouch(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){ //check if singletouch child exists in database
+                    boolean ststatus = dataSnapshot.getValue(Boolean.class);
+                    if(ststatus){ //singletouch is set as active
+                        Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                        getContext().startService(servIntent);
+                    }
+                }
+                else{ //create a single touch branch and make it active
+                    dataSnapshot.getRef().setValue(true);
+                    Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                    getContext().startService(servIntent);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+    //setup the action bar
+    private void setupActionBar(String title){
         TextView title1 = (TextView) findViewById(R.id.title1);
         TextView title2 = (TextView) findViewById(R.id.title2);
         ImageView logo  = (ImageView) findViewById(R.id.logo);
@@ -566,12 +631,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         }
     }
 
+    //function to check if user has gotten awards
     private void checkAwards() {
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         database.child("ReportedTimes").child(UID).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG,"datachange");
                 ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
                 if((reportedTimes.getverification()>1)){
                     if((!reportedTimes.getawarded()) || ((Boolean)reportedTimes.getawarded()==null)){
@@ -604,6 +669,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     }
 
+    //award keys to user
     private void awardKeys(){
         if(awardcount==0){
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -654,9 +720,29 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     }
 
-    private void buildAlertMessageNoGps() {
+    //show this if user has location service turned off
+    private void buildAlertMessageNoLocation() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("SpotPark needs GPS service, should we enable it?")
+        builder.setMessage("SpotPark needs location service, should we enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
+    //show this if user's location is not on high accuracy mode
+    private void buildAlertMessageNoGPS() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("For best results, it is recommended that your location be on 'High Accuracy' mode. Should we change it?")
                 .setCancelable(false)
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
@@ -738,6 +824,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
         checkIn(hourlyrate,couthours,coutmins,otherspark.isChecked(),free.isChecked(),notes);
     }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        // User touched the dialog's negative button
+        //Do nothing
+
+    }
+
 
     private void checkIn(String parkrate,int parkhour,int parkmin,boolean otherspark,boolean free,String notes) {
 
@@ -843,7 +937,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
 
     private void scheduleNotification(Notification notification, int delay, int unique) {
-
         Intent notificationIntent = new Intent(this, NotificationPublisher.class);   //send intent to NotificationPublisher class
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, unique);  //attach Notification ID
         notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification); //and Notification with the intent
@@ -933,14 +1026,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         }
 
     }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-        // User touched the dialog's negative button
-        //Do nothing
-
-    }
-
 
     //define the ChildEventListener for Delete CheckIn function
     ChildEventListener listener1 = new ChildEventListener() {

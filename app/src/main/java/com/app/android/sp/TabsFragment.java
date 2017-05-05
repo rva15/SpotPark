@@ -25,7 +25,7 @@ public class TabsFragment extends Fragment {
     private static boolean isCheckedin;
     static private boolean searchStarted;
     private ViewPager viewPager;
-    private TabLayout tabLayout;
+    public TabLayout tabLayout;
 
     //-------------------------Fragment LifeCycle Methods--------------------------//
 
@@ -56,8 +56,57 @@ public class TabsFragment extends Fragment {
         if (isCheckedin) {
             tabLayout.getTabAt(0).setIcon(R.drawable.navigate);
         }
-        tabLayout.getTabAt(1).setIcon(R.drawable.search);
-        tabLayout.getTabAt(2).setIcon(R.drawable.report);
+        tabLayout.getTabAt(1).setIcon(R.drawable.searcho);
+        tabLayout.getTabAt(2).setIcon(R.drawable.reporto);
+
+        //switch logos and colors based on the tab that is selected
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if(tab.getPosition()==0){
+                    if(isCheckedin){
+                        tab.setIcon(R.drawable.navigate);
+                        tabLayout.getTabAt(1).setIcon(R.drawable.searcho);
+                        tabLayout.getTabAt(2).setIcon(R.drawable.reporto);
+                    }
+                    else{
+                        tab.setIcon(R.drawable.checkin);
+                        tabLayout.getTabAt(1).setIcon(R.drawable.searcho);
+                        tabLayout.getTabAt(2).setIcon(R.drawable.reporto);
+                    }
+                }
+                if(tab.getPosition()==1){
+                    tab.setIcon(R.drawable.search);
+                    tabLayout.getTabAt(2).setIcon(R.drawable.reporto);
+                    if(isCheckedin){
+                        tabLayout.getTabAt(0).setIcon(R.drawable.navigateo);
+                    }
+                    else{
+                        tabLayout.getTabAt(0).setIcon(R.drawable.checkino);
+                    }
+                }
+                if(tab.getPosition()==2){
+                    tab.setIcon(R.drawable.report);
+                    tabLayout.getTabAt(1).setIcon(R.drawable.searcho);
+                    if(isCheckedin){
+                        tabLayout.getTabAt(0).setIcon(R.drawable.navigateo);
+                    }
+                    else{
+                        tabLayout.getTabAt(0).setIcon(R.drawable.checkino);
+                    }
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
 
         return view;
     }
@@ -87,7 +136,7 @@ public class TabsFragment extends Fragment {
     //----------------------FragmentStatePagerAdapter Class----------------------//
 
 
-    static class Adapter extends FragmentStatePagerAdapter {
+    private class Adapter extends FragmentStatePagerAdapter {
         public final List<Fragment> mFragments = new ArrayList<>();
         public final List<String> mFragmentTitles = new ArrayList<>();
 

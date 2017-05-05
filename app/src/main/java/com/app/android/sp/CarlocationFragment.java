@@ -12,11 +12,13 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +44,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.text.Line;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -49,9 +53,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.android.gms.location.LocationListener;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -64,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 
 import static android.R.attr.id;
+import static android.R.attr.path;
 import static android.content.Context.ALARM_SERVICE;
 import static com.app.android.sp.R.id.cinnotes;
 import static com.facebook.internal.CallbackManagerImpl.RequestCodeOffset.Login;
@@ -302,8 +315,41 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         childUpdates.put("/HistoryKeys/"+UID+"/"+checkinkey,historyMap);
         database = FirebaseDatabase.getInstance().getReference();
         database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
+
+        //try to get the map image stored in local storage
+        final File file = new File(getContext().getCacheDir(),checkinkey);
+        int size = (int) file.length();
+        byte[] bytes = new byte[size];
+        try {
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, bytes.length);
+            buf.close();
+            if(bytes!=null){ //found the image
+                FirebaseStorage storage = FirebaseStorage.getInstance(); //now upload it to firebase
+                StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+                StorageReference historyRef = storageRef.child(UID+"/History/"+checkinkey+".jpg");
+
+                UploadTask uploadTask = historyRef.putBytes(bytes);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        file.delete(); //delete the file after upload is over
+                    }
+                });
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    //Dialog for confirmation of making new checkin
     private void newdialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Make a new Check-In and push the current one to History?");

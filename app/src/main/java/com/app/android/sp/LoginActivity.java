@@ -3,9 +3,15 @@
 package com.app.android.sp;
 //all imports
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -72,7 +78,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private String firstname = "", email = "", lastname = "";
     private String logoutFlagString = "logoutflag";
     private int count = 0;
-    private boolean isCheckedIn = false;
     private Bitmap profilepic;
 
     // -- Firebase variables --
@@ -293,60 +298,22 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-
+    //Dont check active checkin status here. It will be done in homescreen activity
     private class CheckStatusBackground extends AsyncTask<String,Void,String> {
 
         @Override
-        protected String doInBackground(String... UID) {
+        protected String doInBackground(final String... UID) {
             userid = UID[0];
-            database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
+            saveUID(userid); // on logging in, save UID to phone storage
 
-            final ValueEventListener valuelistener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Get Post object and use the values to update the UI
-                    if(count==0) {
-                        if (dataSnapshot.exists()) {
-                            isCheckedIn=true;
-                            mAuthstart.removeAuthStateListener(mAuthListener);
-                            mAuthfb.removeAuthStateListener(newAccountListener);
-                            mAuthlogin.removeAuthStateListener(mAuthListener);
-                            mAuthsignup.removeAuthStateListener(newAccountListener);
-                            mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
-                            intent.putExtra("userid", userid);
-                            intent.putExtra("sendstatus",isCheckedIn);
-                            intent.putExtra("startedfrom","login");
-                            startActivity(intent);
-
-                        }
-                        else if(!dataSnapshot.exists()){
-                            isCheckedIn=false;
-                            mAuthfb.removeAuthStateListener(newAccountListener);
-                            mAuthlogin.removeAuthStateListener(mAuthListener);
-                            mAuthsignup.removeAuthStateListener(newAccountListener);
-                            mAuthgoogle.removeAuthStateListener(newAccountListener);
-                            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
-                            intent.putExtra("userid", userid);
-                            intent.putExtra("sendstatus",isCheckedIn);
-                            intent.putExtra("startedfrom","login");
-                            startActivity(intent);
-
-                        }
-
-                    }
-                    count=count+1;
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                    //Do nothing
-
-                }
-            };
-            database.child("CheckInUsers").child(userid).addListenerForSingleValueEvent(valuelistener); //attach listener
-
+            mAuthfb.removeAuthStateListener(newAccountListener);
+            mAuthlogin.removeAuthStateListener(mAuthListener);
+            mAuthsignup.removeAuthStateListener(newAccountListener);
+            mAuthgoogle.removeAuthStateListener(newAccountListener);
+            Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
+            intent.putExtra("userid", userid);
+            intent.putExtra("startedfrom","login");
+            startActivity(intent);
             return "";
         }
 
@@ -410,7 +377,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void addNewUser(String userID){
         database = FirebaseDatabase.getInstance().getReference();          //get a firebase key for the update
         String key = database.child("UserInformation").push().getKey();
-        UserDetails user = new UserDetails(firstname,lastname,email,10,0,0,0); //make a new user object
+        UserDetails user = new UserDetails(firstname,lastname,email,10,0,0,0,true); //make a new user object
         Map<String, Object> newUser = user.toMap();
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/UserInformation/"+userID, newUser);
@@ -437,9 +404,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             });
         }
 
+        saveUID(userid); // on logging in, save UID to phone storage
         Intent intent = new Intent(LoginActivity.this, TutorialActivity.class); //send Intent to Tutorial Activity
         intent.putExtra("userid", userid);
-        intent.putExtra("sendstatus",isCheckedIn);
         intent.putExtra("startedfrom","login");
         startActivity(intent);
 
@@ -461,6 +428,21 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private int dpToPx(int dp) {
         DisplayMetrics displayMetrics = getApplicationContext().getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    //This saves the UID to phone internal storage
+    private void saveUID(String ID){
+        File file;
+        FileOutputStream outputStream;
+        try {
+            file = new File(getCacheDir(), "UIDFile");
+
+            outputStream = new FileOutputStream(file);
+            outputStream.write(ID.getBytes());
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

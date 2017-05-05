@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,6 +94,7 @@ public class HistoryFragment extends Fragment  {
     //------------Helper Functions----------------------//
 
     private void getHistoryData(){
+
         fetchinghistory.setVisibility(View.VISIBLE);
         database = FirebaseDatabase.getInstance().getReference();       //get the Firebase reference
         database.child("HistoryKeys").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -125,40 +127,47 @@ public class HistoryFragment extends Fragment  {
             if(count<(max+1)) {
                 width = mv.getWidth();
                 final HistoryPlace historyPlace = dataSnapshot.getValue(HistoryPlace.class);
+                if(historyPlace!=null && dataSnapshot.getKey()!=null) {
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+                    StorageReference islandRef = storageRef.child(UID + "/History/" + dataSnapshot.getKey() + ".jpg");
 
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-                StorageReference islandRef = storageRef.child(UID + "/History/" + dataSnapshot.getKey() + ".jpg");
+                    if(islandRef!=null) {
+                        final long ONE_MEGABYTE = 1024 * 1024;
+                        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                            @Override
+                            public void onSuccess(byte[] bytes) {
+                                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                if(bmp==null){ //if map image unavailable, display default image
+                                    bmp = BitmapFactory.decodeResource(getResources(),
+                                            R.drawable.mapnotav);
+                                }
+                                Bitmap cropped = bmp;
+                                if (bmp.getHeight() * 2 > width) {   //check this to avoid crash
+                                    cropped = Bitmap.createBitmap(bmp, (int) (bmp.getWidth() / 2 - width / 2), (int) (bmp.getHeight() / 2 - width / 4), width, (int) width / 2);
+                                }
+                                bitmaps.add(cropped);
+                                historyPlaces.add(historyPlace);
+                                keys.add(dataSnapshot.getKey());
+                                i = i + 1;
+                                if (i == max) {
+                                    progressBar.setVisibility(View.GONE);
+                                    fetchinghistory.setVisibility(View.GONE);
+                                    historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this, recList, UID, getContext(), max);
+                                    recList.setAdapter(historyAdapter);   //set the adapter
+                                    database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
+                                }
 
-                final long ONE_MEGABYTE = 1024 * 1024;
-                islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                    @Override
-                    public void onSuccess(byte[] bytes) {
-                        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                        Bitmap cropped = bmp;
-                        if (bmp.getHeight() * 2 > width) {   //check this to avoid crash
-                            cropped = Bitmap.createBitmap(bmp, (int) (bmp.getWidth() / 2 - width / 2), (int) (bmp.getHeight() / 2 - width / 4), width, (int) width / 2);
-                        }
-                        bitmaps.add(cropped);
-                        historyPlaces.add(historyPlace);
-                        keys.add(dataSnapshot.getKey());
-                        i = i + 1;
-                        if (i == max) {
-                            progressBar.setVisibility(View.GONE);
-                            fetchinghistory.setVisibility(View.GONE);
-                            historyAdapter = new HistoryAdapter(historyPlaces, keys, bitmaps, getActivity(), HistoryFragment.this,recList, UID,getContext(),max);
-                            recList.setAdapter(historyAdapter);   //set the adapter
-                            database.child("HistoryKeys").child(UID).orderByKey().limitToLast(10).removeEventListener(listener1);
-                        }
 
-
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                max = max -1;  //dont display this in history
+                            }
+                        });
                     }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle any errors
-                    }
-                });
+                }
             }
             count=count+1;
         }

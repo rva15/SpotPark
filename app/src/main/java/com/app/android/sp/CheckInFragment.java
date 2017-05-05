@@ -65,10 +65,15 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.facebook.FacebookSdk.getCacheDir;
 
 /**
  * Created by ruturaj on 9/13/16.
@@ -212,6 +217,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 .addTestDevice(getResources().getString(R.string.test_device_ID))
                 .build();
         adView.loadAd(request);*/
+
         return view;
     }
 
@@ -432,9 +438,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
 
 
-        //Put the screenshot of map into FileStorage
-        final String userid = UID;
-        final String cikey  = key;
+        //Put the screenshot of map into internal storage
         GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
 
             @Override
@@ -445,22 +449,16 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
                 byte[] data = baos.toByteArray();
                 showPostCheckin(LatLngCode,key,data,cinnotes);
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-                StorageReference historyRef = storageRef.child(userid+"/History/"+cikey+".jpg");
-
-                UploadTask uploadTask = historyRef.putBytes(data);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                    }
-                });
+                File file;
+                FileOutputStream outputStream;
+                try {
+                    file = new File(getCacheDir(), key); //name of file is the checkin key
+                    outputStream = new FileOutputStream(file);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
 
 
@@ -528,8 +526,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         builder.setContentText("Your parking is about to expire !");
         builder.addAction(accept);
         builder.setAutoCancel(true);
-        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(uri);
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry)); //add custom ringtone
 
         return builder.build();
     }
@@ -554,8 +551,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         builder.addAction(accept);
         builder.addAction(cancel);
         builder.setAutoCancel(true);
-        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(uri);
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry));//add custom ringtone
 
 
         return builder.build();

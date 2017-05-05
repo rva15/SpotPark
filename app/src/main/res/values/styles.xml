@@ -11,8 +11,8 @@
 
     <!-- Base application theme. -->
     <style name="Theme.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/statusbarcolor</item>
+        <item name="colorPrimary">@color/colorPrimary</item>       <!-- used for action bar -->
+        <item name="colorPrimaryDark">@color/statusbarcolor</item> <!-- used for status bar -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowActionBar">false</item>

@@ -170,10 +170,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
 
         private void favorite(int position,String spotname){
 
-            Double latitude = historyplace.get(getAdapterPosition()).getplatitude();
-            Double longitude = historyplace.get(getAdapterPosition()).getplongitude();
-            Bitmap bitmap   = bitmaps.get(getAdapterPosition());
-            String key      = keys.get(getAdapterPosition());
+            Double latitude = historyplace.get(position).getplatitude();
+            Double longitude = historyplace.get(position).getplongitude();
+            Bitmap bitmap   = bitmaps.get(position);
+            String key      = keys.get(position);
 
 
             DatabaseReference database;

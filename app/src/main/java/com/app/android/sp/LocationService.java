@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,9 @@ import android.support.v4.content.ContextCompat;
 import java.lang.Math;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import static com.app.android.sp.SPApplication.getContext;
+
 /**
  * Created by ruturaj on 8/21/16.
  */
@@ -28,8 +32,8 @@ public class LocationService extends android.app.Service{
     //-------------------------Necessary variable declarations--------------//
     private static final String TAG = "Debugger ";
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 15000;  //request updates every 15secs
-    private static final float LOCATION_DISTANCE = 5;    //but only if user has moved 5meters
+    private int LOCATION_INTERVAL = 15000;  //request updates every 15secs
+    private float LOCATION_DISTANCE = 10;    //but only if user has moved 10meters
     private int count = 0,i=0;
     private String UID ="",key="",currTime="";
     private CheckInHelperDB dbHelper;
@@ -48,7 +52,6 @@ public class LocationService extends android.app.Service{
 
             if (Build.VERSION.SDK_INT >= 23 &&
                     ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             mLocationManager.requestLocationUpdates(
@@ -100,15 +103,20 @@ public class LocationService extends android.app.Service{
 
         dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
-        res.moveToFirst();                              //get all info from the CheckInHelper db
-        UID = res.getString(res.getColumnIndex("_id"));
-        carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
-        carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
-        checkinhour = res.getDouble(res.getColumnIndex("CheckInHour"));
-        checkinmin = res.getDouble(res.getColumnIndex("CheckInMin"));
-        lasthour = res.getDouble(res.getColumnIndex("LastHour"));
-        lastmin = res.getDouble(res.getColumnIndex("LastMin"));
-        lastentry = lasthour*60 + lastmin;
+        if(res!=null) {
+            res.moveToFirst();                              //get all info from the CheckInHelper db
+            UID = res.getString(res.getColumnIndex("_id"));
+            carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
+            carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+            checkinhour = res.getDouble(res.getColumnIndex("CheckInHour"));
+            checkinmin = res.getDouble(res.getColumnIndex("CheckInMin"));
+            lasthour = res.getDouble(res.getColumnIndex("LastHour"));
+            lastmin = res.getDouble(res.getColumnIndex("LastMin"));
+            lastentry = lasthour * 60 + lastmin;
+        }
+        else{
+            stopSelf();
+        }
 
 
         simpleDateFormat = new SimpleDateFormat("HH:mm:ss");    //initialize a date format
@@ -119,11 +127,12 @@ public class LocationService extends android.app.Service{
     public void onDestroy() {  //on Destroy is called when stopSelf() executes
         if (Build.VERSION.SDK_INT >= 23 &&
                 ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
-        mLocationManager.removeUpdates(mLocationListeners[1]);
+        if(mLocationManager!=null) {
+            mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
+            mLocationManager.removeUpdates(mLocationListeners[1]);
+        }
     }
 
 
@@ -147,13 +156,19 @@ public class LocationService extends android.app.Service{
         serviceintent.putExtra("started_from","LS");            //inform that it was started from location service
         PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
         NotificationCompat.Action accept = new NotificationCompat.Action.Builder(R.drawable.accept, "Yes", pIntent).build();
+        Intent buttonIntent = new Intent(getContext(), CancelNotification.class);
+        buttonIntent.putExtra("notificationId",29);
+        PendingIntent btPendingIntent = PendingIntent.getBroadcast(getContext(), 0, buttonIntent,0);
+        NotificationCompat.Action cancel = new NotificationCompat.Action.Builder(R.drawable.clear, "No", btPendingIntent).build();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.tab_background_unselected));
         builder.setContentTitle("SpotPark");
         builder.setContentText("Vacating your parking spot soon?");
         builder.addAction(accept);
+        builder.addAction(cancel);
         builder.setAutoCancel(true);
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry)); //custom ringtone
 
 
         return builder.build();
@@ -188,10 +203,15 @@ public class LocationService extends android.app.Service{
                 stopSelf();         //stop this service if it has been running longer than 10 hours
             }
 
-            double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
-            double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));   //get distance to car
+            double distance = distance(lat,lon,carlat,carlon);
+            if(distance>0.1){ //distance from car is more than 100m
+                LOCATION_DISTANCE = 30;
+            }
+            else{
+                LOCATION_DISTANCE = 5;
+            }
 
-            if((deltalat<2)&&(deltalon<2)){  //if you are approx 12mX12m within car's location
+            if(distance<0.05){  //if you are within 50m of the car
 
                 double difference = gettimediff(Double.parseDouble(timearray[0]),Double.parseDouble(timearray[1]),lastentry);
                 if(difference>15){  //and the difference between right now and last time you were in the zone is >15min
@@ -209,6 +229,31 @@ public class LocationService extends android.app.Service{
             }
 
         }
+
+        //----------functions to calculate distance---------------//
+
+        private double distance(double lat1, double lon1, double lat2, double lon2) {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(deg2rad(lat1))
+                    * Math.sin(deg2rad(lat2))
+                    + Math.cos(deg2rad(lat1))
+                    * Math.cos(deg2rad(lat2))
+                    * Math.cos(deg2rad(theta));
+            dist = Math.acos(dist);
+            dist = rad2deg(dist);
+            dist = dist * 60 * 1.1515;
+            return (dist);
+        }
+
+        private double deg2rad(double deg) {
+            return (deg * Math.PI / 180.0);
+        }
+
+        private double rad2deg(double rad) {
+            return (rad * 180.0 / Math.PI);
+        }
+
+        //---------------------------------------------------------//
 
         public double gettimediff(double lh,double lm,double chinmins){ //function returns timedifference between two times
             double currmins = lh*60 + lm;
@@ -244,6 +289,7 @@ public class LocationService extends android.app.Service{
         }
 
     }
+
 
 
 

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="178dp"
     android:orientation="vertical"
+    android:background="@color/statusbarcolor"
     android:weightSum="1">
 
     <LinearLayout
@@ -62,11 +63,6 @@
             android:textStyle="normal"
 
             />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="@color/black"/>
 
     </LinearLayout>
 

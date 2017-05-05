@@ -36,6 +36,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
         <activity
             android:name="com.app.android.sp.LoginActivity"
@@ -54,10 +57,10 @@
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:noHistory="false" />
-
-        <meta-data
-            android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id" />
+        <activity android:name="com.app.android.sp.HomeScreenActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name="com.app.android.sp.TutorialActivity"
+            android:screenOrientation="portrait"/>
 
         <receiver android:name="com.app.android.sp.NotificationPublisher" />
         <receiver android:name="com.app.android.sp.CancelNotification" />
@@ -70,11 +73,15 @@
             android:name="com.app.android.sp.LocationService"
             android:enabled="true"
             android:exported="false" />
+        <service
+            android:name="com.app.android.sp.SingleTouchService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name="com.app.android.sp.CheckinService"
+            android:enabled="true"
+            android:exported="false" />
 
-        <activity android:name="com.app.android.sp.HomeScreenActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name="com.app.android.sp.TutorialActivity"
-            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

@@ -231,106 +231,173 @@
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
                 android:gravity="center"
-                android:background="@color/dimgrey"
+                android:background="@color/statusbarcolor"
                 android:textColor="#ffffff"/>
 
 
 
             <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="3"
-                    android:orientation="vertical">
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:id="@+id/heading"
+                    android:text="Cost per Hour"
+                    android:gravity="center"/>
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="match_parent"
-                        android:layout_height="30dp"
-                        android:id="@+id/heading"
-                        android:text="Cost per Hour"
-                        android:gravity="center"/>
-                    <FrameLayout
+                        android:layout_height="58dp"
+                        android:id="@+id/spotdescription"
+                        android:gravity="top|center_horizontal"
+                        android:textColor="@color/tab_background_selected"
+                        android:textSize="24dp"/>
+                    <TextView
+                        android:id="@+id/rate"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="58dp"
-                            android:id="@+id/spotdescription"
-                            android:gravity="top|center_horizontal"
-                            android:textColor="@color/tab_background_selected"
-                            android:textSize="24dp"/>
-                        <TextView
-                            android:id="@+id/rate"
-                            android:layout_width="match_parent"
-                            android:layout_height="58dp"
-                            android:textSize="48dp"
-                            android:gravity="top|center_horizontal"
-                            android:textColor="@color/tab_background_selected"/>
-                    </FrameLayout>
+                        android:layout_height="58dp"
+                        android:textSize="48dp"
+                        android:gravity="top|center_horizontal"
+                        android:textColor="@color/tab_background_selected"/>
+                </FrameLayout>
 
 
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="2"
+                android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <RelativeLayout
+                    android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:layout_height="0dp"
+                    android:id="@+id/route"
+                    android:orientation="horizontal"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ROUTE"
+                        android:layout_marginLeft="8dp"
+                        android:layout_centerInParent="true"
+                        android:id="@+id/drawroute"
+                        android:layout_centerVertical="true"
+                        android:background="@color/white"
+                        android:textColor="@color/statusbarcolor"/>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_toLeftOf="@+id/drawroute"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/route"/>
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:id="@+id/navigate"
+                    android:layout_height="match_parent"
                     android:orientation="horizontal">
 
                     <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:text="ROUTE"
-                        android:gravity="center"
-                        android:id="@+id/drawroute"
-                        android:background="@color/dimgrey"
-                        android:textColor="@color/white"/>
-
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="@color/white"/>
-
-                    <TextView
                         android:id="@+id/navigatebutton"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="NAVIGATE"
-                        android:gravity="center"
-                        android:background="@color/dimgrey"
-                        android:textColor="@color/white"/>
+                        android:layout_marginLeft="8dp"
+                        android:layout_centerVertical="true"
+                        android:layout_centerInParent="true"
+                        android:background="@color/white"
+                        android:textColor="@color/statusbarcolor"/>
 
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="match_parent"
-                        android:background="@color/white"/>
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_toLeftOf="@+id/navigatebutton"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/navigatespot"/>
 
+
+
+
+                </RelativeLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/book">
 
                     <TextView
-                        android:id="@+id/book"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/bookbutton"
                         android:text="BOOK"
-                        android:gravity="center"
-                        android:background="@color/dimgrey"
-                        android:textColor="@color/white"/>
+                        android:layout_marginLeft="8dp"
+                        android:layout_centerVertical="true"
+                        android:layout_centerInParent="true"
+                        android:background="@color/white"
+                        android:textColor="@color/statusbarcolor"/>
 
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/book"
+                        android:layout_centerVertical="true"
+                        android:layout_toLeftOf="@+id/bookbutton"/>
+
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:id="@+id/feedback">
 
                     <TextView
-                        android:id="@+id/feedback"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:text="FEEDBACK"
-                        android:gravity="center"
-                        android:background="@color/dimgrey"
-                        android:textColor="@color/white"/>
+                        android:layout_marginLeft="8dp"
+                        android:id="@+id/feedbutton"
+                        android:layout_centerVertical="true"
+                        android:layout_centerInParent="true"
+                        android:background="@color/white"
+                        android:textColor="@color/statusbarcolor"/>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/feedback"
+                        android:layout_centerVertical="true"
+                        android:layout_toLeftOf="@+id/feedbutton"/>
 
 
 
-                </LinearLayout>
+
+                </RelativeLayout>
+
+
+
+            </LinearLayout>
 
 
         </LinearLayout>

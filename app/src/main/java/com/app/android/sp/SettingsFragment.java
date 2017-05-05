@@ -22,9 +22,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.support.v4.app.Fragment;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.Manifest;
@@ -51,6 +54,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static android.R.id.toggle;
+
 /**
  * Created by ruturaj on 12/9/16.
  */
@@ -75,6 +80,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private Bitmap bmp;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
     private LinearLayout profileinfo;
+    private Switch stswitch;
+    private boolean ststatus;
+    private RelativeLayout gotostsettings;
+
 
 
     @Override
@@ -121,6 +130,24 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         contactfb.setOnClickListener(this);
         icons8 = (ImageView) view.findViewById(R.id.icons8);
         icons8.setOnClickListener(this);
+        gotostsettings = (RelativeLayout) view.findViewById(R.id.gotostsettings);
+        gotostsettings.setOnClickListener(this);
+        stswitch = (Switch) view.findViewById(R.id.stswitch);
+        stswitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // The toggle is enabled
+                    Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                    getContext().startService(servIntent);
+                    database.child("UserInformation").child(UID).child("singletouch").setValue(true);
+                } else {
+                    // The toggle is disabled
+                    Intent stopIntent = new Intent(getContext(), SingleTouchService.class);
+                    getContext().stopService(stopIntent);
+                    database.child("UserInformation").child(UID).child("singletouch").setValue(false);
+                }
+            }
+        });
         database.child("UserInformation").child(UID).addListenerForSingleValueEvent(listener1);
         setdp();
         return view;
@@ -155,6 +182,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             ln = userDetails.getlastname();
             fullname.setText(userDetails.getfirstname() + " " + userDetails.getlastname());
             currentemail = userDetails.getemail();
+            ststatus = userDetails.getsingletouch();
+            stswitch.setChecked(ststatus);
             email.setText(userDetails.getemail());
             //set the change password button visibility
             if (logintype == 1) {
@@ -197,6 +226,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         if(v.getId() == R.id.icons8){
             icons8();
         }
+        if(v.getId() == R.id.gotostsettings){
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+            homeScreenActivity.getSTSettings();
+        }
     }
 
     private void icons8(){
@@ -237,7 +270,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
     private void showPswdDialog() {
-        // Create an instance of the dialog fragment and show it
+        //Create an instance of the dialog fragment and show it
         //DialogFragment dialog = new ChangePswdDialog();
         //dialog.setTargetFragment(SettingsFragment.this, REQ_CODE);       //set target fragment to this fragment
         //dialog.show(this.getActivity().getSupportFragmentManager(),"ChangePswd fragment");

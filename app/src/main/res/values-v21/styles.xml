@@ -26,8 +26,8 @@
     <style name="Base.Widget.Design.TabLayout" parent="Widget.Design.TabLayout">
         <item name="tabBackground">@drawable/tab_color_selector</item>
         <item name="tabTextAppearance">@style/MyCustomTabText</item>
-        <item name="tabSelectedTextColor">@color/newuiorange</item>
-        <item name="tabIndicatorColor">@color/newuiorange</item>
+        <item name="tabSelectedTextColor">@color/statusbarcolor</item>
+        <item name="tabIndicatorColor">@color/statusbarcolor</item>
         <item name="tabIndicatorHeight">2dp</item>
     </style>
 

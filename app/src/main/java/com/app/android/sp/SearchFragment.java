@@ -27,6 +27,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -96,7 +97,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
-    private TextView book,navigate,route;
+    private RelativeLayout navigate,route;
     private ParkWhizSpots parkWhizSpots;
     private ImageView startsearch,refreshspots;
     private double cameralatitude,cameralongitude;
@@ -105,7 +106,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private TextView displaystart,displayend;
     private LinearLayout fromuntil1,fromuntil2;
     private boolean showCheckIns=true;
-    private TextView feedback;
+    private RelativeLayout feedback,book;
     private static boolean searchStarted;
     private String curLatLng;
     private String label;
@@ -245,9 +246,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         rate = (TextView) view.findViewById(R.id.rate);
         spotdescription = (TextView) view.findViewById(R.id.spotdescription);
         heading = (TextView) view.findViewById(R.id.heading);
-        navigate = (TextView) view.findViewById(R.id.navigatebutton);
+        navigate = (RelativeLayout) view.findViewById(R.id.navigate);
         navigate.setOnClickListener(this);
-        route = (TextView) view.findViewById(R.id.drawroute);
+        route = (RelativeLayout) view.findViewById(R.id.route);
         route.setOnClickListener(this);
         startsearch = (ImageView) view.findViewById(R.id.startsearch);
         startsearch.setOnClickListener(this);
@@ -255,7 +256,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         recenter = (LinearLayout) view.findViewById(R.id.recenter);
         recenter.setVisibility(View.GONE);
         recenter.setOnClickListener(this);
-        book = (TextView) view.findViewById(R.id.book);
+        book = (RelativeLayout) view.findViewById(R.id.book);
         book.setOnClickListener(this);
         ssatview = (ImageView) view.findViewById(R.id.ssatview);
         ssatview.setOnClickListener(this);
@@ -268,7 +269,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         fromuntil1.setVisibility(View.GONE);
         fromuntil2.setVisibility(View.GONE);
         fromuntil2.setOnClickListener(this);
-        feedback= (TextView) view.findViewById(R.id.feedback);
+        feedback= (RelativeLayout) view.findViewById(R.id.feedback);
         feedback.setOnClickListener(this);
         refreshspots = (ImageView) view.findViewById(R.id.refreshspots);
         refreshspots.setOnClickListener(this);
@@ -404,7 +405,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onClick(View v) {
 
-        if(v.getId()==R.id.drawroute) {                  //draw a route on the searchmap
+        if(v.getId()==R.id.route) {                  //draw a route on the searchmap
             if (currentmarker != null && place != null) {
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 Toast.makeText(getContext(),"Drawing route",Toast.LENGTH_SHORT).show();
@@ -426,7 +427,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 Toast.makeText(getContext(),"Refreshing spots",Toast.LENGTH_SHORT).show();
             }
         }
-        if(v.getId()==R.id.navigatebutton){    //send an intent to the Google Maps app
+        if(v.getId()==R.id.navigate){    //send an intent to the Google Maps app
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             if(currentmarker!=null) {
                 double lat = currentmarker.latitude;

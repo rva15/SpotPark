@@ -33,8 +33,8 @@ public class DirectionService extends android.app.Service{
     //Variable Declaration
     private static final String TAG = "Debugger ";
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 30000; //obtain new location every 30secs
-    private static final float LOCATION_DISTANCE = 5;   //but only if user has moved 5m
+    private int LOCATION_INTERVAL = 30000; //obtain new location every 30secs
+    private float LOCATION_DISTANCE = 10;   //but only if user has moved 10m
     private int count = 0;
     private String UID ="",key="",origin="";
     private CheckInHelperDB dbHelper;
@@ -59,7 +59,6 @@ public class DirectionService extends android.app.Service{
 
             if (Build.VERSION.SDK_INT >= 23 &&
                     ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             mLocationManager.requestLocationUpdates(
@@ -113,10 +112,15 @@ public class DirectionService extends android.app.Service{
 
         dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
-        res.moveToFirst();
-        UID = res.getString(res.getColumnIndex("_id"));             //get location of the car, userID
-        carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
-        carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+        if(res!=null) {
+            res.moveToFirst();
+            UID = res.getString(res.getColumnIndex("_id"));             //get location of the car, userID
+            carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
+            carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+        }
+        else{
+            stopSelf();
+        }
 
         if(intent!=null) {
             //possible duplication happening here but still harmless
@@ -148,8 +152,10 @@ public class DirectionService extends android.app.Service{
             //ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-        mLocationManager.removeUpdates(mLocationListeners[0]); //remove location listeners on service destroy
-        mLocationManager.removeUpdates(mLocationListeners[1]);
+        if(mLocationManager!=null) {
+            mLocationManager.removeUpdates(mLocationListeners[0]); //remove location listeners on service destroy
+            mLocationManager.removeUpdates(mLocationListeners[1]);
+        }
     }
 
     //increment user's keys by 2
@@ -190,18 +196,23 @@ public class DirectionService extends android.app.Service{
 
             double lat = location.getLatitude();    //get current location
             double lon = location.getLongitude();
+            double distance = distance(lat,lon,carlat,carlon);
 
-            if (count < 30) {       //send a maximum of 30 calls to the Directions API
-                WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID,getApplicationContext());
-                walkTime.getWalkTime(); //get estimated time of walk to the car
+
+            if(distance<0.84) { //user is less than 840m from car
+                if (count < 30) {           //send a maximum of 30 calls to the Directions API
+                    WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID, getApplicationContext());
+                    walkTime.getWalkTime(); //get estimated time of walk to the car
+                }
+                count = count + 1;
+
+                mLastLocation.set(location);
+                if (distance < 0.015) {  //user is 15m from the car
+                    stopSelf();
+                }
             }
-            count = count + 1;
-
-            mLastLocation.set(location);
-            double deltalat = Math.abs((lat*10000)-(carlat.doubleValue()*10000));
-            double deltalon = Math.abs((lon*10000)-(carlon.doubleValue()*10000));
-            if((deltalat<2)&&(deltalon<2)){
-                stopSelf();
+            else{
+                LOCATION_DISTANCE = 50;
             }
 
         }
@@ -224,6 +235,31 @@ public class DirectionService extends android.app.Service{
         {
 
         }
+
+        //----------functions to calculate distance---------------//
+
+        private double distance(double lat1, double lon1, double lat2, double lon2) {
+            double theta = lon1 - lon2;
+            double dist = Math.sin(deg2rad(lat1))
+                    * Math.sin(deg2rad(lat2))
+                    + Math.cos(deg2rad(lat1))
+                    * Math.cos(deg2rad(lat2))
+                    * Math.cos(deg2rad(theta));
+            dist = Math.acos(dist);
+            dist = rad2deg(dist);
+            dist = dist * 60 * 1.1515;
+            return (dist);
+        }
+
+        private double deg2rad(double deg) {
+            return (deg * Math.PI / 180.0);
+        }
+
+        private double rad2deg(double rad) {
+            return (rad * 180.0 / Math.PI);
+        }
+
+        //---------------------------------------------------------//
 
     }
 
