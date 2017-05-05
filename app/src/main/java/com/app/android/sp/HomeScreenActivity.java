@@ -950,6 +950,13 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     //construct the notification that allows the user to navigate back to his car
     private Notification getAlertNotification() {
 
+        //open the app on tapping the notification
+        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        openapp.putExtra("startedfrom","notification");
+        openapp.putExtra("userid",UID);
+        openapp.addCategory("hscreenalert");
+        PendingIntent pendingIntent1 = PendingIntent.getActivity(getContext(), 0, openapp, PendingIntent.FLAG_CANCEL_CURRENT);
+
         Intent navigate = new Intent(this, HomeScreenActivity.class);
         navigate.putExtra("startedfrom","notification");
         navigate.putExtra("sendstatus",true);
@@ -960,18 +967,25 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this, R.color.tab_background_unselected));
+        builder.setContentIntent(pendingIntent1);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Your parking is about to expire !");
         builder.addAction(accept);
         builder.setAutoCancel(true);
-        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(uri);
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry)); //custom ringtone
 
         return builder.build();
     }
 
     //construct notification asking users to inform others
     private Notification getInformNotification() {
+
+        //open the app on tapping the notification
+        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        openapp.putExtra("startedfrom","notification");
+        openapp.putExtra("userid",UID);
+        openapp.addCategory("hscreeninform");
+        PendingIntent pendingIntent2 = PendingIntent.getActivity(getContext(), 0, openapp, PendingIntent.FLAG_CANCEL_CURRENT);
 
         Intent serviceintent = new Intent(this,DirectionService.class);
         serviceintent.putExtra("started_from","checkin");
@@ -986,13 +1000,13 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(this, R.color.tab_background_unselected));
+        builder.setContentIntent(pendingIntent2);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Walking back to vacate parking spot?");
         builder.addAction(accept);
         builder.addAction(cancel);
         builder.setAutoCancel(true);
-        Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        builder.setSound(uri);
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry)); //custom ringtone
 
 
         return builder.build();

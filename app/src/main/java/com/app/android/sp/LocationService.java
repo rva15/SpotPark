@@ -152,6 +152,14 @@ public class LocationService extends android.app.Service{
 
 
     private Notification getInformNotification() {
+
+        //open the app on tapping the notification
+        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        openapp.putExtra("startedfrom","notification");
+        openapp.putExtra("userid",UID);
+        openapp.addCategory("servicealert");
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, openapp, PendingIntent.FLAG_CANCEL_CURRENT);
+
         Intent serviceintent = new Intent(this,DirectionService.class);
         serviceintent.putExtra("started_from","LS");            //inform that it was started from location service
         PendingIntent pIntent = PendingIntent.getService(this, 0, serviceintent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -163,6 +171,7 @@ public class LocationService extends android.app.Service{
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.drawable.logowhite);
         builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.tab_background_unselected));
+        builder.setContentIntent(pendingIntent);
         builder.setContentTitle("SpotPark");
         builder.setContentText("Vacating your parking spot soon?");
         builder.addAction(accept);

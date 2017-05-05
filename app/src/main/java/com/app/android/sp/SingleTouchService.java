@@ -62,6 +62,7 @@ public class SingleTouchService extends android.app.Service {
     private double minplacedis=30;
     private int tempcounter=0,zonelimit=0;
     private Places closestPlace;
+    private boolean inzone=false;
 
 
     //---------------------------Service LifeCycle Methods------------------------//
@@ -151,11 +152,16 @@ public class SingleTouchService extends android.app.Service {
             userlon = location.getLongitude();
             saveLocation(Double.toString(userlat),Double.toString(userlon)); //save the current location in phone cache
 
-            String url = getUrl(userlat, userlon); //get url for google places query
-            Object[] DataTransfer = new Object[1];
-            DataTransfer[0] = url;  //put this url in an Object[]
-            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-            getNearbyPlacesData.execute(DataTransfer);  //execute single touch logic
+            if(!inzone) { //do these activities only if you are out of a zone
+                String url = getUrl(userlat, userlon); //get url for google places query
+                Object[] DataTransfer = new Object[1];
+                DataTransfer[0] = url;  //put this url in an Object[]
+                GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                getNearbyPlacesData.execute(DataTransfer);  //execute single touch logic
+            }
+            else{ //you are in the zone, so keep checking distances
+                initSTAlgo();
+            }
 
         }
 
@@ -380,12 +386,14 @@ public class SingleTouchService extends android.app.Service {
                 if (readCSStatus().equals("0") || readCSStatus().equals("")) { // if notification is not already sent
                     scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
                 }
-                LOCATION_DISTANCE = 300;   //notification sent, so relax distance to 300m
-                LOCATION_INTERVAL = 30000;  //location interval to 30secs
+                inzone = true;            //you are in zone
+                LOCATION_DISTANCE = 0;    //location distance is 0
+                LOCATION_INTERVAL = 3000; //location interval to 3secs
                 saveCSStatus("1");        //and store in phone memory that we have already notified user
             } else if ((distance > 0.3) && (distance < 0.6)) { //in this range, user might enter zone anytime soon
+                inzone = false;
                 zonelimit = zonelimit+1;
-                if(zonelimit>50){ //user has been in near zone more than 50 times
+                if(zonelimit>30){ //user has been in near zone more than 30 times
                     zonelimit = 0;
                     LOCATION_DISTANCE = 300;    //now user has to move 300m to next location update
                     LOCATION_INTERVAL = 30000;
@@ -395,6 +403,7 @@ public class SingleTouchService extends android.app.Service {
                     LOCATION_INTERVAL = 15000; //location interval is 15secs
                 }
             } else {  //user far away from nearest interesting place
+                inzone = false;
                 LOCATION_DISTANCE = (int) (distance * 1000 * 0.5);   //set this to half of the distance to nearest place
                 LOCATION_INTERVAL = 15000;
                 if (readCSStatus().equals("1")) {  //destroy already given notification
