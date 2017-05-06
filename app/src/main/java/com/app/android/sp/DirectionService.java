@@ -38,7 +38,7 @@ public class DirectionService extends android.app.Service{
     private int count = 0;
     private String UID ="",key="",origin="";
     private CheckInHelperDB dbHelper;
-    private Double carlat,carlon;
+    private Double carlat=0.,carlon=0.;
     private DatabaseReference database;
     private DirectionService directionService;
 
@@ -117,6 +117,9 @@ public class DirectionService extends android.app.Service{
             UID = res.getString(res.getColumnIndex("_id"));             //get location of the car, userID
             carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
             carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
+            if(UID.equals("") || carlat==0. || carlon==0.){
+                stopSelf();
+            }
         }
         else{
             stopSelf();

@@ -125,7 +125,7 @@ public class FavoriteFragment extends Fragment {
                 public void onSuccess(byte[] bytes) {
                     // Data for "images/island.jpg" is returns, use this as needed
                     Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    Bitmap cropped = Bitmap.createBitmap(bmp, (int)(bmp.getWidth()/2 - width/2),(int)(bmp.getHeight()/2 - width/4),width,(int)width/2);
+                    Bitmap cropped = getCroppedMap(bmp);
                     FavoriteInfo info = new FavoriteInfo();
                     info.name = favoritePlace.getspotname();
                     info.spotimage = cropped;
@@ -182,6 +182,49 @@ public class FavoriteFragment extends Fragment {
         fetchingfavorites.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
         message.setVisibility(View.VISIBLE);
+    }
+
+    private Bitmap getCroppedMap(Bitmap b){
+
+        int p1=1,p2=1,p3=1,p4=1;
+        boolean bwidthlarge = true,bheightlarge=true;
+        int bwidth = b.getWidth();
+        int bheight = b.getHeight();
+        if(bwidth>=width){
+            bwidthlarge = true;
+            p3 = width;
+        }
+        else{
+            bwidthlarge = false;
+            p3 = b.getWidth();
+        }
+
+        if(bheight>=(width/2)){
+            bheightlarge = true;
+            p4 = (width)/2;
+        }
+        else{
+            bheightlarge = false;
+            p4 = b.getHeight();
+        }
+
+        if(bwidthlarge){
+            p1 = (bwidth/2) - (width/2);
+        }
+        else{
+            p1 = 0;
+        }
+
+        if(bheightlarge){
+            p2 = (bheight/2) - (width/4);
+        }
+        else{
+            p2 = 0;
+        }
+
+        Bitmap cropped = Bitmap.createBitmap(b, p1, p2, p3, p4);
+
+        return cropped;
     }
 
 

@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -61,6 +62,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -334,15 +336,46 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
+                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                        homeScreenActivity.delete();
+                        Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         file.delete(); //delete the file after upload is over
+                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                        homeScreenActivity.delete();
+                        Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
                     }
                 });
             }
         } catch (FileNotFoundException e) {
+            Bitmap bitmap = ((BitmapDrawable) ContextCompat.getDrawable(getContext(),R.drawable.mapnotav)).getBitmap();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            byte[] bitmapdata = stream.toByteArray();
+            FirebaseStorage storage = FirebaseStorage.getInstance(); //now upload it to firebase
+            StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+            StorageReference historyRef = storageRef.child(UID+"/History/"+checkinkey+".jpg");
+
+            UploadTask uploadTask = historyRef.putBytes(bitmapdata);
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                    homeScreenActivity.delete();
+                    Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                    homeScreenActivity.delete();
+                    Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                }
+            });
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
@@ -356,9 +389,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 addtoHistory();
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                homeScreenActivity.delete();
-                Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+
 
             }
         });

@@ -46,7 +46,7 @@ public class TutorialActivity extends AppCompatActivity {
 
         //Set the pager with an adapter
         mPager = (ViewPager) findViewById(R.id.tutorial_pager);
-        mPager.setOffscreenPageLimit(3); // Helps to keep fragment alive, otherwise I will have to load again images
+        mPager.setOffscreenPageLimit(4); // Helps to keep fragment alive, otherwise I will have to load again images
         mPagerAdapter = new TutorialPagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
 

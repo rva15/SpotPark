@@ -494,6 +494,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         homeScreenActivity.setRate(dollars,cents);
         homeScreenActivity.setNotes(cinnotes);
         homeScreenActivity.getCheckedin(mapimage,hours,mins,sub); //display the post checkin screen
+        homeScreenActivity.refreshMenu();
     }
 
     //---------------------------Notifications Related Functions---------------------------//

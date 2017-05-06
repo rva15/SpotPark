@@ -181,6 +181,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         getHome();
     }
 
+    public void refreshMenu(){
+        mAdapter = new MainmenuAdapter(TITLES,ICONS,this,Drawer,UID,getContext());
+        mRecyclerView.setAdapter(mAdapter);
+    }
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -558,9 +563,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             }
             else if (stSettingsFragment!=null && stSettingsFragment.isVisible()){ //if current page is STsettings
                 getSettings();  //go to settings page with back button
+                refreshMenu();
             }
             else{
                 getHome(); //otherwise go to home
+                refreshMenu();
             }
             return true;
         }

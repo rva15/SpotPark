@@ -23,6 +23,8 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.app.android.sp.R.color.green;
+
 /**
  * Created by ruturaj on 11/29/16.
  */
@@ -71,8 +73,13 @@ public class ContributionsFragment extends Fragment {
 
     public void setupPointsBar(int points){
         int px = dpToPx(16);
-
-        int green = (int)Math.floor(points/10);
+        int green=0;
+        if(points>=100){
+            green = 10;
+        }
+        else {
+            green = (int) Math.floor(points / 10);
+        }
 
         for(int i=1;i<(green+1);i++){
             String name = "pb"+Integer.toString(i);
@@ -88,27 +95,33 @@ public class ContributionsFragment extends Fragment {
             tv.setBackground(ContextCompat.getDrawable(getActivity(),R.drawable.tvborderwhite));
         }
 
-        int remainder = points%10;
-        float w1 = (float)remainder/10;
-        float w2 = 1-w1;
+        TextView tv;
+        LinearLayout.LayoutParams param;
+        float w1=0,w2 = 0;
+        if(points<100) {
+            int remainder = points % 10;
+            w1 = (float) remainder / 10;
+            w2 = 1 - w1;
 
-        String name = "pb"+Integer.toString(green+1);
-        int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
-        TextView tv = (TextView)view.findViewById(resID);
-        LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                0,
-                px, w1);
-        tv.setLayoutParams(param);
-        tv.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.tvbordergreen));
+            String name = "pb" + Integer.toString(green + 1);
+            int resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
+            tv = (TextView) view.findViewById(resID);
+            param = new LinearLayout.LayoutParams(
+                    0,
+                    px, w1);
+            tv.setLayoutParams(param);
+            tv.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.tvbordergreen));
 
-        name = "pb"+Integer.toString(green+2);
-        resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
-        tv = (TextView)view.findViewById(resID);
-        param = new LinearLayout.LayoutParams(
-                0,
-                px, w2);
-        tv.setLayoutParams(param);
-        tv.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.tvborderwhite));
+            name = "pb" + Integer.toString(green + 2);
+            resID = getResources().getIdentifier(name, "id", getActivity().getPackageName());
+            tv = (TextView) view.findViewById(resID);
+            param = new LinearLayout.LayoutParams(
+                    0,
+                    px, w2);
+            tv.setLayoutParams(param);
+            tv.setBackground(ContextCompat.getDrawable(getActivity(), R.drawable.tvborderwhite));
+        }
+
 
         tv = (TextView)view.findViewById(R.id.currentpoints);
         tv.setText(Integer.toString(points));

@@ -144,7 +144,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryV
                     // Setting Positive "OK" Button
                     alertDialogBuilder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            favorite(getAdapterPosition(),et.getText().toString());
+                            favorite(max-1-getAdapterPosition(),et.getText().toString());
                             addtofavorites.setEnabled(false);    //disable the checkbox soon as it is clicked
                         }
                     });

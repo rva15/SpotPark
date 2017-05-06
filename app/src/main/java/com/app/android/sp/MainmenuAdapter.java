@@ -245,7 +245,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
     @Override
     public void onBindViewHolder(MainmenuAdapter.ViewHolder holder, int position) {
 
-        if(holder.Holderid ==1) {                              // as the list view is going to be called after the header view so we decrement the
+        if(holder.Holderid ==1) { // as the list view is going to be called after the header view so we decrement the
             // position by 1 and pass it to the holder while setting the text and image
             holder.textView.setText(mNavTitles[position - 1]); // Setting the Text with the array of our Titles
             holder.imageView.setImageResource(mIcons[position -1]);// Settimg the image with array of our icons

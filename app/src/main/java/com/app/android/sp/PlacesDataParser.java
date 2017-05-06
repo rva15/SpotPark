@@ -29,16 +29,19 @@ public class PlacesDataParser {
     }
 
     private List<HashMap<String, String>> getPlaces(JSONArray jsonArray) {
-        int placesCount = jsonArray.length();
         List<HashMap<String, String>> placesList = new ArrayList<>();
-        HashMap<String, String> placeMap = null;
 
-        for (int i = 0; i < placesCount; i++) {
-            try {
-                placeMap = getPlace((JSONObject) jsonArray.get(i));
-                placesList.add(placeMap);
-            } catch (JSONException e) {
-                e.printStackTrace();
+        if(jsonArray!=null) {
+            int placesCount = jsonArray.length();
+            HashMap<String, String> placeMap = null;
+
+            for (int i = 0; i < placesCount; i++) {
+                try {
+                    placeMap = getPlace((JSONObject) jsonArray.get(i));
+                    placesList.add(placeMap);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return placesList;

@@ -6,14 +6,18 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,6 +29,7 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,6 +41,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static android.R.attr.id;
+import static com.app.android.sp.SPApplication.getContext;
 
 /**
  * Created by ruturaj on 4/3/17.
@@ -197,15 +203,10 @@ public class CheckinService extends Service{
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                    CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
-                    carlatitude = user.getcarlatitude();
-                    carlongitude = user.getcarlongitude();
-                    checkinkey = user.getkey();
-                    latlngcode = user.getlatlngcode();
-                    addToHistory();  //add existing checkin to history, delete it and then call makecheckin
+                    getExistingCin();
                 }
                 else{
-                   makeCheckin(); //make checkin directly if there is no active checkin
+                    makeCheckin(); //make checkin directly if there is no active checkin
                 }
             }
 
@@ -215,6 +216,45 @@ public class CheckinService extends Service{
             }
         });
     }
+
+    private void getExistingCin(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        database.child("CheckInUsers").orderByKey().equalTo(UID).addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                CheckInUser user = dataSnapshot.getValue(CheckInUser.class);
+                carlatitude = user.getcarlatitude();
+                carlongitude = user.getcarlongitude();
+                checkinkey = user.getkey();
+                latlngcode = user.getlatlngcode();
+                addToHistory();  //add existing checkin to history, delete it and then call makecheckin
+                database.child("CheckInUsers").orderByKey().equalTo(UID).removeEventListener(this);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+
 
     private void makeCheckin(){
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
@@ -242,6 +282,7 @@ public class CheckinService extends Service{
     }
 
     private void addToHistory(){
+
         // Make an entry in user's history saying it has not been favorited
         Calendar calendar = Calendar.getInstance();                    //get current time
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
@@ -256,40 +297,27 @@ public class CheckinService extends Service{
         database = FirebaseDatabase.getInstance().getReference();
         database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
 
-        //get the map image from local storage
-        final File file = new File(getCacheDir(),checkinkey);
-        int size = (int) file.length();
-        byte[] bytes = new byte[size];
-        try {
-            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
-            buf.read(bytes, 0, bytes.length);
-            buf.close();
-            if(bytes!=null){
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
-                StorageReference historyRef = storageRef.child(UID+"/History/"+checkinkey+".jpg");
+        Bitmap bitmap = ((BitmapDrawable) ContextCompat.getDrawable(getContext(),R.drawable.mapnotav)).getBitmap();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
+        FirebaseStorage storage = FirebaseStorage.getInstance(); //now upload it to firebase
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+        StorageReference historyRef = storageRef.child(UID+"/History/"+checkinkey+".jpg");
 
-                UploadTask uploadTask = historyRef.putBytes(bytes);
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        file.delete(); //delete the file
-                    }
-                });
+        UploadTask uploadTask = historyRef.putBytes(bitmapdata);
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+                delete();
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        delete();
-
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                delete();
+            }
+        });
 
     }
 

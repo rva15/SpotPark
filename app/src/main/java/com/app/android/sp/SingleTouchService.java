@@ -211,7 +211,12 @@ public class SingleTouchService extends android.app.Service {
                 List<HashMap<String, String>> nearbyPlacesList = null;
                 PlacesDataParser dataParser = new PlacesDataParser();
                 nearbyPlacesList = dataParser.parse(result);   //pass the result of the query to a dataparser
-                CheckVicinity(nearbyPlacesList);               //pass the parsed result to check vicinity function
+                if(nearbyPlacesList!=null) {
+                    CheckVicinity(nearbyPlacesList);               //pass the parsed result to check vicinity function
+                }
+                else{
+                    return;
+                }
             }
             else{
                 return;
@@ -534,7 +539,7 @@ public class SingleTouchService extends android.app.Service {
         builder.addAction(accept);
         builder.addAction(cancel);
         builder.setAutoCancel(true);
-        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.sintouch)); //custom ringtone
+        builder.setSound(Uri.parse("android.resource://" + getContext().getPackageName() + "/" +R.raw.expiry)); //custom ringtone
 
 
         return builder.build();

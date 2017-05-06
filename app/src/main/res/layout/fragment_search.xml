@@ -263,7 +263,7 @@
                         android:id="@+id/rate"
                         android:layout_width="match_parent"
                         android:layout_height="58dp"
-                        android:textSize="48dp"
+                        android:textSize="32dp"
                         android:gravity="top|center_horizontal"
                         android:textColor="@color/tab_background_selected"/>
                 </FrameLayout>

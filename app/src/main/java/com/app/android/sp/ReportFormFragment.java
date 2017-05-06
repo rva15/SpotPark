@@ -345,6 +345,7 @@ public class ReportFormFragment extends Fragment implements View.OnClickListener
     private void showPostReport(byte[] bytearray){
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
         homeScreenActivity.getPostReport(bytearray);
+        homeScreenActivity.refreshMenu();
     }
 
     private String getLatLngCode(double lat, double lon){
