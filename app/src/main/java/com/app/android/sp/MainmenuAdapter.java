@@ -100,37 +100,30 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                 String option = (String) tv.getText();
 
                 if (option.equals("Home")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHome();
                     drawer.closeDrawers();
                 }
                 if (option.equals("History")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHistory();
                     drawer.closeDrawers();
                 }
                 if (option.equals("Favorites")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getFavorite();
                     drawer.closeDrawers();
                 }
                 if (option.equals("Contributions")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getContri();
                     drawer.closeDrawers();
                 }
                 if (option.equals("Settings")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getSettings();
                     drawer.closeDrawers();
                 }
                 if(option.equals("Help")){
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHelp();
                     drawer.closeDrawers();
                 }
                 if (option.equals("Logout")) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.backToLogin();
                     drawer.closeDrawers();
                 }
@@ -138,37 +131,30 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
 
             if(view.getId()==R.id.menurow){
                 if (getAdapterPosition()==1) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHome();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==2) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHistory();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==3) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getFavorite();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==4) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getContri();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==5) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getSettings();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==6) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.getHelp();
                     drawer.closeDrawers();
                 }
                 if (getAdapterPosition()==7) {
-                    setMenuColors(getAdapterPosition());
                     homeScreenActivity.backToLogin();
                     drawer.closeDrawers();
                 }
@@ -176,7 +162,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
             }
         }
 
-        //function that sets colors for the main menu
+        /*//function that sets colors for the main menu
         private void setMenuColors(int position){
             menurows.get(position-1).setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
             menuicons.get(position-1).setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
@@ -187,7 +173,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                 menuicons.get(i).setBackgroundColor(ContextCompat.getColor(context,R.color.white));
                 menutitles.get(i).setBackgroundColor(ContextCompat.getColor(context,R.color.white));
             }
-        }
+        }*/
 
     }
 
@@ -249,11 +235,6 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
             // position by 1 and pass it to the holder while setting the text and image
             holder.textView.setText(mNavTitles[position - 1]); // Setting the Text with the array of our Titles
             holder.imageView.setImageResource(mIcons[position -1]);// Settimg the image with array of our icons
-            if(position==1){
-                holder.linearlayout.setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
-                holder.imageView.setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
-                holder.textView.setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
-            }
             menurows.add(holder.linearlayout);
             menuicons.add(holder.imageView);
             menutitles.add(holder.textView);

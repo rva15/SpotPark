@@ -208,14 +208,14 @@ public class SingleTouchService extends android.app.Service {
         @Override
         protected void onPostExecute(String result) {
             if(result!=null) {
-                List<HashMap<String, String>> nearbyPlacesList = null;
+                List<HashMap<String, String>> nearbyPlacesList;
                 PlacesDataParser dataParser = new PlacesDataParser();
                 nearbyPlacesList = dataParser.parse(result);   //pass the result of the query to a dataparser
-                if(nearbyPlacesList!=null) {
-                    CheckVicinity(nearbyPlacesList);               //pass the parsed result to check vicinity function
+                if(nearbyPlacesList.isEmpty()) {
+                    return;
                 }
                 else{
-                    return;
+                    CheckVicinity(nearbyPlacesList);               //pass the parsed result to check vicinity function
                 }
             }
             else{
@@ -224,6 +224,9 @@ public class SingleTouchService extends android.app.Service {
         }
 
         private void CheckVicinity(List<HashMap<String, String>> nearbyPlacesList) {
+            if(nearbyPlacesList.isEmpty()){
+                return;
+            }
             HashMap<String, String> googlePlace = nearbyPlacesList.get(0);
             gplacelat = Double.parseDouble(googlePlace.get("lat"));  //get the lat and lon of the nearest place
             gplacelng = Double.parseDouble(googlePlace.get("lng"));

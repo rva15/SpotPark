@@ -66,7 +66,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // General Utility
     private String UID="",starter="",latlngcode,key;
-    private Boolean isCheckedin,inputerror=false;
+    private boolean isCheckedin,inputerror=false,checkex=false;
     private LinearLayout fragmentcontainer;
     private String TAG="debugger",locationcode,checkinkey,cinnotes="";
     private final static String logoutFlagString = "logoutflag";
@@ -108,8 +108,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent1 = getIntent();           //Receive intent from loginActivity
-        UID     = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
-        starter=intent1.getStringExtra("startedfrom");
+        if(intent1!=null) {
+            UID = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
+            starter = intent1.getStringExtra("startedfrom");
+        }
         if(starter!=null && starter.equals("notification")){       //check if it was opened from a notification
             NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
             nMgr.cancel(1);  //remove the notifications that started this
@@ -186,6 +188,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         mRecyclerView.setAdapter(mAdapter);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //No call for super(). Bug on API Level > 11.
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -326,7 +332,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, historyFragment, "history");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -351,7 +357,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, tabsFragment, "home");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -374,7 +380,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, favoriteFragment, "favorites");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -398,7 +404,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, contributionsFragment, "contributions");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -422,7 +428,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, settingsFragment, "settings");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -446,7 +452,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, stsettingsFragment, "stsettings");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -492,7 +498,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, postCheckinFragment, "postcheckin");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -518,7 +524,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, reportFormFragment, "reportform");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -543,7 +549,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 fragmentTransaction.replace(R.id.fragment_container, postReportFragment, "postreport");
                 fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
                         android.R.anim.fade_out);
-                fragmentTransaction.commit();
+                fragmentTransaction.commitAllowingStateLoss();
             }
         };
         if (mPendingRunnable != null) {
@@ -566,8 +572,10 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 refreshMenu();
             }
             else{
-                getHome(); //otherwise go to home
-                refreshMenu();
+                if(checkex) { 
+                    getHome(); //otherwise go to home
+                    refreshMenu();
+                }
             }
             return true;
         }
@@ -583,6 +591,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 isCheckedin = dataSnapshot.exists();
+                checkex = true;
                 setView();
             }
 
@@ -598,7 +607,8 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){ //check if singletouch child exists in database
+                if(dataSnapshot.exists())
+                { //check if singletouch child exists in database
                     boolean ststatus = dataSnapshot.getValue(Boolean.class);
                     if(ststatus){ //singletouch is set as active
                         Intent servIntent = new Intent(getContext(), SingleTouchService.class);
@@ -645,10 +655,12 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
-                if((reportedTimes.getverification()>1)){
-                    if((!reportedTimes.getawarded()) || ((Boolean)reportedTimes.getawarded()==null)){
-                        awardKeys();
-                        dataSnapshot.child("awarded").getRef().setValue(true);
+                if(reportedTimes!=null) {
+                    if ((reportedTimes.getverification() > 1)) {
+                        if ((!reportedTimes.getawarded()) || ((Boolean) reportedTimes.getawarded() == null)) {
+                            awardKeys();
+                            dataSnapshot.child("awarded").getRef().setValue(true);
+                        }
                     }
                 }
             }

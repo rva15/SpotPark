@@ -19,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -93,8 +94,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private SpotFinder finder;
     private SlidingUpPanelLayout mLayout;
     private SearchHelperDB helperDB;
-    private TextView category,rate,heading,spotdescription;
-    private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false;
+    private TextView category,rate,heading,spotdescription,curkeys;
+    private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false,zoomalertgiven=false,isgridview=true;
     private String key="",latlngcode,uid;
     private LinearLayout recenter;
     private RelativeLayout navigate,route;
@@ -137,6 +138,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         SearchFragment fragment = new SearchFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
     }
 
     @Override
@@ -273,10 +279,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         feedback.setOnClickListener(this);
         refreshspots = (ImageView) view.findViewById(R.id.refreshspots);
         refreshspots.setOnClickListener(this);
+        curkeys = (TextView) view.findViewById(R.id.curkeys);
 
         initializeComponents();
+        getKeyCount();
 
         return view;
+
     }
 
     //-----------------------------Location Related Functions-------------------//
@@ -372,6 +381,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         FragmentTransaction transaction = mgr.beginTransaction();
         transaction.replace(R.id.searchplacefragmentholder,placeSelection, "AutoSearchFragment");
         transaction.commitAllowingStateLoss();
+
     }
 
     @Override
@@ -436,10 +446,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 String query = lat + "," + lon + "(" + label + ")";
                 String encodedQuery = Uri.encode(query);
                 String uriString = uriBegin + "?q=" + encodedQuery + "&z=16";
-                Uri uri = Uri.parse(uriString);
-                Intent intent = new Intent(android.content.Intent.ACTION_VIEW, uri);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                getActivity().getApplicationContext().startActivity(intent);
+                if(!TextUtils.isEmpty(uriString)) {
+                    Uri uri = Uri.parse(uriString);
+                    Intent intent = new Intent(android.content.Intent.ACTION_VIEW, uri);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getActivity().getApplicationContext().startActivity(intent);
+                }
             }
         }
 
@@ -459,29 +471,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             //check number of keys
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity)getActivity();
             homeScreenActivity.setStartSearch(true);
-            database = FirebaseDatabase.getInstance().getReference();
-            database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Integer keys = dataSnapshot.getValue(Integer.class);
-                    if(keys>0){
-                        dataSnapshot.getRef().setValue(keys-1);
-                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                        homeScreenActivity.refreshMainAdapter();
-                        Toast.makeText(getContext(),"You have "+Integer.toString(keys-1)+" keys remaining",Toast.LENGTH_LONG).show();
-                        startSearch();
-                    }
-                    else{
-                        Toast.makeText(getContext(),"Oops! Looks like you don't have any keys left. Check-In at a parking spot to earn 2 keys.",Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
+            reduceKey();
         }
 
         if(v.getId()==R.id.feedback){
@@ -504,11 +494,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             ssatview.setVisibility(View.GONE);
             sgridview.setVisibility(View.VISIBLE);
             searchmap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            isgridview = false;
+            updateUI();
         }
         if(v.getId() == R.id.sgridview){
             sgridview.setVisibility(View.GONE);
             ssatview.setVisibility(View.VISIBLE);
             searchmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            isgridview = true;
+            updateUI();
         }
 
 
@@ -601,7 +595,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         fromuntil1.setVisibility(View.VISIBLE);
         fromuntil2.setVisibility(View.VISIBLE);
         refreshspots.setVisibility(View.VISIBLE);
-        Toast.makeText(getContext(),"Click on the markers for more info",Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(),"Tap on the parking spot markers",Toast.LENGTH_SHORT).show();
         startcalendar = Calendar.getInstance();
         Calendar tmp = (Calendar) startcalendar.clone();
         tmp.add(Calendar.HOUR_OF_DAY, 3);
@@ -652,6 +646,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onCameraMoveStarted(int reason){
         // display the recenter button
         if(reason==REASON_GESTURE) {
+            if(!zoomalertgiven){
+                Toast.makeText(getContext(),"Use search bar or refresh button",Toast.LENGTH_SHORT).show();
+                zoomalertgiven = true;
+            }
             recenter.setVisibility(View.VISIBLE);
             isAutoMode = false;
         }
@@ -751,6 +749,79 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         });
 
+    }
+
+    private void getKeyCount(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Integer keys = dataSnapshot.getValue(Integer.class);
+                curkeys.setText(Integer.toString(keys));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void reduceKey(){
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).child("numberofkeys").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Integer keys = dataSnapshot.getValue(Integer.class);
+                if(keys>0){
+                    dataSnapshot.getRef().setValue(keys-1);
+                    curkeys.setText(Integer.toString(keys-1));
+                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+                    homeScreenActivity.refreshMainAdapter();
+                    if(keys>4) {
+                        startSearch();
+                    }
+                    else{
+                        lowAlert(keys-1);
+                    }
+                }
+                else{
+                    curkeys.setText("0");
+                    oopsAlert();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void lowAlert(int keys){
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+        builder.setTitle("Low Key Count Alert");
+        builder.setMessage("You have "+Integer.toString(keys)+" keys left. Check-in when you park to earn keys");
+        builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+                startSearch();
+            }
+        });
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void oopsAlert(){
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getContext());
+        builder.setMessage("Oops! Looks like you don't have any keys left. Check-in when you park to earn 2 keys.");
+        builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void upvoteCheckin(){
@@ -916,12 +987,19 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private void updateUI() {
         latitude = currentLocation.getLatitude();       //get the current latitude
         longitude = currentLocation.getLongitude();     //get the current longitude
+        Log.d(TAG,"zoom is "+searchmap.getMaxZoomLevel());
+        placeSelection.setHint("Search for parking at?");
         //sendLocation();                                 //update this user's location in searcher database
         place = new LatLng(latitude, longitude);        //initiate LatLng object
         if(marker!=null){
             marker.remove();                            //remove previous marker
         }
-        marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));  //set marker at current location
+        if(isgridview) {
+            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
+        }
+        else{
+            marker = searchmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocationwhite))); //and set it at new location
+        }
         if(isAutoMode) {
             searchmap.animateCamera(CameraUpdateFactory.newLatLngZoom(place, 15)); //zoom on the location
         }

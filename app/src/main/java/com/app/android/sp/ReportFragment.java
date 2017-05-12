@@ -55,8 +55,8 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     //variable declarations
     private GoogleMap reportmap;
     private GoogleApiClient mGoogleApiClient;
-    private  double curlatitude;
-    private  double curlongitude;
+    private double curlatitude;
+    private double curlongitude;
     private float zoom = 18;
     private static final String TAG = "Debugger ";
     private Location mCurrentLocation;
@@ -77,6 +77,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     private Marker marker;
     private LinearLayout reportcenter;
     private ImageView satview,gridview;
+    private boolean isgridview=true;
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
     public static ReportFragment newInstance(int page,String id) {
@@ -346,11 +347,15 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
             satview.setVisibility(View.GONE);
             gridview.setVisibility(View.VISIBLE);
             reportmap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            isgridview = false;
+            updateUI();
         }
         if(v.getId() == R.id.gridview){
             gridview.setVisibility(View.GONE);
             satview.setVisibility(View.VISIBLE);
             reportmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            isgridview = true;
+            updateUI();
         }
 
     }
@@ -374,7 +379,12 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         if(marker!=null){
             marker.remove();                            //remove previous marker
         }
-        marker = reportmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));
+        if(isgridview) {
+            marker = reportmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
+        }
+        else{
+            marker = reportmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocationwhite))); //and set it at new location
+        }
         i=i+1;
     }
 

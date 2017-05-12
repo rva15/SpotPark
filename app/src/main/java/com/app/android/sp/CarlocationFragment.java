@@ -80,7 +80,9 @@ import java.util.Map;
 import static android.R.attr.id;
 import static android.R.attr.path;
 import static android.content.Context.ALARM_SERVICE;
+import static com.app.android.sp.R.id.cgridview;
 import static com.app.android.sp.R.id.cinnotes;
+import static com.app.android.sp.R.id.csatview;
 import static com.facebook.internal.CallbackManagerImpl.RequestCodeOffset.Login;
 
 /**
@@ -95,7 +97,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private LatLng place;
     private int i = 0,couthours,coutmins;
     private DatabaseReference database;
-    private Boolean isAutoMode=true;
+    private Boolean isAutoMode=true,isgridview=true;
     public static final String ARG_PAGE = "ARG_PAGE";
     private static final String TAG = "Debugger ";
     private LinearLayout recenter;
@@ -104,7 +106,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private LinearLayout informbutton;
     private com.google.firebase.database.Query getcheckin,getminstoleave,getcheckin2;
     private FrameLayout othersknow;
-    private ImageView editcin,deletecin,notes;
+    private ImageView editcin,deletecin,notes,clsatview,clgridview;
     private FloatingActionButton fab;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
@@ -233,6 +235,11 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         timeview = (TextView) view.findViewById(R.id.couttime);
         informbutton = (LinearLayout) view.findViewById(R.id.informbutton);
         informbutton.setOnClickListener(this);
+
+        clsatview = (ImageView) view.findViewById(R.id.clsatview);
+        clsatview.setOnClickListener(this);
+        clgridview = (ImageView) view.findViewById(R.id.clgridview);
+        clgridview.setOnClickListener(this);
 
 
         // Initialize the Ad unit
@@ -513,7 +520,12 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             marker.remove();    //remove previous marker
         }
 
-        marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
+        if(isgridview) {
+            marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
+        }
+        else{
+            marker = navigationmap.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocationwhite))); //and set it at new location
+        }
 
         if(i==0) {
             navigationmap.moveCamera(CameraUpdateFactory.newLatLngZoom(place, 16)); //zoom on the location
@@ -739,6 +751,20 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         }
         if(v.getId()==R.id.notes){
             showNotes();
+        }
+        if(v.getId() == R.id.clsatview){
+            isgridview = false;
+            clsatview.setVisibility(View.GONE);
+            clgridview.setVisibility(View.VISIBLE);
+            navigationmap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            updateUI();
+        }
+        if(v.getId() == R.id.clgridview){
+            isgridview = true;
+            clgridview.setVisibility(View.GONE);
+            clsatview.setVisibility(View.VISIBLE);
+            navigationmap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            updateUI();
         }
     }
 

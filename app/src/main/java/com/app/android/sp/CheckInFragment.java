@@ -96,7 +96,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private String rph,h,m,o,c,t;
     private static final String ARG_PAGE = "ARG_PAGE";
     private CheckInHelperDB dbHelper ;
-    private boolean inputerror= false;
+    private boolean inputerror= false,isgridview=true;
     private ImageView csatview,cgridview;
 
     //--Google API variables--
@@ -329,11 +329,15 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             csatview.setVisibility(View.GONE);
             cgridview.setVisibility(View.VISIBLE);
             map.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+            isgridview = false;
+            updateUI();
         }
         if(v.getId() == R.id.cgridview){
             cgridview.setVisibility(View.GONE);
             csatview.setVisibility(View.VISIBLE);
             map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            isgridview = true;
+            updateUI();
         }
     }
 
@@ -584,7 +588,12 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         if(marker!=null){
             marker.remove();                            //remove previous marker
         }
-        marker = map.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation)));  //set marker at current location
+        if(isgridview) {
+            marker = map.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocation))); //and set it at new location
+        }
+        else{
+            marker = map.addMarker(new MarkerOptions().position(place).title("You're here").icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_mylocationwhite))); //and set it at new location
+        }
         if(i==0){
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(place, zoom));//zoom on the location
         }
