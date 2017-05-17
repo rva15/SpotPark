@@ -25,6 +25,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,8 +55,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,6 +76,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.R.attr.delay;
+import static com.app.android.sp.SearchHelperDB.key;
 import static com.facebook.FacebookSdk.getCacheDir;
 
 /**
@@ -85,10 +90,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     //--General Utility--
     private  double curlatitude,curlongitude;
     private float zoom = 18;
-    private String checkinTime,deftitle="Untitled";
+    private String checkinTime,deftitle="Untitled",key;
     private static final String TAG = "Debugger ";
     private static String UID="";
-    private int i=0,walktimedef = 10031;
+    private int i=0,walktimedef = 10031,delay = -1;
     private double hours=123,mins=123,checkinhour,checkinmin;
     private int dollars,cents,sub;
     private ImageView pin;
@@ -218,6 +223,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 .build();
         adView.loadAd(request);*/
 
+        doFailSafe();
         return view;
     }
 
@@ -354,20 +360,28 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode== 1){
             Bundle bundle = data.getExtras();
-            String rate = bundle.getString("cph", rph);
-            int hour = bundle.getInt("hours");
-            int min  = bundle.getInt("mins");
-            Boolean otherspark = bundle.getBoolean("otherspark");
-            Boolean free = bundle.getBoolean("free");
-            String cinnotes = bundle.getString("cinnotes");
+            if(bundle==null){
+                showCheckInDialog();
+                Toast.makeText(getContext(),"Sorry, an error occurred.",Toast.LENGTH_SHORT).show();
+            }
+            String rate = "0",cinnotes="";
+            int hour=0,min=0;
+            Boolean otherspark = false,free=true;
+            rate = bundle.getString("cph", rph);
+            hour = bundle.getInt("hours");
+            min  = bundle.getInt("mins");
+            otherspark = bundle.getBoolean("otherspark");
+            free = bundle.getBoolean("free");
+            cinnotes = bundle.getString("cinnotes");
 
             checkIn(rate,hour,min,otherspark,free,cinnotes);
         }
     }
 
 
-    private void checkIn(String parkrate, int parkhour, int parkmin, boolean otherspark, boolean free, final String cinnotes) {
+    private void checkIn(String parkrate, int parkhour, int parkmin, final boolean otherspark, boolean free, final String cinnotes) {
 
+        Toast.makeText(getContext(),"Saving location",Toast.LENGTH_SHORT).show();
         // Initialize all required data for checking in
         position = map.getCameraPosition();                 //get the camera position
         cameracenter = position.target;                     //and get the center of the map
@@ -408,19 +422,49 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             hours = (double)parkhour;
             mins =  (double)parkmin;
             //get the requested delay period
-            int delay = (int) getDelay(checkinhour, checkinmin, hours, mins);    //get the delay for notification
+            delay = (int) getDelay(checkinhour, checkinmin, hours, mins);    //get the delay for notification
             if (delay < 0) {
-                Toast.makeText(this.getActivity(), "Your requested alert time has already passed!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
+                Toast.makeText(this.getActivity(), "Invalid reminder time!", Toast.LENGTH_LONG).show();  //cant set notification if time is too less
                 return;
             }
-            scheduleNotification(getAlertNotification(), delay, 1);              //schedule alert notification for ticket expiring
-            if(otherspark) {
-                scheduleNotification(getInformNotification(), delay + 180000, 23);    //ask user if he wants to inform others by this notification
-            }
+
         }
 
+        //Put the screenshot of map into internal storage
+        final GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+
+            @Override
+            public void onSnapshotReady(Bitmap snapshot) {
+
+                bitmap = snapshot;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+                byte[] data = baos.toByteArray();
+                File file;
+                FileOutputStream outputStream;
+                try {
+                    file = new File(getContext().getFilesDir(), key); //name of file is the checkin key
+                    outputStream = new FileOutputStream(file);
+                    outputStream.write(data);
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                //Put in checkin information into phone local storage
+                if(otherspark) {
+                    dbHelper = new CheckInHelperDB(getActivity());
+                    dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
+                    Intent servIntent = new Intent(getActivity(), LocationService.class);     //start the LocationService if others can park
+                    getActivity().startService(servIntent);
+                }
+                showPostCheckin(LatLngCode,key,data,cinnotes,otherspark);
+            }
+        };
+
+
         // Proceed to make database entries
-        final String key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
+        key = database.child("CheckInKeys/"+LatLngCode).push().getKey();  //push an entry into CheckInKeys node and get its key
         //construct the CheckInDetails  and CheckInUser objects
         if(!otherspark){  //set this value if others cannot park
             walktimedef = 20041;
@@ -439,57 +483,33 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         incrementKeys();                                              //award the user with 2 keys
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
         homeScreenActivity.refreshMainAdapter();
-        database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
-
-
-        //Put the screenshot of map into internal storage
-        GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
-
+        database.updateChildren(childUpdates).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onSnapshotReady(Bitmap snapshot) {
-
-                bitmap = snapshot;
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-                byte[] data = baos.toByteArray();
-                showPostCheckin(LatLngCode,key,data,cinnotes);
-                File file;
-                FileOutputStream outputStream;
-                try {
-                    file = new File(getCacheDir(), key); //name of file is the checkin key
-                    outputStream = new FileOutputStream(file);
-                    outputStream.write(data);
-                    outputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-
-
+            public void onFailure(@NonNull Exception e) {
+                showCheckInDialog();
+                Toast.makeText(getContext(),"Sorry, an error occurred.",Toast.LENGTH_SHORT).show();
+                return;
             }
-        };
+        }).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
 
-        pin.setVisibility(View.GONE);
-        marker.remove();
-        map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-        map.snapshot(callback);
-
-
-
-        //Put in checkin information into phone local storage
-        if(otherspark) {
-            dbHelper = new CheckInHelperDB(this.getActivity());
-            dbHelper.updateInfo(UID,cameracenter.latitude,cameracenter.longitude,checkinhour,checkinmin,checkinhour,checkinmin);
-            Intent servIntent = new Intent(this.getActivity(), LocationService.class);     //start the LocationService if others can park
-            this.getActivity().startService(servIntent);
-        }
-
-
-
+                pin.setVisibility(View.GONE);
+                marker.remove();
+                map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                map.snapshot(callback);
+            }
+        });                        //simultaneously update the database at all locations
 
     }
 
-    private void showPostCheckin(String latlngcode,String key,byte[] mapimage,String cinnotes){
+    private void showPostCheckin(String latlngcode,String key,byte[] mapimage,String cinnotes,boolean otherspark){
+        if(delay != -1) {
+            scheduleNotification(getAlertNotification(), delay, 1);              //schedule alert notification for ticket expiring
+            if (otherspark) {
+                scheduleNotification(getInformNotification(), delay + 180000, 23);    //ask user if he wants to inform others by this notification
+            }
+        }
         HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //pass information to homescreen activity
         homeScreenActivity.setLatlngcode(latlngcode);
         homeScreenActivity.setLatitude(cameracenter.latitude);
@@ -649,6 +669,28 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         }
         return (lons+lats);
     }
+
+
+    private void doFailSafe(){
+        if(!TextUtils.isEmpty(UID)) {
+            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            database.child("CheckInUsers").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        database.child("CheckInUsers").child(UID).setValue(null);
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
 
 
     //function that calculates time difference between two times in milliseconds

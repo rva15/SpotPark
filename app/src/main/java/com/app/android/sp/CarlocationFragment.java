@@ -18,6 +18,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -93,7 +94,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     //Variable declarations
     //--Utility Variables
     private static String UID="";
-    private double latitude,longitude,carlatitude,carlongitude;
+    private double latitude,longitude,carlatitude=0,carlongitude=0;
     private LatLng place;
     private int i = 0,couthours,coutmins;
     private DatabaseReference database;
@@ -310,26 +311,13 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
 
     //-----------------------------Helper functions----------------------------//
 
-    private void addtoHistory(){
-        // Make an entry in user's history saying it has not been favorited
-        Calendar calendar = Calendar.getInstance();                    //get current time
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
-        String checkinTime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
-        String[] timearray = checkinTime.split(":");               //split the time into hours and mins
-        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
-        String strDate = mdformat.format(calendar.getTime());
-        HistoryPlace historyPlace = new HistoryPlace(carlatitude,carlongitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
-        Map<String, Object> historyMap = historyPlace.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-        childUpdates.put("/HistoryKeys/"+UID+"/"+checkinkey,historyMap);
-        database = FirebaseDatabase.getInstance().getReference();
-        database.updateChildren(childUpdates);                        //simultaneously update the database at all locations
+    private void addImagetoHistory(){
 
         //try to get the map image stored in local storage
-        final File file = new File(getContext().getCacheDir(),checkinkey);
-        int size = (int) file.length();
-        byte[] bytes = new byte[size];
+        final File file = new File(getContext().getFilesDir(),checkinkey);
         try {
+            int size = (int) file.length();
+            byte[] bytes = new byte[size];
             BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
             buf.read(bytes, 0, bytes.length);
             buf.close();
@@ -342,18 +330,13 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                        homeScreenActivity.delete();
-                        Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                        Toast.makeText(getContext(),"An error occurred, please try again or use delete icon",Toast.LENGTH_LONG).show();
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         file.delete(); //delete the file after upload is over
-                        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                        homeScreenActivity.delete();
-                        Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                        addDatatoHistory();
                     }
                 });
             }
@@ -370,23 +353,52 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             uploadTask.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                    homeScreenActivity.delete();
-                    Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                    Toast.makeText(getContext(),"An error occurred, please try again or use delete icon",Toast.LENGTH_LONG).show();
                 }
             }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                    homeScreenActivity.delete();
-                    Toast.makeText(getActivity(),"Previous checkin stored in history",Toast.LENGTH_SHORT).show(); //Show a message to user
+                    addDatatoHistory();
                 }
             });
             e.printStackTrace();
         } catch (IOException e) {
+            Toast.makeText(getContext(),"An error occurred, please try again",Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+        catch (NullPointerException n){
+            Toast.makeText(getContext(),"An error occurred, please try again",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void addDatatoHistory(){
+        // Make an entry in user's history saying it has not been favorited
+        Calendar calendar = Calendar.getInstance();                    //get current time
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");      //format for date
+        String checkinTime = simpleDateFormat.format(calendar.getTime());  //convert time into desirable format
+        String[] timearray = checkinTime.split(":");               //split the time into hours and mins
+        SimpleDateFormat mdformat = new SimpleDateFormat("yyyy / MM / dd "); //also get current date in this format
+        String strDate = mdformat.format(calendar.getTime());
+        if(carlatitude==0 || carlongitude==0 || TextUtils.isEmpty(checkinkey)){
+            Toast.makeText(getContext(),"An error has occured",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        HistoryPlace historyPlace = new HistoryPlace(carlatitude,carlongitude,strDate,gettimeformat(timearray[0],timearray[1]),0);
+        Map<String, Object> historyMap = historyPlace.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+        childUpdates.put("/HistoryKeys/"+UID+"/"+checkinkey,historyMap);
+        database = FirebaseDatabase.getInstance().getReference();
+        database.updateChildren(childUpdates).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getContext(),"An error has occured",Toast.LENGTH_SHORT).show();
+                return;
+            }
+        });                        //simultaneously update the database at all locations
+
+        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+        homeScreenActivity.delete();
+
     }
 
     //Dialog for confirmation of making new checkin
@@ -395,7 +407,8 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         builder.setMessage("Make a new Check-In and push the current one to History?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                addtoHistory();
+                Toast.makeText(getActivity(),"Storing previous checkin to History",Toast.LENGTH_SHORT).show(); //Show a message to user
+                addImagetoHistory();
 
 
             }

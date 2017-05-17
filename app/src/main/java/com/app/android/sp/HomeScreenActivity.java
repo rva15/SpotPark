@@ -25,6 +25,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -53,6 +54,11 @@ import com.google.firebase.database.ValueEventListener;
 
 import android.support.v7.app.ActionBarDrawerToggle;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -66,7 +72,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     // General Utility
     private String UID="",starter="",latlngcode,key;
-    private boolean isCheckedin,inputerror=false,checkex=false;
+    private boolean isCheckedin=false,inputerror=false,checkex=false;
     private LinearLayout fragmentcontainer;
     private String TAG="debugger",locationcode,checkinkey,cinnotes="";
     private final static String logoutFlagString = "logoutflag";
@@ -112,11 +118,18 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             UID = intent1.getStringExtra("userid"); //Receive logged in user's unique ID
             starter = intent1.getStringExtra("startedfrom");
         }
-        if(starter!=null && starter.equals("notification")){       //check if it was opened from a notification
+
+        if(!TextUtils.isEmpty(starter) && starter.equals("notification")){       //check if it was opened from a notification
             NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
             nMgr.cancel(1);  //remove the notifications that started this
             nMgr.cancel(13);
         }
+        //setup fail safe for UID
+        if(TextUtils.isEmpty(UID)){
+            UID = readUID();
+        }
+
+
         setContentView(R.layout.activity_home_screen);
         mHandler = new Handler();
 
@@ -469,7 +482,6 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 Intent intent = new Intent(getContext(), TutorialActivity.class); //send Intent
                 intent.putExtra("userid", UID);
                 intent.putExtra("sendstatus", isCheckedin);
-                intent.putExtra("startedfrom", starter);
                 startActivity(intent);
             }
         };
@@ -655,7 +667,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 ReportedTimes reportedTimes = dataSnapshot.getValue(ReportedTimes.class);
-                if(reportedTimes!=null) {
+                if(dataSnapshot.exists()) {
                     if ((reportedTimes.getverification() > 1)) {
                         if ((!reportedTimes.getawarded()) || ((Boolean) reportedTimes.getawarded() == null)) {
                             awardKeys();
@@ -1092,6 +1104,26 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
         }
     };
+
+    //function to read the UID
+    private String readUID(){
+        String line="";
+        StringBuffer buffer= new StringBuffer();
+        BufferedReader input = null;
+        File file = null;
+        try {
+            file = new File(getCacheDir(), "UIDFile"); // Pass getFilesDir() and "MyFile" to read file
+            input = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            buffer = new StringBuffer();
+            while ((line = input.readLine()) != null) {
+                buffer.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return buffer.toString();
+    }
 
     // Helper for deleting the CheckIn
     public void deletedata(){

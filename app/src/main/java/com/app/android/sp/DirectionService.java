@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -117,7 +118,7 @@ public class DirectionService extends android.app.Service{
             UID = res.getString(res.getColumnIndex("_id"));             //get location of the car, userID
             carlat = res.getDouble(res.getColumnIndex("Carlatitude"));
             carlon = res.getDouble(res.getColumnIndex("Carlongitude"));
-            if(UID.equals("") || carlat==0. || carlon==0.){
+            if(TextUtils.isEmpty(UID) || carlat==0. || carlon==0.){
                 stopSelf();
             }
         }

@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 
 import java.lang.Math;
 import java.text.SimpleDateFormat;
@@ -113,6 +114,9 @@ public class LocationService extends android.app.Service{
             lasthour = res.getDouble(res.getColumnIndex("LastHour"));
             lastmin = res.getDouble(res.getColumnIndex("LastMin"));
             lastentry = lasthour * 60 + lastmin;
+            if(TextUtils.isEmpty(UID)){
+                stopSelf();
+            }
         }
         else{
             stopSelf();

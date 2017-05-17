@@ -5,12 +5,21 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.facebook.FacebookSdk.getCacheDir;
 
 /**
  * Created by ruturaj on 9/17/16.
@@ -22,8 +31,8 @@ public class TabsFragment extends Fragment {
     private Adapter adapter;
     private static String TAG = "debugger";
     private static String UID;
-    private static boolean isCheckedin;
-    static private boolean searchStarted;
+    private static boolean isCheckedin=false;
+    static private boolean searchStarted=false;
     private ViewPager viewPager;
     public TabLayout tabLayout;
 
@@ -35,9 +44,15 @@ public class TabsFragment extends Fragment {
         setRetainInstance(true);
 
         Bundle extras = getArguments();                 //get userid and active CheckIn status
-        UID = extras.getString("userid");
-        isCheckedin = extras.getBoolean("isCheckedin");
-        searchStarted = extras.getBoolean("searchstarted");
+        if(extras!=null) {
+            UID = extras.getString("userid");
+            isCheckedin = extras.getBoolean("isCheckedin");
+            searchStarted = extras.getBoolean("searchstarted");
+        }
+        //Fail safe
+        if(TextUtils.isEmpty(UID)){
+            UID = readUID();
+        }
 
     }
 
@@ -180,5 +195,25 @@ public class TabsFragment extends Fragment {
             return POSITION_NONE;
         }
 
+    }
+
+    //function to read the UID
+    private String readUID(){
+        String line="";
+        StringBuffer buffer= new StringBuffer();
+        BufferedReader input = null;
+        File file = null;
+        try {
+            file = new File(getCacheDir(), "UIDFile"); // Pass getFilesDir() and "MyFile" to read file
+            input = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+            buffer = new StringBuffer();
+            while ((line = input.readLine()) != null) {
+                buffer.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return buffer.toString();
     }
 }

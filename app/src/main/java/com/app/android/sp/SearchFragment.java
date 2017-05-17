@@ -987,7 +987,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private void updateUI() {
         latitude = currentLocation.getLatitude();       //get the current latitude
         longitude = currentLocation.getLongitude();     //get the current longitude
-        Log.d(TAG,"zoom is "+searchmap.getMaxZoomLevel());
         placeSelection.setHint("Search for parking at?");
         //sendLocation();                                 //update this user's location in searcher database
         place = new LatLng(latitude, longitude);        //initiate LatLng object

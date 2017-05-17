@@ -12,6 +12,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -39,6 +40,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.R.attr.id;
 import static com.app.android.sp.SPApplication.getContext;
@@ -54,6 +57,7 @@ public class CheckinService extends Service{
     private DatabaseReference database;
     private Calendar calendar;
     private double carlatitude,carlongitude;
+    private boolean sentcin = false;
 
     //---------------------------Service LifeCycle Methods------------------------//
 
@@ -83,11 +87,13 @@ public class CheckinService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         UID = readUID();    //get UID from phone storage
+        if(TextUtils.isEmpty(UID)){
+            Toast.makeText(getApplicationContext(),"An error occured. Please complete this action manually from the SpotPark app",Toast.LENGTH_LONG).show();
+            stopSelf();
+        }
         if(intent!=null) {
             if((boolean)intent.getExtras().get("action")) { //user asked to checkin
-                userlat = Double.parseDouble(readLatitude()); //read user's current location from phone storage
-                userlon = Double.parseDouble(readLongitude());
-                checkExistingCin();  //check if there is an active checkin
+                readLocation();
             }
             else{ //user asked to veto this place
                 String vplacename = (String) intent.getExtras().get("vplacename"); //get the place information
@@ -111,6 +117,27 @@ public class CheckinService extends Service{
         }
         return START_NOT_STICKY;
 
+    }
+
+    private void readLocation(){
+        final double templat = Double.parseDouble(readLatitude());
+        final double templon = Double.parseDouble(readLongitude());
+        final Timer t = new Timer();
+        t.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if(templat!=Double.parseDouble(readLatitude()) || templon!=Double.parseDouble(readLongitude())){
+                    if(!sentcin) {
+                        checkExistingCin(Double.parseDouble(readLatitude()), Double.parseDouble(readLongitude()));  //check if there is an active checkin
+                        sentcin = true;
+                    }
+                    t.cancel();
+                }
+
+
+            }
+
+        }, 0, 2000);
     }
 
     //function to read the UID
@@ -197,7 +224,9 @@ public class CheckinService extends Service{
         return (lons+lats);
     }
 
-    private void checkExistingCin(){
+    private void checkExistingCin(double lat, double lon){
+        userlat = lat;
+        userlon = lon;
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         database.child("CheckInUsers").orderByKey().equalTo(UID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

@@ -19,6 +19,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.firebase.database.ChildEventListener;
@@ -52,8 +53,6 @@ public class SingleTouchService extends android.app.Service {
 
     //Variable Declarations
     private LocationManager mLocationManager = null;
-    private static int LOCATION_INTERVAL = 15000;  //default request updates every 15secs
-    private static float LOCATION_DISTANCE = 100;  //set default distance interval to 100m
     private String TAG = "debugger",UID="",gplacename;
     private double userlat, userlon,gplacelat,gplacelng;
     private ArrayList<Places> placesArrayList = new ArrayList<Places>();
@@ -62,7 +61,7 @@ public class SingleTouchService extends android.app.Service {
     private double minplacedis=30;
     private int tempcounter=0,zonelimit=0;
     private Places closestPlace;
-    private boolean inzone=false;
+    private boolean inzone=false,notesent=false;
 
 
     //---------------------------Service LifeCycle Methods------------------------//
@@ -71,7 +70,15 @@ public class SingleTouchService extends android.app.Service {
     @Override
     public void onCreate(){
 
-        initializeLocationManager(); //declare location manager
+        initializeLocationManager(15000,100); //declare location manager
+
+
+    }
+
+    private void initializeLocationManager(int locinterval, int locdistance) {
+        if (mLocationManager == null) {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
         try {
 
             if (Build.VERSION.SDK_INT >= 23 &&
@@ -79,7 +86,7 @@ public class SingleTouchService extends android.app.Service {
                 return; //return if you dont have permission
             }
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //request location updates through network
+                    LocationManager.NETWORK_PROVIDER, locinterval, locdistance, //request location updates through network
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
         } catch (IllegalArgumentException ex) {
@@ -87,17 +94,10 @@ public class SingleTouchService extends android.app.Service {
 
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,  //request location updates through GPS
+                    LocationManager.GPS_PROVIDER, locinterval, locdistance,  //request location updates through GPS
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
         } catch (IllegalArgumentException ex) {
-        }
-
-    }
-
-    private void initializeLocationManager() {
-        if (mLocationManager == null) {
-            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
     }
 
@@ -119,6 +119,9 @@ public class SingleTouchService extends android.app.Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         UID = readUID();
+        if(TextUtils.isEmpty(UID)){
+            stopSelf();
+        }
         return START_STICKY;
     }
 
@@ -147,7 +150,6 @@ public class SingleTouchService extends android.app.Service {
 
         @Override
         public void onLocationChanged(Location location) {
-
             userlat = location.getLatitude();        //get current location
             userlon = location.getLongitude();
             saveLocation(Double.toString(userlat),Double.toString(userlon)); //save the current location in phone cache
@@ -390,35 +392,33 @@ public class SingleTouchService extends android.app.Service {
 
         if(passVeto(closestPlace)) { //execute function only if the closest place is not vetoed
             if (distance < 0.3) {   //if distance is less than 300m, you are in the zone
-
-                if (readCSStatus().equals("0") || readCSStatus().equals("")) { // if notification is not already sent
+                if (!notesent && (readCSStatus().equals("0") || readCSStatus().equals("start"))) { // if notification is not already sent
                     scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
+                    notesent = true;
+                    saveCSStatus("1");
                 }
                 inzone = true;            //you are in zone
-                LOCATION_DISTANCE = 0;    //location distance is 0
-                LOCATION_INTERVAL = 3000; //location interval to 3secs
-                saveCSStatus("1");        //and store in phone memory that we have already notified user
+                initializeLocationManager(2000,0);
             } else if ((distance > 0.3) && (distance < 0.6)) { //in this range, user might enter zone anytime soon
                 inzone = false;
                 zonelimit = zonelimit+1;
                 if(zonelimit>30){ //user has been in near zone more than 30 times
                     zonelimit = 0;
-                    LOCATION_DISTANCE = 300;    //now user has to move 300m to next location update
-                    LOCATION_INTERVAL = 30000;
+                    initializeLocationManager(30000,300);
                 }
                 else { //user is below near zone limit, check location more frequently
-                    LOCATION_DISTANCE = (int) ((distance - 0.3) * 1000);  //get the distance to the inner circle and set that as location distance
-                    LOCATION_INTERVAL = 15000; //location interval is 15secs
+                    initializeLocationManager(15000,(int) ((distance - 0.3) * 1000));
                 }
             } else {  //user far away from nearest interesting place
                 inzone = false;
-                LOCATION_DISTANCE = (int) (distance * 1000 * 0.5);   //set this to half of the distance to nearest place
-                LOCATION_INTERVAL = 15000;
-                if (readCSStatus().equals("1")) {  //destroy already given notification
+                initializeLocationManager(15000,(int) (distance * 1000 * 0.5));
+                if (notesent || readCSStatus().equals("1") ) {  //destroy already given notification
                     NotificationManager manager = (NotificationManager) getSystemService(Service.NOTIFICATION_SERVICE);
                     manager.cancel(13);
+                    notesent = false;
+                    saveCSStatus("0");
                 }
-                saveCSStatus("0");
+
             }
         }
         else{
@@ -601,9 +601,9 @@ public class SingleTouchService extends android.app.Service {
 
     private String readCSStatus(){
         String line="";
-        StringBuffer buffer= new StringBuffer();
-        BufferedReader input = null;
-        File file = null;
+        StringBuffer buffer;
+        BufferedReader input;
+        File file;
         try {
             file = new File(getCacheDir(), "CSStatus"); // Pass getFilesDir() and "MyFile" to read file
 
@@ -614,7 +614,7 @@ public class SingleTouchService extends android.app.Service {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return "";
+            return "start";
         }
 
         return buffer.toString();
@@ -637,8 +637,12 @@ public class SingleTouchService extends android.app.Service {
             stopSelf();
             e.printStackTrace();
         }
-
-        return buffer.toString();
+        if(buffer.length()!=0) {
+            return buffer.toString();
+        }
+        else{
+            return "";
+        }
     }
 
     //--------------------------------------------------------------------------------//
