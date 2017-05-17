@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,14 +35,13 @@ public class DirectionService extends android.app.Service{
     //Variable Declaration
     private static final String TAG = "Debugger ";
     private LocationManager mLocationManager = null;
-    private int LOCATION_INTERVAL = 30000; //obtain new location every 30secs
-    private float LOCATION_DISTANCE = 10;   //but only if user has moved 10m
     private int count = 0;
     private String UID ="",key="",origin="";
     private CheckInHelperDB dbHelper;
     private Double carlat=0.,carlon=0.;
     private DatabaseReference database;
     private DirectionService directionService;
+    private boolean initwt=false;
 
     //---------------------------Service Lifecycle Methods---------------------------------//
 
@@ -55,7 +55,16 @@ public class DirectionService extends android.app.Service{
         manager.cancel(29);  //remove notification from Location Service
 
 
-        initializeLocationManager();
+        initializeLocationManager(30000,20);
+
+
+
+    }
+
+    private void initializeLocationManager(int locinterval, int locdistance) {
+        if (mLocationManager == null) {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
         try {
 
             if (Build.VERSION.SDK_INT >= 23 &&
@@ -63,7 +72,7 @@ public class DirectionService extends android.app.Service{
                 return;
             }
             mLocationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask network for location
+                    LocationManager.NETWORK_PROVIDER, locinterval, locdistance, //ask network for location
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
         } catch (IllegalArgumentException ex) {
@@ -71,19 +80,10 @@ public class DirectionService extends android.app.Service{
 
         try {
             mLocationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, //ask GPS for location
+                    LocationManager.GPS_PROVIDER, locinterval, locdistance, //ask GPS for location
                     mLocationListeners[0]);
         } catch (java.lang.SecurityException ex) {
         } catch (IllegalArgumentException ex) {
-        }
-
-
-    }
-
-    private void initializeLocationManager() {
-        if (mLocationManager == null) {
-            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
         }
     }
 
@@ -110,7 +110,6 @@ public class DirectionService extends android.app.Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-
         dbHelper = new CheckInHelperDB(this);
         Cursor res = dbHelper.getInfo();
         if(res!=null) {
@@ -204,6 +203,7 @@ public class DirectionService extends android.app.Service{
 
 
             if(distance<0.84) { //user is less than 840m from car
+                initializeLocationManager(15000,10);
                 if (count < 30) {           //send a maximum of 30 calls to the Directions API
                     WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID, getApplicationContext());
                     walkTime.getWalkTime(); //get estimated time of walk to the car
@@ -216,7 +216,12 @@ public class DirectionService extends android.app.Service{
                 }
             }
             else{
-                LOCATION_DISTANCE = 50;
+                initializeLocationManager(30000,30);
+                if(!initwt){
+                    WalkTime walkTime = new WalkTime(carlat.doubleValue(), carlon.doubleValue(), lat, lon, UID, getApplicationContext());
+                    walkTime.getWalkTime(); //get estimated time of walk to the car
+                    initwt = true;
+                }
             }
 
         }
@@ -239,6 +244,8 @@ public class DirectionService extends android.app.Service{
         {
 
         }
+
+
 
         //----------functions to calculate distance---------------//
 

@@ -3,6 +3,7 @@ package com.app.android.sp;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONObject;
@@ -139,6 +140,7 @@ public class WalkTime {
 
 
                 if(totalmins>10){
+                    updatedata();
                     //do nothing
                 }
                 else{

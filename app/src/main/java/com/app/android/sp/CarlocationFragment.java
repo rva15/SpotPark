@@ -880,7 +880,9 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
             ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
-
+            if(result.isEmpty()){
+                return;
+            }
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<>();
