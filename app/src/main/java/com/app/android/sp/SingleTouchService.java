@@ -17,11 +17,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -49,7 +54,7 @@ import static com.app.android.sp.SPApplication.getContext;
  * Created by ruturaj on 4/2/17.
  */
 
-public class SingleTouchService extends android.app.Service {
+public class SingleTouchService extends android.app.Service{
 
     //Variable Declarations
     private LocationManager mLocationManager = null;
@@ -62,6 +67,7 @@ public class SingleTouchService extends android.app.Service {
     private int tempcounter=0,zonelimit=0;
     private Places closestPlace;
     private boolean inzone=false,notesent=false;
+    private GoogleApiClient mApiClient;
 
 
     //---------------------------Service LifeCycle Methods------------------------//
@@ -71,9 +77,34 @@ public class SingleTouchService extends android.app.Service {
     public void onCreate(){
 
         initializeLocationManager(15000,100); //declare location manager
+        /*mApiClient = new GoogleApiClient.Builder(this)
+                .addApi(ActivityRecognition.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
+        mApiClient.connect();*/
 
 
     }
+
+    /*@Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.d(TAG,"activityrecognition connected");
+        Intent intent = new Intent( this, ARService.class );
+        PendingIntent pendingIntent = PendingIntent.getService( this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT );
+        ActivityRecognition.ActivityRecognitionApi.requestActivityUpdates( mApiClient, 3000, pendingIntent );
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }*/
 
     private void initializeLocationManager(int locinterval, int locdistance) {
         if (mLocationManager == null) {
@@ -480,7 +511,7 @@ public class SingleTouchService extends android.app.Service {
 
     //function that constructs google places api url
     private String getUrl(double latitude, double longitude){
-        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+Double.toString(latitude)+","+Double.toString(longitude)+"&rankby=distance&keyword=AMC|Regal|Cinemark|walmart|costco|Stadium&key="+getResources().getString(R.string.googleAPI_serverkey);
+        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+Double.toString(latitude)+","+Double.toString(longitude)+"&opennow&rankby=distance&keyword=AMC|Regal|Cinemark|walmart|costco|Stadium&key="+getResources().getString(R.string.googleAPI_serverkey);
         return url;
     }
 
