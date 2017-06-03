@@ -8,8 +8,8 @@ android {
         applicationId "com.app.android.sp"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 32
-        versionName "2.6"
+        versionCode 33
+        versionName "2.7"
         multiDexEnabled true
     }
     buildTypes {
@@ -40,10 +40,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
 
-    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.google.android.gms:play-services:10.0.1'
     compile 'com.android.support:support-v4:25.0.0'
-    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:design:25.3.1'
     compile 'com.google.firebase:firebase-core:9.0.0'
     compile 'com.google.android.gms:play-services-ads:10.0.1'
     compile 'com.google.android.gms:play-services-auth:10.0.1'
@@ -62,8 +62,8 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.android.support:support-v4:25.0.0'
     compile 'com.android.support:palette-v7:25.0.0'
-    compile 'com.android.support:mediarouter-v7:25.0.0'
-    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:mediarouter-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
 }
 
 
