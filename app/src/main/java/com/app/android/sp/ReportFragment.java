@@ -232,7 +232,9 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onLocationChanged(Location location) {   //triggered after location change
         mCurrentLocation = location;                     //stores current location
-        updateUI();                                      //will update UI accordingly
+        if(mCurrentLocation!=null) {
+            updateUI();                                      //will update UI accordingly
+        }
     }
 
     @Override
