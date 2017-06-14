@@ -211,7 +211,11 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_carlocation, container, false); //inflate the view
+        return view;
+    }
 
+    @Override
+    public void onViewCreated(View view,Bundle savedInstanceState){
         nMapView = (MapView) view.findViewById(R.id.nmap);
         nMapView.onCreate(savedInstanceState);
         nMapView.onResume();                                                      //get mapView and initialize it
@@ -251,8 +255,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 .build();
         adView.loadAd(request);*/
 
-
-        return view;
     }
 
     //----------------------Location Related Functions----------------------------------//

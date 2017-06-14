@@ -34,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -204,17 +205,29 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_checkin, container, false); //inflate the view
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view,Bundle savedInstanceState){
+
         pin = (ImageView)view.findViewById(R.id.pinimage);                         //get the marker
         pin.setOnClickListener(this);                                              //and set its onclicklistener
         gMapView = (MapView) view.findViewById(R.id.gmap);
         gMapView.onCreate(savedInstanceState);
         gMapView.onResume();                                                      //get mapView and initialize it
-        MapsInitializer.initialize(getActivity());
+        try {
+            MapsInitializer.initialize(getActivity());
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         gMapView.getMapAsync(this);
         csatview = (ImageView) view.findViewById(R.id.csatview);
         csatview.setOnClickListener(this);
         cgridview = (ImageView) view.findViewById(R.id.cgridview);
         cgridview.setOnClickListener(this);
+        doFailSafe();
 
         // Initialize the Ad unit
         /*NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.cinadView);
@@ -223,9 +236,8 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 .build();
         adView.loadAd(request);*/
 
-        doFailSafe();
-        return view;
     }
+
 
     //----------------------Location Related Functions----------------------------------//
 

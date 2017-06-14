@@ -174,6 +174,11 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_report, container, false); //inflate the view
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view,Bundle savedInstanceState){
         rpin = (ImageView)view.findViewById(R.id.rpinimage);                      //get the marker
         rpin.setOnClickListener(this);                                            //and set its onclicklistener
         sMapView = (MapView) view.findViewById(R.id.rmap);
@@ -193,7 +198,6 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         satview.setOnClickListener(this);
         gridview = (ImageView) view.findViewById(R.id.gridview);
         gridview.setOnClickListener(this);
-        return view;
     }
 
     //----------------------Location Related Functions----------------------------------//

@@ -240,6 +240,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_search, container, false); //inflate the view
+        return view;
+
+    }
+
+    @Override
+    public void onViewCreated(View view,Bundle savedInstanceState){
         gMapView = (MapView) view.findViewById(R.id.smap);
         gMapView.onCreate(savedInstanceState);
         gMapView.onResume();                                                      //get mapView and initialize it
@@ -283,8 +289,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         initializeComponents();
         getKeyCount();
-
-        return view;
 
     }
 
