@@ -180,10 +180,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) && !manager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
             buildAlertMessageNoLocation();
         }
-
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER )) {
+        else if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER )) {
             buildAlertMessageNoGPS();
         }
+
+
 
         checkAwards();  //see if the user has been awarded keys
         initsingletouch(); //(re)start the singletouch service
