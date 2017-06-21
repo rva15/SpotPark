@@ -511,7 +511,7 @@ public class SingleTouchService extends android.app.Service{
 
     //function that constructs google places api url
     private String getUrl(double latitude, double longitude){
-        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+Double.toString(latitude)+","+Double.toString(longitude)+"&opennow&rankby=distance&keyword=AMC|Regal|Cinemark|walmart|costco|Stadium&key="+getResources().getString(R.string.googleAPI_serverkey);
+        String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+Double.toString(latitude)+","+Double.toString(longitude)+"&opennow&rankby=distance&keyword=AMC|Regal&key="+getResources().getString(R.string.googleAPI_serverkey);
         return url;
     }
 
