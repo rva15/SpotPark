@@ -66,7 +66,7 @@ public class SingleTouchService extends android.app.Service{
     private double minplacedis=30;
     private int tempcounter=0,zonelimit=0;
     private Places closestPlace;
-    private boolean inzone=false,notesent=false;
+    private boolean inzone=false,notesent=false,dontfire=false;
     private GoogleApiClient mApiClient;
 
 
@@ -76,7 +76,7 @@ public class SingleTouchService extends android.app.Service{
     @Override
     public void onCreate(){
 
-        initializeLocationManager(15000,100); //declare location manager
+        initializeLocationManager(15000,1000); //declare location manager
         /*mApiClient = new GoogleApiClient.Builder(this)
                 .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
@@ -107,10 +107,14 @@ public class SingleTouchService extends android.app.Service{
     }*/
 
     private void initializeLocationManager(int locinterval, int locdistance) {
+        if(mLocationManager!=null){
+            mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
+            mLocationManager.removeUpdates(mLocationListeners[1]);
+        }
         if (mLocationManager == null) {
             mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
-        try {
+        /*try {
 
             if (Build.VERSION.SDK_INT >= 23 &&
                     ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -121,9 +125,13 @@ public class SingleTouchService extends android.app.Service{
                     mLocationListeners[1]);
         } catch (java.lang.SecurityException ex) {
         } catch (IllegalArgumentException ex) {
-        }
+        }*/
 
         try {
+            if (Build.VERSION.SDK_INT >= 23 &&
+                    ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return; //return if you dont have permission
+            }
             mLocationManager.requestLocationUpdates(
                     LocationManager.GPS_PROVIDER, locinterval, locdistance,  //request location updates through GPS
                     mLocationListeners[0]);
@@ -185,15 +193,19 @@ public class SingleTouchService extends android.app.Service{
             userlon = location.getLongitude();
             saveLocation(Double.toString(userlat),Double.toString(userlon)); //save the current location in phone cache
 
-            if(!inzone) { //do these activities only if you are out of a zone
-                String url = getUrl(userlat, userlon); //get url for google places query
-                Object[] DataTransfer = new Object[1];
-                DataTransfer[0] = url;  //put this url in an Object[]
-                GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-                getNearbyPlacesData.execute(DataTransfer);  //execute single touch logic
+            if(!dontfire) {
+                if (!inzone) { //do these activities only if you are out of a zone
+                    String url = getUrl(userlat, userlon); //get url for google places query
+                    Object[] DataTransfer = new Object[1];
+                    DataTransfer[0] = url;  //put this url in an Object[]
+                    GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+                    getNearbyPlacesData.execute(DataTransfer);  //execute single touch logic
+                } else { //you are in the zone, so keep checking distances
+                    initSTAlgo();
+                }
             }
-            else{ //you are in the zone, so keep checking distances
-                initSTAlgo();
+            else{
+                dontfire = false;
             }
 
         }
@@ -422,6 +434,7 @@ public class SingleTouchService extends android.app.Service{
 
 
         if(passVeto(closestPlace)) { //execute function only if the closest place is not vetoed
+            dontfire = true;
             if (distance < 0.3) {   //if distance is less than 300m, you are in the zone
                 if (!notesent && (readCSStatus().equals("0") || readCSStatus().equals("start"))) { // if notification is not already sent
                     scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
