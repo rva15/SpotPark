@@ -489,6 +489,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             Map PWSpotlinks = parkWhizSpots.getParkWhizlinks();
             String url = (String) PWSpotlinks.get(currentmarker);
+            if(TextUtils.isEmpty(url)){
+                Toast.makeText(getContext(),"Unable to perform action. Please refresh and try again.",Toast.LENGTH_SHORT).show();
+                return;
+            }
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
             startActivity(i);

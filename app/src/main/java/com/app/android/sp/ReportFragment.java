@@ -323,24 +323,26 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     public void onClick(View v) {
 
         if(v.getId()==R.id.rpinimage) {
-            final GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
-                Bitmap bitmap;
+            if(marker!=null) {
+                final GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+                    Bitmap bitmap;
 
-                @Override
-                public void onSnapshotReady(Bitmap snapshot) {
-                    bitmap = snapshot;
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-                    byte[] data = baos.toByteArray();
-                    showForm(data, cameracenter.latitude, cameracenter.longitude);
-                }
-            };
-            rpin.setVisibility(View.GONE);
-            marker.remove();
-            position = reportmap.getCameraPosition();
-            cameracenter = position.target;
-            reportmap.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
-            reportmap.snapshot(callback);
+                    @Override
+                    public void onSnapshotReady(Bitmap snapshot) {
+                        bitmap = snapshot;
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+                        byte[] data = baos.toByteArray();
+                        showForm(data, cameracenter.latitude, cameracenter.longitude);
+                    }
+                };
+                rpin.setVisibility(View.GONE);
+                marker.remove();
+                position = reportmap.getCameraPosition();
+                cameracenter = position.target;
+                reportmap.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                reportmap.snapshot(callback);
+            }
             //get next activity when user clicks marker
         }
         if(v.getId()==R.id.reportrecenter){

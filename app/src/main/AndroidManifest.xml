@@ -65,8 +65,6 @@
             android:screenOrientation="portrait"/>
         <activity android:name="com.app.android.sp.TutorialActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.app.android.sp.ARTestActivity"
-            android:screenOrientation="portrait"/>
 
         <receiver android:name="com.app.android.sp.NotificationPublisher" />
         <receiver android:name="com.app.android.sp.CancelNotification" />

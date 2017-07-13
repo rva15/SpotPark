@@ -190,6 +190,11 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         initsingletouch(); //(re)start the singletouch service
         checkExistingCin(); //check if there is an active checkin
 
+        //---------Testing Activity Recognition-----------//
+        Intent servIntent = new Intent(getApplicationContext(), ARLocService.class);
+        getApplicationContext().startService(servIntent);
+        //------------------------------------------------//
+
     }
 
     private void setView(){

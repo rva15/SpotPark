@@ -311,7 +311,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             mAuthsignup.removeAuthStateListener(newAccountListener);
             mAuthgoogle.removeAuthStateListener(newAccountListener);
             Intent intent = new Intent(LoginActivity.this, HomeScreenActivity.class); //send Intent to home
-            //Intent intent = new Intent(LoginActivity.this, ARTestActivity.class); //send Intent to home
             intent.putExtra("userid", userid);
             intent.putExtra("startedfrom","login");
             startActivity(intent);
