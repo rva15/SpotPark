@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Paint;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -70,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
 /**
  * Created by ruturaj on 9/15/16.
  */
@@ -258,6 +258,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         rate = (TextView) view.findViewById(R.id.rate);
         spotdescription = (TextView) view.findViewById(R.id.spotdescription);
         heading = (TextView) view.findViewById(R.id.heading);
+        heading.setOnClickListener(this);
         navigate = (RelativeLayout) view.findViewById(R.id.navigate);
         navigate.setOnClickListener(this);
         route = (RelativeLayout) view.findViewById(R.id.route);
@@ -512,8 +513,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             isgridview = true;
             updateUI();
         }
-
-
+        if(v.getId() == R.id.heading){
+            if(heading.getText().equals("What is Activity Prediction?")) {
+                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
+                homeScreenActivity.getARGuide();
+            }
+        }
     }
 
     @Override
@@ -1084,7 +1089,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             Map Desc = finder.getDesc();
             Map DriveTime = finder.getDriveTimes();
             Map UserFeedbacks = finder.getUserFeedbacks();
+            Map ARTypes = finder.getARTypes();
             Map PWSpotnames = parkWhizSpots.getPWSpotnames();
+            heading.setPaintFlags(heading.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
             if (Cats.get(currentmarker) != null) {    //the marker belongs to a reported spot
                 book.setVisibility(View.GONE);
                 feedback.setVisibility(View.VISIBLE);
@@ -1109,8 +1116,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 }
                 isReported = true;
                 heading.setText("Reporter's Description");
+                heading.setTextColor(ContextCompat.getColor(getContext(),R.color.dimgrey));
                 if ((boolean) Cats.get(currentmarker) == true) {
-                    category.setText("Verified user-reported no cost spot");
+                    category.setText("Verified user-reported spot");
                     //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                     //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                     rate.setVisibility(View.GONE);
@@ -1120,7 +1128,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                     mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
                     return true;
                 } else {
-                    category.setText("Unverified user-reported no cost spot");
+                    category.setText("Unverified user-reported spot");
                     //float pixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10, getResources().getDisplayMetrics());
                     //rate.setTextSize(TypedValue.COMPLEX_UNIT_DIP, pixels);
                     rate.setVisibility(View.GONE);
@@ -1158,12 +1166,31 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 book.setVisibility(View.VISIBLE);
                 feedback.setVisibility(View.GONE);
                 heading.setText("Parking Lot Name");
-                category.setText("Parking lot (from ParkWhiz)");
+                category.setText("Paid Parking lot (from ParkWhiz)");
                 rate.setVisibility(View.GONE);
                 spotdescription.setVisibility(View.VISIBLE);
                 spotdescription.setText((String) PWSpotnames.get(currentmarker));
                 label = (String) PWSpotnames.get(currentmarker);
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+            }
+            if (ARTypes.get(currentmarker) != null) { //marker belongs to AR Spot
+                book.setVisibility(View.GONE);
+                feedback.setVisibility(View.VISIBLE);
+                heading.setText("What is Activity Prediction?");
+                heading.setTextColor(ContextCompat.getColor(getContext(),R.color.black));
+                if((Double)ARTypes.get(currentmarker)==0.0){
+                    category.setText("Activity Prediction Algorithm");
+                    rate.setVisibility(View.GONE);
+                    spotdescription.setText("A user taking out his car in ~ 2min");
+                }
+                if((Double)ARTypes.get(currentmarker)==1.0){
+                    category.setText("Activity Prediction Algorithm");
+                    rate.setVisibility(View.GONE);
+                    spotdescription.setText("A user just took his car out");
+                }
+                rate.setVisibility(View.GONE);
+                mLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+
             }
         }
         return false;

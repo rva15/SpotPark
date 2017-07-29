@@ -129,7 +129,7 @@ public class DirectionService extends android.app.Service{
             //possible duplication happening here but still harmless
             incrementKeys();   //award user with 2 keys
             origin = (String) intent.getExtras().get("started_from");
-            if(origin.equals("LS") || origin.equals("navigation")){ //this was started from location service
+            if(origin.equals("LS") || origin.equals("navigation")){ //this was started from location service/carlocation fragment
                 Intent cancelaction = new Intent(this, NotificationPublisher.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 1, cancelaction, PendingIntent.FLAG_UPDATE_CURRENT);
                 AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);

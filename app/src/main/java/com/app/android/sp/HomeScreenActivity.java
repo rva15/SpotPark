@@ -481,6 +481,26 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
 
     }
 
+    public void getARGuide(){
+        Runnable mPendingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                ARGuideFragment arGuideFragment = new ARGuideFragment();
+                android.support.v4.app.FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, arGuideFragment, "arguide");
+                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
+                        android.R.anim.fade_out);
+                fragmentTransaction.commitAllowingStateLoss();
+            }
+        };
+        if (mPendingRunnable != null) {
+            mHandler.post(mPendingRunnable);
+            setupActionBar("SpotPark Activity Prediction");
+        }
+
+    }
+
     public void getHelp(){
         Runnable mPendingRunnable = new Runnable() {
             @Override
@@ -629,14 +649,14 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
                 { //check if singletouch child exists in database
                     boolean ststatus = dataSnapshot.getValue(Boolean.class);
                     if(ststatus){ //singletouch is set as active
-                        Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                        getContext().startService(servIntent);
+                        //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                        //getContext().startService(servIntent);
                     }
                 }
                 else{ //create a single touch branch and make it active
                     dataSnapshot.getRef().setValue(true);
-                    Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                    getContext().startService(servIntent);
+                    //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                    //getContext().startService(servIntent);
                 }
             }
 

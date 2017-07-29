@@ -137,13 +137,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     // The toggle is enabled
-                    Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                    getContext().startService(servIntent);
+                    //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
+                    //getContext().startService(servIntent);
                     database.child("UserInformation").child(UID).child("singletouch").setValue(true);
                 } else {
                     // The toggle is disabled
-                    Intent stopIntent = new Intent(getContext(), SingleTouchService.class);
-                    getContext().stopService(stopIntent);
+                    //Intent stopIntent = new Intent(getContext(), SingleTouchService.class);
+                    //getContext().stopService(stopIntent);
                     database.child("UserInformation").child(UID).child("singletouch").setValue(false);
                 }
             }

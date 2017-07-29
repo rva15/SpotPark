@@ -61,6 +61,7 @@ public class SpotFinder {
     private Map chintimes = new HashMap();
     private Map chinkeys = new HashMap();
     private Map uidkey = new HashMap();
+    private Map artypes = new HashMap();
     private Map chindrivetimes = new HashMap();
     private Map userfeedbacks = new HashMap();
     private SimpleDateFormat dayFormat, simpleDateFormat;
@@ -141,6 +142,7 @@ public class SpotFinder {
             //database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
             if(showCheckIns) {
                 database.child("CheckInKeys").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener);
+                database.child("ARSpots").child(array.get(k)).addChildEventListener(listener5);
             }
             database.child("ReportedDetails").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener2);  //add listener3 for reported spots
         }
@@ -393,6 +395,68 @@ public class SpotFinder {
         }
     };
 
+    ChildEventListener listener5 = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            if(showCheckIns) {
+                ARSpots arSpots = dataSnapshot.getValue(ARSpots.class);
+                double spotmillis = arSpots.getmillis();
+                double curmillis = System.currentTimeMillis();
+                double diff = (curmillis - spotmillis) / 1000;
+                //if (diff < 180) {
+                if(true){
+                    spotplace = new LatLng(arSpots.getlatitude(), arSpots.getlongitude());
+                    Marker marker = (Marker) markerlocations.get(spotplace);
+                    if (marker == null) {
+                        if ((int) arSpots.gettype() == 0) {
+                            spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar0)));
+                        } else if ((int) arSpots.gettype() == 1) {
+                            spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar1)));
+                        }
+                        markerlocations.put(spotplace, spotmarker);
+                        markers.add(spotmarker);
+                        artypes.put(spotplace, arSpots.gettype());
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            if(showCheckIns){
+                ARSpots arSpots = dataSnapshot.getValue(ARSpots.class);
+                spotplace = new LatLng(arSpots.getlatitude(), arSpots.getlongitude());
+                Marker marker = (Marker) markerlocations.get(spotplace);
+                if(marker!=null){
+                    marker.remove();
+                    if ((int) arSpots.gettype() == 0) {
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repunver)));
+                    } else if ((int) arSpots.gettype() == 1) {
+                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repver)));
+                    }
+                    markerlocations.put(spotplace, spotmarker);
+                    markers.add(spotmarker);
+                    artypes.put(spotplace, arSpots.gettype());
+                }
+            }
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
     //define the ChildEventListener for searchers
     ChildEventListener listener2 = new ChildEventListener() {
         @Override
@@ -477,6 +541,8 @@ public class SpotFinder {
     public Map getUserFeedbacks() {
         return userfeedbacks;
     }
+
+    public Map getARTypes() {return  artypes;}
 
     private void beServerCheckIn(CheckInDetails checkInDetails, String key) {
         String updatedate = checkInDetails.getupdatedate();
