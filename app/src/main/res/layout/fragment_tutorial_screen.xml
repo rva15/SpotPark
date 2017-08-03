@@ -6,15 +6,17 @@
 
     <ImageView
         android:id="@+id/tutorial_screen_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"/>
 
     <TextView
         android:id="@+id/tutorial_screen_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="20dp"
         android:background="@null"
         android:gravity="center"/>
 </FrameLayout>

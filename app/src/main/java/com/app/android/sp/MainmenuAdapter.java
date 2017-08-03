@@ -104,8 +104,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
                     drawer.closeDrawers();
                 }
                 if (option.equals("History")) {
-                    //homeScreenActivity.getHistory();
-                    homeScreenActivity.getARGuide();
+                    homeScreenActivity.getHistory();
                     drawer.closeDrawers();
                 }
                 if (option.equals("Favorites")) {

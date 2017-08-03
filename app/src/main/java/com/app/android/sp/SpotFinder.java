@@ -62,6 +62,7 @@ public class SpotFinder {
     private Map chinkeys = new HashMap();
     private Map uidkey = new HashMap();
     private Map artypes = new HashMap();
+    private Map arkeys = new HashMap();
     private Map chindrivetimes = new HashMap();
     private Map userfeedbacks = new HashMap();
     private SimpleDateFormat dayFormat, simpleDateFormat;
@@ -140,9 +141,9 @@ public class SpotFinder {
         for (int k = 0; k < 9; k++) {
             //database.child("CheckInKeys").child(array.get(k)).addChildEventListener(listener1); //add listener1 for checkin spots
             //database.child("Searchers").child(array.get(k)).addChildEventListener(listener2);   //add listener2 for other searchers
-            if(showCheckIns) {
-                database.child("CheckInKeys").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener);
-                database.child("ARSpots").child(array.get(k)).addChildEventListener(listener5);
+            if(showCheckIns) { //only if user is searching for present time
+                database.child("CheckInKeys").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener); //listener for checkins
+                database.child("ARSpots").child(array.get(k)).addChildEventListener(listener5); //listener for AR
             }
             database.child("ReportedDetails").child(array.get(k)).addListenerForSingleValueEvent(valueEventListener2);  //add listener3 for reported spots
         }
@@ -403,12 +404,11 @@ public class SpotFinder {
                 double spotmillis = arSpots.getmillis();
                 double curmillis = System.currentTimeMillis();
                 double diff = (curmillis - spotmillis) / 1000;
-                //if (diff < 180) {
-                if(true){
+                if (diff < 180) { //spot was updated less than 3min ago
                     spotplace = new LatLng(arSpots.getlatitude(), arSpots.getlongitude());
                     Marker marker = (Marker) markerlocations.get(spotplace);
                     if (marker == null) {
-                        if ((int) arSpots.gettype() == 0) {
+                        if ((int) arSpots.gettype() == 0) { //place a marker according to the type
                             spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar0)));
                         } else if ((int) arSpots.gettype() == 1) {
                             spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar1)));
@@ -416,6 +416,7 @@ public class SpotFinder {
                         markerlocations.put(spotplace, spotmarker);
                         markers.add(spotmarker);
                         artypes.put(spotplace, arSpots.gettype());
+                        arkeys.put(spotplace,dataSnapshot.getKey());
                     }
                 }
             }
@@ -428,15 +429,19 @@ public class SpotFinder {
                 spotplace = new LatLng(arSpots.getlatitude(), arSpots.getlongitude());
                 Marker marker = (Marker) markerlocations.get(spotplace);
                 if(marker!=null){
-                    marker.remove();
-                    if ((int) arSpots.gettype() == 0) {
-                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repunver)));
-                    } else if ((int) arSpots.gettype() == 1) {
-                        spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.repver)));
+                    marker.remove(); //remove previous marker
+                    double curmillis = System.currentTimeMillis();
+                    double diff = (curmillis - arSpots.getmillis())/1000;
+                    if(diff<180) { //check if it was updated less than 3min ago
+                        if ((int) arSpots.gettype() == 0) {
+                            spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar0)));
+                        } else if ((int) arSpots.gettype() == 1) {
+                            spotmarker = searchmap.addMarker(new MarkerOptions().position(spotplace).title("spot").icon(BitmapDescriptorFactory.fromResource(R.drawable.ar1)));
+                        }
+                        markerlocations.put(spotplace, spotmarker);
+                        markers.add(spotmarker);
+                        artypes.put(spotplace, arSpots.gettype());
                     }
-                    markerlocations.put(spotplace, spotmarker);
-                    markers.add(spotmarker);
-                    artypes.put(spotplace, arSpots.gettype());
                 }
             }
         }
@@ -544,6 +549,8 @@ public class SpotFinder {
 
     public Map getARTypes() {return  artypes;}
 
+    public Map getArKeys() {return  arkeys;}
+
     private void beServerCheckIn(CheckInDetails checkInDetails, String key) {
         String updatedate = checkInDetails.getupdatedate();
         int updatehour = checkInDetails.getupdatehour();
@@ -597,6 +604,7 @@ public class SpotFinder {
             database.child("CheckInKeys").child(array.get(k)).removeEventListener(listener1); //remove listener1 for checkin spots
             //database.child("Searchers").child(array.get(k)).removeEventListener(listener2);   //remove listener2 for other searchers
             database.child("ReportedDetails").child(array.get(k)).removeEventListener(listener3);//remove listener3 for reported spots
+            database.child("ARSpots").child(array.get(k)).removeEventListener(listener5);
         }
         if (getReported != null) {
             getReported.removeEventListener(listener4);

@@ -156,7 +156,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="32dp"
-                    android:text="SINGLE TOUCH"
+                    android:text="AUTO REMINDERS"
                     android:textColor="@color/black"
                     android:gravity="center"
                     android:layout_margin="8dp"/>
@@ -197,7 +197,7 @@
                     android:gravity="center"
                     android:textColor="@color/white"
                     android:id="@+id/stsettings"
-                    android:text="Single Touch Settings"/>
+                    android:text="Auto Reminder Settings"/>
 
                     <ImageView
                         android:layout_width="24dp"

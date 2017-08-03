@@ -77,14 +77,6 @@
             android:name="com.app.android.sp.LocationService"
             android:enabled="true"
             android:exported="false" />
-        <service
-            android:name="com.app.android.sp.SingleTouchService"
-            android:enabled="true"
-            android:exported="false" />
-        <service
-            android:name="com.app.android.sp.CheckinService"
-            android:enabled="true"
-            android:exported="false" />
         <service android:name=".ARService" />
         <service android:name=".ARLocService"/>
 

@@ -38,11 +38,11 @@ public class STSettingsFragment extends Fragment implements View.OnClickListener
         Bundle extras = getArguments();
         UID = extras.getString("userid");
         placeaddedmsg = (TextView) view.findViewById(R.id.placeaddedmsg);
-        vetoaddedmsg = (TextView) view.findViewById(R.id.vetoaddedmsg);
+        //vetoaddedmsg = (TextView) view.findViewById(R.id.vetoaddedmsg);
         placeslist = (TextView) view.findViewById(R.id.placeslist);
-        vetoeslist = (TextView) view.findViewById(R.id.vetoeslist);
+        //vetoeslist = (TextView) view.findViewById(R.id.vetoeslist);
         placeslist.setOnClickListener(this);
-        vetoeslist.setOnClickListener(this);
+        //vetoeslist.setOnClickListener(this);
         initializeAutoComplete(); //get the google place autocomplete fragments
 
 
@@ -75,9 +75,9 @@ public class STSettingsFragment extends Fragment implements View.OnClickListener
         transaction1.replace(R.id.addplace,addPlace, "AutoSearchFragment");
         transaction1.commitAllowingStateLoss();
 
-        vetoPlace = new SupportPlaceAutocompleteFragment();
+        //vetoPlace = new SupportPlaceAutocompleteFragment();
 
-        vetoPlace.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+        /*vetoPlace.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 vetoaddedmsg.setText(place.getName()+" added to list");
@@ -98,7 +98,7 @@ public class STSettingsFragment extends Fragment implements View.OnClickListener
         FragmentManager mgr2 = getFragmentManager();
         FragmentTransaction transaction2 = mgr2.beginTransaction();
         transaction2.replace(R.id.vetoplace,vetoPlace, "AutoSearchFragment");
-        transaction2.commitAllowingStateLoss();
+        transaction2.commitAllowingStateLoss();*/
     }
 
     @Override
@@ -106,9 +106,9 @@ public class STSettingsFragment extends Fragment implements View.OnClickListener
         if(v.getId()==R.id.placeslist){
             showPlacesListDialog("Places");
         }
-        if(v.getId()==R.id.vetoeslist){
+        /*if(v.getId()==R.id.vetoeslist){
             showPlacesListDialog("Vetoes");
-        }
+        }*/
     }
 
     private void showPlacesListDialog(String type) {

@@ -18,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -137,14 +138,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     // The toggle is enabled
-                    //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                    //getContext().startService(servIntent);
-                    database.child("UserInformation").child(UID).child("singletouch").setValue(true);
+                    if(!TextUtils.isEmpty(UID)) {
+                        database.child("UserInformation").child(UID).child("singletouch").setValue(true);
+                    }
                 } else {
                     // The toggle is disabled
-                    //Intent stopIntent = new Intent(getContext(), SingleTouchService.class);
-                    //getContext().stopService(stopIntent);
-                    database.child("UserInformation").child(UID).child("singletouch").setValue(false);
+                    if(!TextUtils.isEmpty(UID)) {
+                        database.child("UserInformation").child(UID).child("singletouch").setValue(false);
+                    }
                 }
             }
         });

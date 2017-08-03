@@ -190,7 +190,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         initsingletouch(); //(re)start the singletouch service
         checkExistingCin(); //check if there is an active checkin
 
-        //---------Testing Activity Recognition-----------//
+        //--------- Activity Recognition-----------//
         Intent servIntent = new Intent(getApplicationContext(), ARLocService.class);
         getApplicationContext().startService(servIntent);
         //------------------------------------------------//
@@ -476,7 +476,7 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
         };
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
-            setupActionBar("Single Touch Settings");
+            setupActionBar("Auto Reminder Settings");
         }
 
     }
@@ -641,30 +641,23 @@ public class HomeScreenActivity extends AppCompatActivity implements GoogleApiCl
     }
 
     private void initsingletouch(){
-        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists())
-                { //check if singletouch child exists in database
-                    boolean ststatus = dataSnapshot.getValue(Boolean.class);
-                    if(ststatus){ //singletouch is set as active
-                        //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                        //getContext().startService(servIntent);
+        if(!TextUtils.isEmpty(UID)) {
+            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                    } else { //create a single touch branch and make it active
+                        dataSnapshot.getRef().setValue(true);
                     }
                 }
-                else{ //create a single touch branch and make it active
-                    dataSnapshot.getRef().setValue(true);
-                    //Intent servIntent = new Intent(getContext(), SingleTouchService.class);
-                    //getContext().startService(servIntent);
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+            });
+        }
     }
 
 

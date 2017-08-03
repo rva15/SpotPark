@@ -71,6 +71,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static android.R.string.yes;
+
 /**
  * Created by ruturaj on 9/15/16.
  */
@@ -95,8 +98,8 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private SlidingUpPanelLayout mLayout;
     private SearchHelperDB helperDB;
     private TextView category,rate,heading,spotdescription,curkeys;
-    private boolean isReported = false,isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false,zoomalertgiven=false,isgridview=true;
-    private String key="",latlngcode,uid;
+    private boolean isAutoMode=true,isComplaint=false,isUpvoted=false,isDownvoted=false,zoomalertgiven=false,isgridview=true;
+    private String key="",latlngcode,uid,type="",arkey="";
     private LinearLayout recenter;
     private RelativeLayout navigate,route;
     private ParkWhizSpots parkWhizSpots;
@@ -340,7 +343,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 alertBuilder.setCancelable(true);
                 alertBuilder.setTitle("Permission necessary");
                 alertBuilder.setMessage("Permission to access your location is necessary");
-                alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(yes, new DialogInterface.OnClickListener() {
                     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
                     public void onClick(DialogInterface dialog, int which) {
                         ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 65);
@@ -482,7 +485,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         if(v.getId()==R.id.feedback){
             // Create an instance of the dialog fragment and show it
             mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            checkFeedbacks(key);
+            if(!type.equals("actrec")) {
+                checkFeedbacks(key);
+            }
+            else{
+                showFeedbackDialog();
+            }
         }
 
         if(v.getId()==R.id.book){
@@ -527,34 +535,43 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode== 5){
             Bundle bundle = data.getExtras();
-            Boolean yes   = bundle.getBoolean("yes");
-            if(yes){
-                if(isReported){
-                    upvoteReported();
+            if(!type.equals("actrec")) {
+                Boolean yes = bundle.getBoolean("yes");
+                if (yes) {
+                    if (type.equals("reported")) {
+                        upvoteReported();
+                    } else {
+                        upvoteCheckin();
+                    }
+                } else {
+                    Boolean notav = bundle.getBoolean("notav");
+                    Boolean nospace = bundle.getBoolean("nospace");
+                    Boolean notfree = bundle.getBoolean("notfree");
+                    registerComplaint(notav, nospace, notfree);           //register user's complaint
+                    if (type.equals("reported")) {
+                        downvoteReported();
+                    }
                 }
-                else{
-                    upvoteCheckin();
+                if (type.equals("reported")) {
+                    giveKeys(2);
+                    Toast.makeText(getContext(), "You've earned 2 keys for this feedback!", Toast.LENGTH_SHORT).show();
+                } else {
+                    giveKeys(1);
+                    Toast.makeText(getContext(), "You've earned 1 key for this feedback!", Toast.LENGTH_SHORT).show();
                 }
-            }
-            else {
-                Boolean notav = bundle.getBoolean("notav");
-                Boolean nospace = bundle.getBoolean("nospace");
-                Boolean notfree = bundle.getBoolean("notfree");
-                registerComplaint(notav, nospace, notfree);           //register user's complaint
-                if (isReported) {
-                    downvoteReported();
-                }
-            }
-            if(isReported){
-                giveKeys(2);
-                Toast.makeText(getContext(),"You've earned 2 keys for this feedback!",Toast.LENGTH_SHORT).show();
+
             }
             else{
-                giveKeys(1);
-                Toast.makeText(getContext(),"You've earned 1 key for this feedback!",Toast.LENGTH_SHORT).show();
+                Boolean aryes = bundle.getBoolean("aryes");
+                Boolean arno  = bundle.getBoolean("arno");
+                Log.d("debugger","reached the right place "+aryes);
+                if(arno){
+                    Log.d("debugger",getLatLngCode(currentmarker.latitude,currentmarker.longitude)+" "+arkey);
+                    database = FirebaseDatabase.getInstance().getReference();
+                    database.child("ARSpots").child(getLatLngCode(currentmarker.latitude,currentmarker.longitude)).child(arkey).child("millis").setValue(0);
+                }
+
             }
-
-
         }
         if(requestCode==4){
             Bundle bundle = data.getExtras();  //set the range of dates to search in
@@ -622,7 +639,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     }
 
     private void registerComplaint(Boolean notav,Boolean nospace,Boolean notfree){
-        if(isReported){
+        if(type.equals("reported")){
             if(nospace||notfree){
                 //reduce verifications on the reported spot
                 if(nospace){
@@ -727,7 +744,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private void showFeedbackDialog(){
         DialogFragment dialog = new ComplainDialog();
         Bundle args = new Bundle();
-        args.putBoolean("isReported", isReported);
+        args.putString("type", type);
         dialog.setArguments(args);
         dialog.setTargetFragment(SearchFragment.this, 5);       //set target fragment to this fragment
         dialog.show(this.getActivity().getSupportFragmentManager(), "Search fragment");
@@ -1090,9 +1107,11 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             Map DriveTime = finder.getDriveTimes();
             Map UserFeedbacks = finder.getUserFeedbacks();
             Map ARTypes = finder.getARTypes();
+            Map ARKeys = finder.getArKeys();
             Map PWSpotnames = parkWhizSpots.getPWSpotnames();
             heading.setPaintFlags(heading.getPaintFlags()| Paint.UNDERLINE_TEXT_FLAG);
             if (Cats.get(currentmarker) != null) {    //the marker belongs to a reported spot
+                type = "reported";
                 book.setVisibility(View.GONE);
                 feedback.setVisibility(View.VISIBLE);
                 key = (String) Keys.get(currentmarker);
@@ -1114,7 +1133,6 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                         isDownvoted=true;
                     }
                 }
-                isReported = true;
                 heading.setText("Reporter's Description");
                 heading.setTextColor(ContextCompat.getColor(getContext(),R.color.dimgrey));
                 if ((boolean) Cats.get(currentmarker) == true) {
@@ -1142,9 +1160,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             if (Keys.get(currentmarker) != null) {         //marker belongs to a checkin spot
                 book.setVisibility(View.GONE);
                 feedback.setVisibility(View.VISIBLE);
+                type = "checkin";
                 label = "SpotPark user Check-In";
                 heading.setText("Cost per Hour");
-                isReported = false;
                 key = (String) Keys.get(currentmarker);
                 int time = (int) Times.get(currentmarker);
                 if (key != null) {
@@ -1165,6 +1183,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             if (PWSpotnames.get(currentmarker) != null) {  //marker belongs to ParkWhiz spot
                 book.setVisibility(View.VISIBLE);
                 feedback.setVisibility(View.GONE);
+                type = "parkwhiz";
                 heading.setText("Parking Lot Name");
                 category.setText("Paid Parking lot (from ParkWhiz)");
                 rate.setVisibility(View.GONE);
@@ -1176,7 +1195,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             if (ARTypes.get(currentmarker) != null) { //marker belongs to AR Spot
                 book.setVisibility(View.GONE);
                 feedback.setVisibility(View.VISIBLE);
+                type = "actrec";
+                label = "Activity Prediction Spot";
                 heading.setText("What is Activity Prediction?");
+                arkey = (String)ARKeys.get(currentmarker);
                 heading.setTextColor(ContextCompat.getColor(getContext(),R.color.black));
                 if((Double)ARTypes.get(currentmarker)==0.0){
                     category.setText("Activity Prediction Algorithm");

@@ -4,13 +4,11 @@ import android.app.AlarmManager;
 import android.app.Notification;
 import android.os.Handler;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -27,7 +25,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
@@ -51,9 +48,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static android.R.attr.data;
 import static com.app.android.sp.SPApplication.getContext;
-import static com.app.android.sp.SearchHelperDB.key;
 
 /**
  * Created by ruturaj on 6/30/17.
@@ -62,16 +57,17 @@ import static com.app.android.sp.SearchHelperDB.key;
 public class ARLocService extends android.app.Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
+    // All variables
     private LocationManager mLocationManager = null;
     public GoogleApiClient mApiClient;
-    private double userlat1=0, userlon1=0,userlat2=0,userlon2=0,candlat=0,candlon=0,curlat=0,curlon=0;
+    private double userlat1=0, userlon1=0,candlat=0,candlon=0,curlat=0,curlon=0;
     private boolean forPlaces=false;
     private String TAG = "ActivityRecognition",UID="",latlngcode,key,gplacename="";
     protected ActivityDetectionBroadcastReceiver mBroadcastReceiver;
     private boolean T1=false,T2=false,T3=false,trackAct=false,trackUser=false,activeSpot=false,notesent=false,stactive=false;
-    private boolean l1taken=false,l2taken=false,type0updated=false,trackactHP=false,tracklocHP=false,sleepMode=false;
-    private long t1,t2,t3,diff1,diff2,t4,t5;
-    private double drivingc,footc,runningc,stillc,tiltingc,walkingc,unknownc,curdist=0,activemillis=0;
+    private boolean l1taken=false,type0updated=false,trackactHP=false,tracklocHP=false,sleepMode=false;
+    private long t1,t2,t3,diff1,diff2,t4,t5,hvtime=0;
+    private double drivingc,footc,runningc,stillc,tiltingc,walkingc,curdist=0,activemillis=0;
     private DatabaseReference database;
     private double gplacelat=0,gplacelng=0,minplacedis=30,userplacelat=0,userplacelon=0,notesentlat=0,notesentlon=0;
     private Places closestPlace;
@@ -85,7 +81,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     //onCreate method
     @Override
     public void onCreate(){
-        Log.d(TAG," created");
     }
 
     // Binder given to clients
@@ -104,18 +99,20 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        UID = readUID();
-        if(TextUtils.isEmpty(UID)){
+        UID = readUID(); //read UID from local storage
+        if(TextUtils.isEmpty(UID)){ //if UID is null stop the service
             stopSelf();
         }
-        checkST();
+
+        checkST(); //check if Single Touch is enabled
+
         mApiClient = new GoogleApiClient.Builder(this)  //construct googleapiclient for AR
                 .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
-
         mApiClient.connect(); //connect it
+
         mBroadcastReceiver = new ActivityDetectionBroadcastReceiver(); //declare broadcast receiver
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, //register the receiver
                 new IntentFilter("com.app.android.sp.BROADCAST_ACTION"));
@@ -126,10 +123,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        requestActivityUpdates(60000);
+        requestActivityUpdates(60000); //activity updates every 1min
         handler = new Handler();
-        handler.post(runnableCode);
-    } //request for AR on connection success
+        handler.post(runnableCode); //job of handler to switch service off at night
+    }
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -152,17 +149,17 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
             mLocationManager.removeUpdates(mLocationListeners[1]);
         }
-        removeActivityUpdates();
+        removeActivityUpdates(); //stop activity updates
     }
 
-    //----------Request and remove AR updates--------------//
+    //----------Handler code--------------//
 
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
             Log.d("Handlers", "Called on main thread");
             int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            if((hour>0) && (hour<7)){
+            if((hour>0) && (hour<7)){ //past 12am and before 7am go to sleep
                 if(!sleepMode) {
                     removeActivityUpdates();
                     if (mLocationManager != null) {
@@ -181,23 +178,24 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     notesent = false;
                     stactive = false;
                     l1taken = false;
-                    l2taken = false;
                     type0updated = false;
                     sleepMode = true;
                     candlon = 0.0;
                     candlat = 0.0;
                 }
             }
-            else{
+            else{  //wake up if service is sleeping
                 if(sleepMode){
                     requestActivityUpdates(60000);
                     trackactHP = false;
                     sleepMode = false;
                 }
             }
-            handler.postDelayed(this, 60000);
+            handler.postDelayed(this, 300000); // run this every 5 mins
         }
     };
+
+    //---------------Code for Activity Recognition------------//
 
     public void requestActivityUpdates(int milliseconds) {
         if (mApiClient.isConnected()) {
@@ -223,38 +221,35 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         }
     }
 
-    //----------------------------------------------------//
-
+    //Main activity recognition
     private void handleDetectedActivities(List<DetectedActivity> probableActivities) {
-        drivingc = 0;
+        drivingc = 0; //set all confidences to 0 initially
         footc=0;
         runningc=0;
         stillc=0;
         tiltingc=0;
         walkingc=0;
-        unknownc=0;
         Log.d(TAG,"activity detection " +trackactHP);
-        for( DetectedActivity activity : probableActivities ) {
+        for( DetectedActivity activity : probableActivities ) { //loop over all activities in result
             switch( activity.getType() ) {
                 case DetectedActivity.IN_VEHICLE: {
                     if(activity.getConfidence()>50) {
-                        if(!trackactHP){
+                        if(!trackactHP){   //track user activity with HP
                             removeActivityUpdates();
                             requestActivityUpdates(8000);
                             trackactHP = true;
                         }
-                        triggerOn();
-                        l1taken = false;
-                        l2taken = false;
+                        triggerOn(); //give a trigger
+                        l1taken = false; //reset location taken
                         drivingc = activity.getConfidence();
                         Log.d("ActivityRecogition", "In Vehicle: " + activity.getConfidence());
                     }
-                    if(stactive) {
-                        if (activity.getConfidence() < 30) {
-                            if (trackAct) {
+                    if(stactive) { //single touch is enabled
+                        if (activity.getConfidence() < 30) { //user is slowing down
+                            if (trackAct) { //and is in the car
                                 Log.d(TAG,"initial st condition");
                                 forPlaces = true;
-                                initializeLocationManager(2000, 0);
+                                initializeLocationManager(2000, 0); //check for places around
                             }
                         }
                     }
@@ -267,10 +262,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     break;
                 }
                 case DetectedActivity.ON_FOOT: {
-                    if(activity.getConfidence()>50) {
-                        if(activeSpot && (curdist<0.1)){
+                    if(activity.getConfidence()>50) { //user is really walking
+                        if(activeSpot && (curdist<0.1)){ //less than 100m away from an active spot
                             if(!tracklocHP){
-                                Log.d(TAG,"switching to locHP");
+                                Log.d(TAG,"switching to locHP"); //track location on HP
                                 initializeLocationManager(2000,0);
                                 tracklocHP = true;
                             }
@@ -281,7 +276,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     break;
                 }
                 case DetectedActivity.RUNNING: {
-                    if(activity.getConfidence()>50) {
+                    if(activity.getConfidence()>50) {  //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
                                 Log.d(TAG,"switching to locHP");
@@ -295,9 +290,9 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     break;
                 }
                 case DetectedActivity.STILL: {
-                    if(activity.getConfidence()>50) {
-                        if(activeSpot && (curdist>0.08))
-                        if(tracklocHP) {
+                    if(activity.getConfidence()>50) { //user is still
+                        if(activeSpot && (curdist>0.08)) //active spot is greater than 80m away
+                        if(tracklocHP) { //take location on LP
                             initializeLocationManager(20000, 10);
                             tracklocHP = false;
                         }
@@ -314,7 +309,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     break;
                 }
                 case DetectedActivity.WALKING: {
-                    if(activity.getConfidence()>50) {
+                    if(activity.getConfidence()>50) { //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
                                 Log.d(TAG,"switching to locHP");
@@ -328,7 +323,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     break;
                 }
                 case DetectedActivity.UNKNOWN: {
-                    if(activity.getConfidence()>50) {
+                    if(activity.getConfidence()>50) { //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
                                 Log.d(TAG,"switching to locHP");
@@ -336,7 +331,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                                 tracklocHP = true;
                             }
                         }
-                        unknownc = activity.getConfidence();
                         Log.d("ActivityRecogition", "Unknown: " + activity.getConfidence());
                     }
                     break;
@@ -344,24 +338,25 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             }
         }
 
-        if(trackAct) {
-            if (((footc > 50) || (runningc > 50) || (stillc > 50) || (tiltingc > 50) || (walkingc > 50)) && (drivingc==0)){
-                if(!tracklocHP){
+        if(trackAct) { //user is travelling
+            if (((footc > 50) || (runningc > 50) || (stillc > 50) || (tiltingc > 50) || (walkingc > 50)) && (drivingc==0)){ //and stops
+                if(!tracklocHP){ //take the user's current location
                     initializeLocationManager(2000,0);   //declare location manager
                     tracklocHP = true;
                 }
-                t4 = System.currentTimeMillis();
+                t4 = System.currentTimeMillis(); //get current time
                 t5 = (t4-t3)/1000;
-                if(t5>180){
+                if(t5>180){ //stopped for more than 3min
                     trackUser = true;
-                    T1 = T2 = T3 =false;
+                    T1 = T2 = T3 =false; //available for re-triggering
                     trackAct = false;
-                    scheduleNotification(getARTestNotification("Candidate "+Double.toString(candlat)+" "+Double.toString(candlon)), 1000, 411019);//notify user immediately
-                    if(tracklocHP) {
+                    scheduleNotification(getARTestNotification("Parked at "+Double.toString(candlat)+" "+Double.toString(candlon)), 1000, 411019);//notify user immediately
+                    hvtime = System.currentTimeMillis();
+                    if(tracklocHP) { //track location on LP
                         initializeLocationManager(20000, 10);
                         tracklocHP = false;
                     }
-                    if(trackactHP) {
+                    if(trackactHP) { //track activity on LP
                         removeActivityUpdates();
                         requestActivityUpdates(60000);
                         trackactHP = false;
@@ -371,6 +366,8 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         }
     }
 
+
+    //code to establish user is driving
     private void triggerOn(){
         if(!T1){
             T1 = true;
@@ -382,10 +379,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             t2 = System.currentTimeMillis();
             Log.d(TAG,"t122 "+t2);
             diff1 = (t2-t1)/1000;
-            if(diff1<30){
+            if(diff1<30){ //got second confirmation less than 30secs after first
                 T2 = true;
             }
-            else{
+            else{ //if it has been more than 30 secs, restart triggers
                 if(trackactHP) {
                     removeActivityUpdates();
                     requestActivityUpdates(60000);
@@ -400,13 +397,14 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             t3 = System.currentTimeMillis();
             Log.d(TAG,"t123 "+t3);
             diff2 = (t3-t2)/1000;
-            if(diff2<30){
+            if(diff2<30){ //received 3 confirmations
                 T3 =true;
-                scheduleNotification(getARTestNotification("You're driving!!"), 1000, 599019);//notify user immediately
+                Log.d(TAG,"triggered");
+                scheduleNotification(getARTestNotification("You're driving"), 1000, 599019);//notify user immediately
                 trackAct = true;
                 trackUser = false;
                 type0updated = false;
-                if(!trackactHP) {
+                if(!trackactHP) { //track act on HP
                     removeActivityUpdates();
                     requestActivityUpdates(8000);
                     trackactHP = true;
@@ -416,17 +414,17 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     mLocationManager.removeUpdates(mLocationListeners[1]);
                     tracklocHP = false;
                 }
-                if(activeSpot){
+                if(activeSpot){ //there was an active spot
                     Log.d(TAG,"spot is active");
                     double timediff = (t3-activemillis)/1000;
                     Log.d(TAG,"time diff active "+timediff);
-                    if(timediff<120){
+                    if(timediff<120){ //you were in the active zone less than 2mins ago
                         Log.d(TAG,"timediff is less than 120");
-                        scheduleNotification(getARTestNotification("Certainly left a spot!!"), 1000, 359019);//notify user immediately
-                        updateType();
+                        scheduleNotification(getARTestNotification("Took your car out"), 1000, 359019);//notify user immediately
+                        updateType(); //update spot to type1
                     }
                 }
-                activeSpot = false;
+                activeSpot = false; //make an activespot false, but first check above lines
             }
             else{
                 if(trackactHP) {
@@ -441,13 +439,13 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             return;
 
         }
-        if(T1 && T2 && T3){
+        if(T1 && T2 && T3){ //already established driving
             if(mLocationManager!=null){
                 mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
                 mLocationManager.removeUpdates(mLocationListeners[1]);
                 tracklocHP = false;
             }
-            t3 = System.currentTimeMillis();
+            t3 = System.currentTimeMillis(); //just keep noting the time
         }
     }
 
@@ -473,9 +471,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         return (rad * 180.0 / Math.PI);
     }
 
-    // --------------------------------------------------------------------------//
-
-    //-----------------------Notification Related Functions------------------------------//
+    //-----------------------General Utility------------------------------//
 
     private void scheduleNotification(Notification notification, int delay, int unique) { //schedules the inform notification immediately after the right conditions are met
 
@@ -509,72 +505,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
         return builder.build();
 
-    }
-
-    private void checkST(){
-        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists())
-                { //check if singletouch child exists in database
-                    stactive = dataSnapshot.getValue(Boolean.class);
-                }
-                else{ //create a single touch branch and make it active
-                    dataSnapshot.getRef().setValue(true);
-                    stactive = true;
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    //Check for existing active spot
-    private void checkActive(){
-        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        database.child("ARUsers").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                    ARUsers arUsers = dataSnapshot.getValue(ARUsers.class);
-                    String userkey = arUsers.getkey();
-                    String usercode = arUsers.getlatlngcode();
-                    database.child("ARSpots").child(usercode).child(userkey).setValue(null);
-                    database.child("ARUsers").child(UID).setValue(null);
-                    addSpot();
-                }
-                else{
-                    addSpot();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    //Add active spot
-    private void addSpot(){
-        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        key = database.child("ARSpots").child(latlngcode).push().getKey();
-
-        ARUsers arUsers = new ARUsers(latlngcode,key);
-        Map<String, Object> arUsersMap = arUsers.toMap(); //call its toMap method
-        ARSpots arSpots = new ARSpots(candlat,candlon,activemillis,0);
-        Map<String, Object> arSpotsMap = arSpots.toMap(); //call its toMap method
-
-        // Make the entries
-        Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-        childUpdates.put("/ARSpots/"+latlngcode+"/"+key, arSpotsMap);
-        childUpdates.put("/ARUsers/"+UID,arUsersMap);
-
-        database.updateChildren(childUpdates);
     }
 
     private void updateType(){
@@ -644,7 +574,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     private void initializeLocationManager(int locinterval, int locdistance) {
         if(!forPlaces) {
             l1taken = false;
-            l2taken = false;
         }
         if(mLocationManager!=null){
             mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
@@ -678,58 +607,68 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         @Override
         public void onLocationChanged(Location location) {
             Log.d(TAG,"on location changed "+tracklocHP);
-            if(notesentlon!=0 && notesentlon!=0){
+            if(notesentlon!=0 && notesentlon!=0){ //check if we are more than 1km away from the spot for which ST notification was sent
                 double notesentdist = distance(notesentlat,notesentlon,location.getLatitude(),location.getLongitude());
-                if(notesentdist>1){
+                if(notesentdist>1){ //yes than reset those variables
                     notesentlon =0;
                     notesentlat=0;
                     notesent = false;
                 }
             }
             if(!forPlaces) {
-                if (!trackUser) {
+                if (!trackUser) { //we aren't tracking the user, just taking location once
                     if (!l1taken) {
                         Log.d(TAG, "l1taken " + location.getLatitude() + " " + location.getLongitude());
                         userlat1 = location.getLatitude();
                         userlon1 = location.getLongitude();
-                        l1taken = true;
-                    }
-                    if (l1taken && (!l2taken)) {
-                        Log.d(TAG, "l2taken " + location.getLatitude() + " " + location.getLongitude());
-                        userlat2 = location.getLatitude();
-                        userlon2 = location.getLongitude();
-                        l2taken = true;
                         candlat = (userlat1);
                         candlon = (userlon1);
                         if (mLocationManager != null) {
                             mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
                             mLocationManager.removeUpdates(mLocationListeners[1]);
                         }
+                        l1taken = true;
                     }
-                } else {
+
+                }
+                else { //we are tracking the user
                     curlat = location.getLatitude();
                     curlon = location.getLongitude();
                     curdist = distance(curlat, curlon, candlat, candlon);
                     Log.d(TAG,"current distance "+curdist + " "+activeSpot);
-                    if (!activeSpot) {
-                        if (curdist > 0.05) {
-                            if (trackactHP) {
+                    if (!activeSpot) { //there is no active spot
+                        if (curdist > 0.05) { //distance to candidate is more than 50m
+                            if (trackactHP) { // track activity on LP
                                 removeActivityUpdates();
                                 requestActivityUpdates(60000);
                                 trackactHP = false;
                             }
                             activeSpot = true;
                         }
+                        else{
+                            double t = System.currentTimeMillis();
+                            double d = (t-hvtime)/1000;
+                            if(d>1800){ //has been more than half hour user hasnt gone out of zone
+                                candlat = 0; //discard the candidate
+                                candlon = 0;
+                                trackUser = false;
+                                tracklocHP = false;
+                                if(mLocationManager!=null) {
+                                    mLocationManager.removeUpdates(mLocationListeners[0]); //stop getting location updates
+                                    mLocationManager.removeUpdates(mLocationListeners[1]);
+                                }
+                            }
+                        }
                     }
                     if (activeSpot) {
-                        if (curdist < 0.02) {
-                            if (!trackactHP) {
+                        if (curdist < 0.02) { //user is less than 20m away from active spot
+                            if (!trackactHP) { //track activity on HP
                                 removeActivityUpdates();
                                 requestActivityUpdates(8000);
                                 trackactHP = true;
                             }
-                            activemillis = System.currentTimeMillis();
-                            if (!type0updated) {
+                            activemillis = System.currentTimeMillis(); //record time
+                            if (!type0updated) { //update candidate location to firebase
                                 scheduleNotification(getARTestNotification("Car lene aaye ho aap?"), 1000, 211019);//notify user immediately
                                 latlngcode = getLatLngCode(candlat, candlon);
                                 type0updated = true;
@@ -746,7 +685,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                 }
             }
             else{
-                forPlaces = false;
+                forPlaces = false; //start with single touch algo
                 userplacelat = location.getLatitude();
                 userplacelon = location.getLongitude();
                 String url = getUrl(userplacelat, userplacelon); //get url for google places query
@@ -782,6 +721,78 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
 
     //------------Single Touch Algorithm---------------------//
+
+    private void checkST(){
+        if(!TextUtils.isEmpty(UID)) {
+            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            database.child("UserInformation").child(UID).child("singletouch").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) { //check if singletouch child exists in database
+                        stactive = dataSnapshot.getValue(Boolean.class);
+                    } else { //create a single touch branch and make it active
+                        dataSnapshot.getRef().setValue(true);
+                        stactive = true;
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    //Check for existing active spot
+    private void checkActive(){
+        if(!TextUtils.isEmpty(UID)) {
+            database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+            database.child("ARUsers").child(UID).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        ARUsers arUsers = dataSnapshot.getValue(ARUsers.class);
+                        String userkey = arUsers.getkey();
+                        String usercode = arUsers.getlatlngcode();
+                        if((!TextUtils.isEmpty(usercode)) && (!TextUtils.isEmpty(userkey))) {
+                            database.child("ARSpots").child(usercode).child(userkey).setValue(null);
+                            database.child("ARUsers").child(UID).setValue(null);
+                            addSpot();
+                        }
+                    } else {
+                        addSpot();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    //Add active spot
+    private void addSpot(){
+        database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
+        key = database.child("ARSpots").child(latlngcode).push().getKey();
+
+        ARUsers arUsers = new ARUsers(latlngcode,key);
+        Map<String, Object> arUsersMap = arUsers.toMap(); //call its toMap method
+        ARSpots arSpots = new ARSpots(candlat,candlon,activemillis,0);
+        Map<String, Object> arSpotsMap = arSpots.toMap(); //call its toMap method
+
+        // Make the entries
+        if((!TextUtils.isEmpty(latlngcode)) && (!TextUtils.isEmpty(key)) && (!TextUtils.isEmpty(UID))) {
+            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+            childUpdates.put("/ARSpots/" + latlngcode + "/" + key, arSpotsMap);
+            childUpdates.put("/ARUsers/" + UID, arUsersMap);
+
+            database.updateChildren(childUpdates);
+        }
+    }
+
     private String getUrl(double latitude, double longitude){
         String url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location="+Double.toString(latitude)+","+Double.toString(longitude)+"&opennow&rankby=distance&keyword=AMC|Regal&key="+getResources().getString(R.string.googleAPI_serverkey);
         return url;
@@ -813,7 +824,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     return;
                 }
                 else{
-                    CheckVicinity(nearbyPlacesList);               //pass the parsed result to check vicinity function
+                    CheckVicinity(nearbyPlacesList);          //pass the parsed result to check vicinity function
                 }
             }
             else{
@@ -822,15 +833,17 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         }
 
         private void CheckVicinity(List<HashMap<String, String>> nearbyPlacesList) {
-            if(nearbyPlacesList.isEmpty()){
-                return;
+            if (!TextUtils.isEmpty(UID)) {
+                if (nearbyPlacesList.isEmpty()) {
+                    return;
+                }
+                HashMap<String, String> googlePlace = nearbyPlacesList.get(0);
+                gplacelat = Double.parseDouble(googlePlace.get("lat"));  //get the lat and lon of the nearest place
+                gplacelng = Double.parseDouble(googlePlace.get("lng"));
+                gplacename = googlePlace.get("place_name");              //get name of the place
+                Log.d(TAG, "google place name " + gplacename);
+                getPlaceCount();   //get custom places
             }
-            HashMap<String, String> googlePlace = nearbyPlacesList.get(0);
-            gplacelat = Double.parseDouble(googlePlace.get("lat"));  //get the lat and lon of the nearest place
-            gplacelng = Double.parseDouble(googlePlace.get("lng"));
-            gplacename = googlePlace.get("place_name");              //get name of the place
-            Log.d(TAG,"google place name "+gplacename);
-            getPlaceCount();   //get custom places
         }
     }
 
@@ -1013,9 +1026,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         return true;
     }
 
-    // --------------------------------------------------------------------------//
-
-
     private Notification getCheckinNotification() {
         //open the app on tapping the notification
         Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
@@ -1075,7 +1085,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         }
     }
 
-
+    // --------------------------------------------------------------------------//
 
 
 }

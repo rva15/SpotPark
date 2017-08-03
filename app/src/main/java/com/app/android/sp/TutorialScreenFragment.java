@@ -72,7 +72,7 @@ public class TutorialScreenFragment extends android.support.v4.app.Fragment {
             // Call Glide to load image
             Glide.with(this)
                     .load(imageResId)
-                    .centerCrop()
+                    //.centerCrop()
                     .into(image);
         }
     }
