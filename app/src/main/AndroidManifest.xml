@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.app.android.sp">
+    package="com.application.android.sp">
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -16,7 +16,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
 
     <application
-        android:name="com.app.android.sp.SPApplication"
+        android:name="com.application.android.sp.SPApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -45,7 +45,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.app.android.sp.LoginActivity"
+            android:name="com.application.android.sp.LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:noHistory="false"
@@ -61,24 +61,24 @@
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:noHistory="false" />
-        <activity android:name="com.app.android.sp.HomeScreenActivity"
+        <activity android:name="com.application.android.sp.HomeScreenActivity"
             android:screenOrientation="portrait"/>
-        <activity android:name="com.app.android.sp.TutorialActivity"
+        <activity android:name="com.application.android.sp.TutorialActivity"
             android:screenOrientation="portrait"/>
 
-        <receiver android:name="com.app.android.sp.NotificationPublisher" />
-        <receiver android:name="com.app.android.sp.CancelNotification" />
+        <receiver android:name="com.application.android.sp.NotificationPublisher" />
+        <receiver android:name="com.application.android.sp.CancelNotification" />
 
         <service
-            android:name="com.app.android.sp.DirectionService"
+            android:name="com.application.android.sp.DirectionService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name="com.app.android.sp.LocationService"
+            android:name="com.application.android.sp.LocationService"
             android:enabled="true"
             android:exported="false" />
-        <service android:name=".ARService" />
-        <service android:name=".ARLocService"/>
+        <service android:name="com.application.android.sp.ARService" />
+        <service android:name="com.application.android.sp.ARLocService"/>
 
     </application>
 

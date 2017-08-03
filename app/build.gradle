@@ -5,7 +5,7 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        applicationId "com.app.android.sp"
+        applicationId "com.application.android.sp"
         minSdkVersion 19
         targetSdkVersion 25
         versionCode 38

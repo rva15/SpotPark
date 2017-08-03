@@ -41,7 +41,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:283432722166:android:5d9823def2f8b5d9",
         "android_client_info": {
-          "package_name": "com.app.android.sp"
+          "package_name": "com.application.android.sp"
         }
       },
       "oauth_client": [

@@ -1,0 +1,337 @@
+package com.application.android.sp;
+// All imports
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.ArrayList;
+
+/**
+ * Created by ruturaj on 12/15/16.
+ */
+public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHolder> {
+
+    // Variable Declarations
+    private static final int TYPE_HEADER = 0;  // Declaring Variable to Understand which View is being worked on
+    private static final int TYPE_ITEM = 1;    // IF the view under inflation and population is header or Item
+    private String mNavTitles[];               // String Array to store the passed titles Value from HomeScreenActivity.java
+    private int mIcons[];                      // Int Array to store the passed icons resource value from HomeScreenActivity.java
+    private static String TAG="debugger";
+    private String UID;
+    public static Activity homeactivity;
+    public static DrawerLayout drawer;
+    private MainmenuAdapter.ViewHolder currholder;
+    private ArrayList<LinearLayout> menurows = new ArrayList<>();
+    private ArrayList<ImageView> menuicons = new ArrayList<>();
+    private ArrayList<TextView> menutitles = new ArrayList<>();
+    private Context context;
+
+
+
+    // Creating a ViewHolder which extends the RecyclerView View Holder
+    // ViewHolder are used to to store the inflated views in order to recycle them
+
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+        int Holderid;
+        String TAG= "debugger";
+        TextView textView,keys;
+        ImageView imageView;
+        ImageView profile;
+        TextView Name;
+        TextView email;
+        LinearLayout linearlayout;
+
+
+        public ViewHolder(View itemView,int ViewType) {                 // Creating ViewHolder Constructor with View and viewType As a parameter
+            super(itemView);
+
+
+            // Here we set the appropriate view in accordance with the the view type as passed when the holder object is created
+
+            if(ViewType == TYPE_ITEM) {
+                textView = (TextView) itemView.findViewById(R.id.rowText);  // Creating TextView object with the id of textView from item_row.xml
+                imageView = (ImageView) itemView.findViewById(R.id.rowIcon);// Creating ImageView object with the id of ImageView from item_row.xml
+                Holderid = 1;                                               // setting holder id as 1 as the object being populated are of type item row
+                linearlayout = (LinearLayout) itemView.findViewById(R.id.menurow);
+                linearlayout.setOnClickListener(this);
+                textView.setOnClickListener(this);
+
+            }
+            else{
+                Name = (TextView) itemView.findViewById(R.id.name);         // Creating Text View object from header.xml for name
+                email = (TextView) itemView.findViewById(R.id.email);       // Creating Text View object from header.xml for email
+                profile = (ImageView) itemView.findViewById(R.id.circleView);// Creating Image view object from header.xml for profile pic
+                keys = (TextView) itemView.findViewById(R.id.keys);
+                Holderid = 0;                                                // Setting holder id = 0 as the object being populated are of type header view
+            }
+        }
+
+        @Override
+        public void onClick(View view) {
+
+            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) homeactivity;
+            if (view.getId() == R.id.rowText) {
+                TextView tv = (TextView) view;
+                String option = (String) tv.getText();
+
+                if (option.equals("Home")) {
+                    homeScreenActivity.getHome();
+                    drawer.closeDrawers();
+                }
+                if (option.equals("History")) {
+                    homeScreenActivity.getHistory();
+                    drawer.closeDrawers();
+                }
+                if (option.equals("Favorites")) {
+                    homeScreenActivity.getFavorite();
+                    drawer.closeDrawers();
+                }
+                if (option.equals("Contributions")) {
+                    homeScreenActivity.getContri();
+                    drawer.closeDrawers();
+                }
+                if (option.equals("Settings")) {
+                    homeScreenActivity.getSettings();
+                    drawer.closeDrawers();
+                }
+                if(option.equals("Help")){
+                    homeScreenActivity.getHelp();
+                    drawer.closeDrawers();
+                }
+                if (option.equals("Logout")) {
+                    homeScreenActivity.backToLogin();
+                    drawer.closeDrawers();
+                }
+            }
+
+            if(view.getId()==R.id.menurow){
+                if (getAdapterPosition()==1) {
+                    homeScreenActivity.getHome();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==2) {
+                    homeScreenActivity.getHistory();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==3) {
+                    homeScreenActivity.getFavorite();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==4) {
+                    homeScreenActivity.getContri();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==5) {
+                    homeScreenActivity.getSettings();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==6) {
+                    homeScreenActivity.getHelp();
+                    drawer.closeDrawers();
+                }
+                if (getAdapterPosition()==7) {
+                    homeScreenActivity.backToLogin();
+                    drawer.closeDrawers();
+                }
+
+            }
+        }
+
+        /*//function that sets colors for the main menu
+        private void setMenuColors(int position){
+            menurows.get(position-1).setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
+            menuicons.get(position-1).setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
+            menutitles.get(position-1).setBackgroundColor(ContextCompat.getColor(context,R.color.lightgrey));
+            for(int i=0;i<7;i++){
+                if(i==(position-1)) continue;
+                menurows.get(i).setBackgroundColor(ContextCompat.getColor(context,R.color.white));
+                menuicons.get(i).setBackgroundColor(ContextCompat.getColor(context,R.color.white));
+                menutitles.get(i).setBackgroundColor(ContextCompat.getColor(context,R.color.white));
+            }
+        }*/
+
+    }
+
+
+
+    public MainmenuAdapter(String Titles[], int Icons[], Activity activity, DrawerLayout drawerLayout, String uid, Context context){ // MainmenuAdapter Constructor with titles and icons parameter
+        this.context = context;
+        mNavTitles = Titles;
+        mIcons = Icons;
+        homeactivity = activity;
+        drawer = drawerLayout;
+        UID = uid;
+    }
+
+    public void closeDrawers(){
+        drawer.closeDrawers();
+    }
+
+
+
+    //Below first we ovverride the method onCreateViewHolder which is called when the ViewHolder is
+    //Created, In this method we inflate the item_row.xml layout if the viewType is Type_ITEM or else we inflate header.xml
+    // if the viewType is TYPE_HEADER
+    // and pass it to the view holder
+
+    @Override
+    public MainmenuAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        if (viewType == TYPE_ITEM) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row,parent,false); //Inflating the layout
+
+            ViewHolder vhItem = new ViewHolder(v,viewType); //Creating ViewHolder and passing the object of type view
+
+            return vhItem; // Returning the created object
+
+            //inflate your layout and pass it to view holder
+
+        } else if (viewType == TYPE_HEADER) {
+
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.header,parent,false); //Inflating the layout
+
+            ViewHolder vhHeader = new ViewHolder(v,viewType); //Creating ViewHolder and passing the object of type view
+
+            return vhHeader; //returning the object created
+
+
+        }
+        return null;
+
+    }
+
+    //Next we override a method which is called when the item in a row is needed to be displayed, here the int position
+    // Tells us item at which position is being constructed to be displayed and the holder id of the holder object tell us
+    // which view type is being created 1 for item row
+    @Override
+    public void onBindViewHolder(MainmenuAdapter.ViewHolder holder, int position) {
+
+        if(holder.Holderid ==1) { // as the list view is going to be called after the header view so we decrement the
+            // position by 1 and pass it to the holder while setting the text and image
+            holder.textView.setText(mNavTitles[position - 1]); // Setting the Text with the array of our Titles
+            holder.imageView.setImageResource(mIcons[position -1]);// Settimg the image with array of our icons
+            menurows.add(holder.linearlayout);
+            menuicons.add(holder.imageView);
+            menutitles.add(holder.textView);
+        }
+        else{
+
+            currholder = holder;
+            getbasicinfo();       //get user's name and email
+            getdp(holder);        //get user's profile pic
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mNavTitles.length+1; // the number of items in the list will be +1 the titles including the header view.
+    }
+
+
+    // Witht the following method we check what type of view is being passed
+    @Override
+    public int getItemViewType(int position) {
+        if (isPositionHeader(position))
+            return TYPE_HEADER;
+
+        return TYPE_ITEM;
+    }
+
+    private boolean isPositionHeader(int position) {
+        return position == 0;
+    }
+
+
+    //------------------Helper Functions-------------------------//
+
+    public void getbasicinfo(){
+        DatabaseReference database;
+        database = FirebaseDatabase.getInstance().getReference();
+        database.child("UserInformation").child(UID).addValueEventListener(listener1);
+    }
+
+    ValueEventListener listener1 = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            UserDetails userDetails = dataSnapshot.getValue(UserDetails.class);
+            if(userDetails!=null) {
+                currholder.Name.setText(userDetails.getfirstname() + " " + userDetails.getlastname());
+                currholder.email.setText(userDetails.getemail());
+                currholder.keys.setText("  " + userDetails.getnumberofkeys());
+            }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+    };
+
+
+    public void getdp(final MainmenuAdapter.ViewHolder holdertemp){
+        FirebaseStorage storage = FirebaseStorage.getInstance();
+        StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
+        StorageReference islandRef = storageRef.child(UID+"/Profile/dp.jpg");
+        final long ONE_MEGABYTE = 1024 * 1024;
+        islandRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holdertemp.profile.setImageBitmap(getCroppedBitmap(bmp,holdertemp));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                holdertemp.profile.setImageResource(R.drawable.user); //set the default profile pic
+            }
+        });
+    }
+
+    // function the crops the profile pic into a circle
+    public Bitmap getCroppedBitmap(Bitmap bitmap,final MainmenuAdapter.ViewHolder holdertemp2) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+                bitmap.getHeight(), android.graphics.Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        final int color = 0xff424242;
+        final Paint paint = new Paint();
+        final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+        paint.setAntiAlias(true);
+        canvas.drawARGB(0, 0, 0, 0);
+        paint.setColor(color);
+        canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2,
+                bitmap.getHeight() / 2, paint);
+        paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN));
+        canvas.drawBitmap(bitmap, rect, rect, paint);
+        return output;
+    }
+
+
+
+
+}
