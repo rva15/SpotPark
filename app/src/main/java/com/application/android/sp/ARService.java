@@ -19,7 +19,6 @@ public class ARService extends IntentService {
     }
 
     public ARService(String name) {
-
         super(name);
     }
 
@@ -27,7 +26,6 @@ public class ARService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if(ActivityRecognitionResult.hasResult(intent)) {
-            Log.d(TAG,"sending broadcast");
             ActivityRecognitionResult result = ActivityRecognitionResult.extractResult(intent);
             Intent localIntent = new Intent("com.app.android.sp.BROADCAST_ACTION");
             ArrayList<DetectedActivity> detectedActivities = (ArrayList) result.getProbableActivities();

@@ -82,6 +82,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private Switch stswitch;
     private boolean ststatus;
     private RelativeLayout gotostsettings;
+    public  HomeScreenActivity homeScreenActivity;
 
 
 
@@ -152,6 +153,18 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         return view;
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity a;
+
+        if (context instanceof Activity){
+            a=(Activity) context;
+            homeScreenActivity = (HomeScreenActivity) a;
+        }
+    }
+
     private void setdp(){
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReferenceFromUrl("gs://spotpark-1385.appspot.com");
@@ -211,10 +224,20 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             showPswdDialog();
         }
         if(v.getId() == R.id.dp){
-            selectImage();
+            if(homeScreenActivity!=null) {
+                selectImage();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
         if(v.getId() == R.id.profileinfo){
-            showProfileDialog();
+            if(homeScreenActivity!=null) {
+                showProfileDialog();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
         if(v.getId() == R.id.contactemail){
             sendEmail();
@@ -226,8 +249,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             icons8();
         }
         if(v.getId() == R.id.gotostsettings){
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-            homeScreenActivity.getSTSettings();
+            if(homeScreenActivity!=null) {
+                homeScreenActivity.getSTSettings();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -382,9 +409,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                HomeScreenActivity home = (HomeScreenActivity)getActivity();
-                home.getSettings();
-                home.refreshMainAdapter();
+                homeScreenActivity.getSettings();
+                homeScreenActivity.refreshMainAdapter();
             }
         });
     }
@@ -448,9 +474,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                HomeScreenActivity home = (HomeScreenActivity)getActivity();
-                home.getSettings();
-                home.refreshMainAdapter();
+                homeScreenActivity.getSettings();
+                homeScreenActivity.refreshMainAdapter();
             }
         });
     }
@@ -501,8 +526,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 fullname.setText(fn+" "+ln);
                 email.setText(newemail);
                 updateEmail(fn, ln, newemail);
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-                homeScreenActivity.refreshMainAdapter();
+                if(homeScreenActivity!=null) {
+                    homeScreenActivity.refreshMainAdapter();
+                }
             }
 
         }

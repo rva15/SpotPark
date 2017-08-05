@@ -2,7 +2,9 @@ package com.application.android.sp;
 //All imports
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -74,6 +76,7 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
     private LinearLayout reportcenter;
     private ImageView satview,gridview;
     private boolean isgridview=true;
+    public  HomeScreenActivity homeScreenActivity;
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
     public static ReportFragment newInstance(int page,String id) {
@@ -164,6 +167,20 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if (null != sMapView){
             sMapView.onResume();}
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity a;
+
+        if (context instanceof Activity){
+            a=(Activity) context;
+            homeScreenActivity = (HomeScreenActivity) a;
+
+        }
+
     }
 
     @Override
@@ -366,8 +383,12 @@ public class ReportFragment extends Fragment implements OnMapReadyCallback, Goog
 
     public void showForm(byte[] bytearray,double lat,double lon){
 
-        HomeScreenActivity activity = (HomeScreenActivity) getActivity();
-        activity.getReportForm(bytearray,lat,lon);
+        if(homeScreenActivity!=null) {
+            homeScreenActivity.getReportForm(bytearray, lat, lon);
+        }
+        else{
+            Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+        }
     }
 
 

@@ -350,7 +350,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     trackUser = true;
                     T1 = T2 = T3 =false; //available for re-triggering
                     trackAct = false;
-                    scheduleNotification(getARTestNotification("Parked at "+Double.toString(candlat)+" "+Double.toString(candlon)), 1000, 411019);//notify user immediately
+                    //scheduleNotification(getARTestNotification("Parked at "+Double.toString(candlat)+" "+Double.toString(candlon)), 1000, 411019);//notify user immediately
                     hvtime = System.currentTimeMillis();
                     if(tracklocHP) { //track location on LP
                         initializeLocationManager(20000, 10);
@@ -372,12 +372,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         if(!T1){
             T1 = true;
             t1 = System.currentTimeMillis();
-            Log.d(TAG,"t121 "+t1);
             return;
         }
         if(T1 && (!T2) && (!T3)){
             t2 = System.currentTimeMillis();
-            Log.d(TAG,"t122 "+t2);
             diff1 = (t2-t1)/1000;
             if(diff1<30){ //got second confirmation less than 30secs after first
                 T2 = true;
@@ -390,17 +388,14 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                 }
                 T1 = false;
             }
-            Log.d(TAG,"t12 diff1 "+diff1);
             return;
         }
         if(T1 && T2 && (!T3)){
             t3 = System.currentTimeMillis();
-            Log.d(TAG,"t123 "+t3);
             diff2 = (t3-t2)/1000;
             if(diff2<30){ //received 3 confirmations
                 T3 =true;
-                Log.d(TAG,"triggered");
-                scheduleNotification(getARTestNotification("You're driving"), 1000, 599019);//notify user immediately
+                //scheduleNotification(getARTestNotification("You're driving"), 1000, 599019);//notify user immediately
                 trackAct = true;
                 trackUser = false;
                 type0updated = false;
@@ -415,12 +410,9 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     tracklocHP = false;
                 }
                 if(activeSpot){ //there was an active spot
-                    Log.d(TAG,"spot is active");
                     double timediff = (t3-activemillis)/1000;
-                    Log.d(TAG,"time diff active "+timediff);
                     if(timediff<200){ //you were in the active zone less than 3mins ago
-                        Log.d(TAG,"timediff is less than 200");
-                        scheduleNotification(getARTestNotification("Took your car out"), 1000, 359019);//notify user immediately
+                        //scheduleNotification(getARTestNotification("Took your car out"), 1000, 359019);//notify user immediately
                         updateType(); //update spot to type1
                     }
                 }
@@ -435,7 +427,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                 T1 = false;
                 T2 = false;
             }
-            Log.d(TAG,"t12 diff2 "+diff2);
             return;
 
         }
@@ -562,7 +553,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     public class ActivityDetectionBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"received broadcast");
             ArrayList<DetectedActivity> updatedActivities =
                     intent.getParcelableArrayListExtra("com.app.android.sp.ACTIVITY_EXTRA");
             handleDetectedActivities(updatedActivities);
@@ -606,7 +596,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
         @Override
         public void onLocationChanged(Location location) {
-            Log.d(TAG,"on location changed "+tracklocHP);
             if(notesentlon!=0 && notesentlon!=0){ //check if we are more than 1km away from the spot for which ST notification was sent
                 double notesentdist = distance(notesentlat,notesentlon,location.getLatitude(),location.getLongitude());
                 if(notesentdist>1){ //yes than reset those variables
@@ -618,7 +607,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             if(!forPlaces) {
                 if (!trackUser) { //we aren't tracking the user, just taking location once
                     if (!l1taken) {
-                        Log.d(TAG, "l1taken " + location.getLatitude() + " " + location.getLongitude());
                         userlat1 = location.getLatitude();
                         userlon1 = location.getLongitude();
                         candlat = (userlat1);
@@ -635,7 +623,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     curlat = location.getLatitude();
                     curlon = location.getLongitude();
                     curdist = distance(curlat, curlon, candlat, candlon);
-                    Log.d(TAG,"current distance "+curdist + " "+activeSpot);
                     if (!activeSpot) { //there is no active spot
                         if (curdist > 0.05) { //distance to candidate is more than 50m
                             if (trackactHP) { // track activity on LP
@@ -669,7 +656,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                             }
                             activemillis = System.currentTimeMillis(); //record time
                             if (!type0updated) { //update candidate location to firebase
-                                scheduleNotification(getARTestNotification("Car lene aaye ho aap?"), 1000, 211019);//notify user immediately
+                                //scheduleNotification(getARTestNotification("Car lene aaye ho aap?"), 1000, 211019);//notify user immediately
                                 latlngcode = getLatLngCode(candlat, candlon);
                                 type0updated = true;
                                 checkActive();
@@ -841,7 +828,6 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                 gplacelat = Double.parseDouble(googlePlace.get("lat"));  //get the lat and lon of the nearest place
                 gplacelng = Double.parseDouble(googlePlace.get("lng"));
                 gplacename = googlePlace.get("place_name");              //get name of the place
-                Log.d(TAG, "google place name " + gplacename);
                 getPlaceCount();   //get custom places
             }
         }
@@ -991,25 +977,22 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             else{
                 distance = distancecp;  //custom place is closest
             }
-            Log.d(TAG,"st algo "+closestPlace.getplacename());
 
         }
         else{ //there are no custom places
             distancegp = distance(gplacelat,gplacelng,userplacelat,userplacelon); //calculate distance from the user's location
             distance = distancegp;
             closestPlace = new Places(gplacename,gplacelat,gplacelng); //google place is closest
-            Log.d(TAG,"st algo "+closestPlace.getplacename());
         }
 
 
         if(passVeto(closestPlace)) { //execute function only if the closest place is not vetoed
-            Log.d(TAG,"st distance "+distance);
             if (distance < 0.2) {   //if distance is less than 300m, you are in the zone
                 if(!notesent) {
                     notesentlat = closestPlace.getplacelat();
                     notesentlon = closestPlace.getplacelon();
                     notesent = true;
-                    scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
+                    //scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
                 }
             }
         }

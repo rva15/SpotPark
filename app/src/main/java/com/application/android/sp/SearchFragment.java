@@ -2,7 +2,9 @@ package com.application.android.sp;
 //All imports
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -68,6 +70,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static android.R.attr.data;
 import static android.R.string.yes;
 
 /**
@@ -111,6 +114,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private String curLatLng;
     private String label;
     private ArrayList<String> array = new ArrayList<String>();
+    public HomeScreenActivity homeScreenActivity;
 
 
 
@@ -233,6 +237,18 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if (null != gMapView){
             gMapView.onResume();}
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity a;
+
+        if (context instanceof Activity){
+            a=(Activity) context;
+            homeScreenActivity = (HomeScreenActivity) a;
+        }
     }
 
     @Override
@@ -473,9 +489,13 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if(v.getId()==R.id.startsearch){
             //check number of keys
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity)getActivity();
-            homeScreenActivity.setStartSearch(true);
-            reduceKey();
+            if(homeScreenActivity!=null) {
+                homeScreenActivity.setStartSearch(true);
+                reduceKey();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
 
         if(v.getId()==R.id.feedback){
@@ -519,8 +539,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         }
         if(v.getId() == R.id.heading){
             if(heading.getText().equals("What is Activity Prediction?")) {
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-                homeScreenActivity.getARGuide();
+                if(homeScreenActivity!=null) {
+                    homeScreenActivity.getARGuide();
+                }
+                else{
+                    Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
@@ -725,8 +749,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Integer keys = dataSnapshot.getValue(Integer.class);
                 dataSnapshot.getRef().setValue(keys+numkeys);
-                HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                homeScreenActivity.refreshMainAdapter();
+                if(homeScreenActivity!=null) {
+                    homeScreenActivity.refreshMainAdapter();
+                }
             }
 
             @Override
@@ -802,8 +827,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 if(keys>0){
                     dataSnapshot.getRef().setValue(keys-1);
                     curkeys.setText(Integer.toString(keys-1));
-                    HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-                    homeScreenActivity.refreshMainAdapter();
+                    if(homeScreenActivity!=null) {
+                        homeScreenActivity.refreshMainAdapter();
+                    }
                     if(keys>4) {
                         startSearch();
                     }
@@ -1160,7 +1186,9 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                 label = "SpotPark user Check-In";
                 heading.setText("Cost per Hour");
                 key = (String) Keys.get(currentmarker);
-                int time = (int) Times.get(currentmarker);
+                if(Times.get(currentmarker)!=null) {
+                    int time = (int) Times.get(currentmarker);
+                }
                 if (key != null) {
                     Cursor res = helperDB.getInfo(key);
                     if (res.getCount() <= 0) {
@@ -1169,7 +1197,12 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
                     res.moveToFirst();
                     int dollars = Integer.parseInt(res.getString(res.getColumnIndex("Dollars")));   //get dollars and cents from phone db
                     int cents = Integer.parseInt(res.getString(res.getColumnIndex("Cents")));
-                    category.setText("Vacating in : "+Integer.toString((int)Times.get(currentmarker))+"mins  |  Travel time : " + Integer.toString((int) DriveTime.get(key)) + "mins");
+                    if((Times.get(currentmarker)!=null)&&(DriveTime.get(key)!=null)) {
+                        category.setText("Vacating in : " + Integer.toString((int) Times.get(currentmarker)) + "mins  |  Travel time : " + Integer.toString((int) DriveTime.get(key)) + "mins");
+                    }
+                    else{
+                        category.setText("");
+                    }
                     rate.setText("$ " + Integer.toString(dollars) + "." + Integer.toString(cents));
                     spotdescription.setVisibility(View.GONE);
                     rate.setVisibility(View.VISIBLE);

@@ -1,5 +1,7 @@
 package com.application.android.sp;
 //All imports
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -93,6 +95,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private FrameLayout othersknow;
     private ImageView editcin,deletecin,notes,clsatview,clgridview;
     private FloatingActionButton fab;
+    public  HomeScreenActivity homeScreenActivity;
     //--Google API variables
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -104,6 +107,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     private GoogleMap navigationmap;
     private MapView nMapView;
     private Bitmap carMarker;
+
 
     //------------------------------Fragment Lifecycle Related Functions-------------------------//
 
@@ -177,6 +181,16 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         super.onLowMemory();
         if (null != nMapView)
             nMapView.onLowMemory();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        Activity a;
+        if (context instanceof Activity){
+            a=(Activity) context;
+            homeScreenActivity = (HomeScreenActivity) a;
+        }
     }
 
 
@@ -381,8 +395,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
                 return;
             }
         });                        //simultaneously update the database at all locations
-
-        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
         homeScreenActivity.delete();
 
     }
@@ -393,8 +405,13 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         builder.setMessage("Make a new Check-In and push the current one to History?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                Toast.makeText(getActivity(),"Storing previous checkin to History",Toast.LENGTH_SHORT).show(); //Show a message to user
-                addImagetoHistory();
+                if(homeScreenActivity!=null) {
+                    Toast.makeText(getActivity(), "Storing previous checkin to History", Toast.LENGTH_SHORT).show(); //Show a message to user
+                    addImagetoHistory();
+                }
+                else{
+                    Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+                }
 
 
             }
@@ -486,8 +503,9 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         Intent servIntent = new Intent(this.getActivity(), DirectionService.class);     //start the DirectionService
         servIntent.putExtra("started_from", "navigation");
         this.getActivity().startService(servIntent);
-        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
-        homeScreenActivity.refreshMainAdapter();
+        if(homeScreenActivity!=null) {
+            homeScreenActivity.refreshMainAdapter();
+        }
     }
 
     private void confirminform() {   //show a confirmation dialog before deleting the spot
@@ -612,7 +630,7 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             int dollars = checkInDetails.getdollars();
             int cents = checkInDetails.getcents();
             // pass information to home screen to make edit checkin active
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
+
             homeScreenActivity.setCheckinkey(checkinkey);
             homeScreenActivity.setLatitude(carlatitude);
             homeScreenActivity.setLongitude(carlongitude);
@@ -654,7 +672,6 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             CheckInDetails checkInDetails = dataSnapshot.getValue(CheckInDetails.class);
             Integer minstoleave =  checkInDetails.getminstoleave();
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
             homeScreenActivity.setRate(checkInDetails.getdollars(),checkInDetails.getcents()); //set default rate for edit checkins
             if(minstoleave!=10031 && minstoleave!=20041){
                 informbutton.setVisibility(View.GONE);
@@ -738,12 +755,20 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
             isAutoMode = true;
         }
         if(v.getId()==R.id.editcin) {
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-            homeScreenActivity.showEditCheckInDialog();
+            if(homeScreenActivity!=null) {
+                homeScreenActivity.showEditCheckInDialog();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
         if(v.getId()==R.id.deletecin) {
-            HomeScreenActivity homeScreenActivity = (HomeScreenActivity) getActivity();
-            homeScreenActivity.deletedialog();
+            if(homeScreenActivity!=null) {
+                homeScreenActivity.deletedialog();
+            }
+            else{
+                Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            }
         }
         if(v.getId()==R.id.fab){
             newdialog();

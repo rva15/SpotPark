@@ -36,6 +36,8 @@ public class ComplainDialog extends DialogFragment {
 
         if(!type.equals("actrec")){ //this is not an AR spot
             //Get UI elements and set their listeners
+            final CardView fbackcard3 = (CardView) view.findViewById(R.id.fbackcard3);
+            fbackcard3.setVisibility(View.GONE);
             final CardView fbackcard2 = (CardView) view.findViewById(R.id.fbackcard2);
             final RadioButton fbackyes = (RadioButton) view.findViewById(R.id.fbackyes);
             fbackyes.setOnClickListener(new View.OnClickListener() {

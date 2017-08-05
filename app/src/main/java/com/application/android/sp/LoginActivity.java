@@ -9,7 +9,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -19,6 +20,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -96,7 +98,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);                 //call onCreate method of super class
-        //FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
+        FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
         setContentView(R.layout.activity_login);            //setup the content view for the loginActivity
         Firebase.setAndroidContext(this);                   //set Firebase context
 
@@ -123,7 +125,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onError(FacebookException exception) {
-
             }
         });
 
@@ -555,6 +556,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
                 catch (JSONException e)
                 {
+
                 }
             }
         });

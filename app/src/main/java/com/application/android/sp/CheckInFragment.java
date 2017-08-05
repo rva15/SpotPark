@@ -2,6 +2,7 @@ package com.application.android.sp;
 // All imports
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -84,6 +85,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private CheckInHelperDB dbHelper ;
     private boolean inputerror= false,isgridview=true;
     private ImageView csatview,cgridview;
+    public HomeScreenActivity homeScreenActivity;
 
     //--Google API variables--
     private GoogleMap map;
@@ -168,6 +170,20 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
         super.onLowMemory();
         if (null != gMapView)
             gMapView.onLowMemory();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        Activity a;
+
+        if (context instanceof Activity){
+            a=(Activity) context;
+            homeScreenActivity = (HomeScreenActivity) a;
+
+        }
+
     }
 
 
@@ -372,7 +388,10 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
     private void checkIn(String parkrate, int parkhour, int parkmin, final boolean otherspark, boolean free, final String cinnotes) {
-
+        if(homeScreenActivity==null){
+            Toast.makeText(getContext(),"An error occurred. Please try again.",Toast.LENGTH_SHORT).show();
+            return;
+        }
         Toast.makeText(getContext(),"Saving location",Toast.LENGTH_SHORT).show();
         // Initialize all required data for checking in
         position = map.getCameraPosition();                 //get the camera position
@@ -473,7 +492,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
 
 
         incrementKeys();                                              //award the user with 2 keys
-        HomeScreenActivity homeScreenActivity = (HomeScreenActivity) this.getActivity();
         homeScreenActivity.refreshMainAdapter();
         database.updateChildren(childUpdates).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -487,7 +505,9 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             public void onComplete(@NonNull Task<Void> task) {
 
                 pin.setVisibility(View.GONE);
-                marker.remove();
+                if(marker!=null) {
+                    marker.remove();
+                }
                 map.addMarker(new MarkerOptions().position(cameracenter).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
                 map.snapshot(callback);
             }
@@ -502,7 +522,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
                 scheduleNotification(getInformNotification(), delay + 180000, 23);    //ask user if he wants to inform others by this notification
             }
         }
-        HomeScreenActivity homeScreenActivity = (HomeScreenActivity)this.getActivity(); //pass information to homescreen activity
         homeScreenActivity.setLatlngcode(latlngcode);
         homeScreenActivity.setLatitude(cameracenter.latitude);
         homeScreenActivity.setLongitude(cameracenter.longitude);
@@ -635,7 +654,6 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
             Double i = Double.parseDouble(var.trim());
             return i;
         }
-
         catch (NumberFormatException nfe){
             inputerror = true;
             return 12345.;

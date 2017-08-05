@@ -95,7 +95,7 @@ public class MainmenuAdapter extends RecyclerView.Adapter<MainmenuAdapter.ViewHo
             HomeScreenActivity homeScreenActivity = (HomeScreenActivity) homeactivity;
             if (view.getId() == R.id.rowText) {
                 TextView tv = (TextView) view;
-                String option = (String) tv.getText();
+                String option = tv.getText().toString();
 
                 if (option.equals("Home")) {
                     homeScreenActivity.getHome();
