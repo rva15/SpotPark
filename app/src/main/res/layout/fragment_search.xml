@@ -270,7 +270,7 @@
                     android:layout_height="30dp"
                     android:id="@+id/heading"
                     android:text="Cost per Hour"
-                    android:padding="8dp"
+                    android:paddingTop="8dp"
                     android:layout_gravity="center_horizontal"/>
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -280,7 +280,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="58dp"
                         android:id="@+id/spotdescription"
-                        android:gravity="top|center_horizontal"
+                        android:gravity="center"
                         android:textColor="@color/tab_background_selected"
                         android:textSize="24dp"/>
                     <TextView
@@ -288,7 +288,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="58dp"
                         android:textSize="32dp"
-                        android:gravity="top|center_horizontal"
+                        android:gravity="center"
                         android:textColor="@color/tab_background_selected"/>
                 </FrameLayout>
 
@@ -296,7 +296,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_weight="2"
+                android:layout_weight="1"
                 android:layout_height="0dp"
                 android:layout_marginBottom="8dp"
                 android:orientation="horizontal">

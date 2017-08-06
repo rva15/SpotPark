@@ -550,13 +550,13 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private Notification getAlertNotification() {
 
         //open the app on tapping the notification
-        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        Intent openapp = new Intent(getContext(), LoginActivity.class);
         openapp.putExtra("startedfrom","notification");
         openapp.putExtra("userid",UID);
         openapp.addCategory("cinfragalert");
         PendingIntent pendingIntent1 = PendingIntent.getActivity(getContext(), 0, openapp, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        Intent navigate = new Intent(this.getActivity(), HomeScreenActivity.class);
+        Intent navigate = new Intent(this.getActivity(), LoginActivity.class);
         navigate.putExtra("startedfrom","notification");
         navigate.putExtra("sendstatus",true);
         navigate.putExtra("userid",UID);
@@ -579,7 +579,7 @@ public class CheckInFragment extends Fragment implements OnMapReadyCallback, Goo
     private Notification getInformNotification() {
 
         //open the app on tapping the notification
-        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        Intent openapp = new Intent(getContext(), LoginActivity.class);
         openapp.putExtra("startedfrom","notification");
         openapp.putExtra("userid",UID);
         openapp.addCategory("cinfraginform");

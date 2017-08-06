@@ -992,7 +992,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     notesentlat = closestPlace.getplacelat();
                     notesentlon = closestPlace.getplacelon();
                     notesent = true;
-                    //scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
+                    scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
                 }
             }
         }
@@ -1011,7 +1011,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
     private Notification getCheckinNotification() {
         //open the app on tapping the notification
-        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        Intent openapp = new Intent(getContext(), LoginActivity.class);
         openapp.putExtra("startedfrom","notification");
         openapp.putExtra("userid",UID);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, openapp, PendingIntent.FLAG_CANCEL_CURRENT);

@@ -11,13 +11,21 @@ import java.util.HashMap;
 import java.util.Map;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -98,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);                 //call onCreate method of super class
-        FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
+        //FacebookSdk.sdkInitialize(getApplicationContext()); //this line has to come before setting the view
         setContentView(R.layout.activity_login);            //setup the content view for the loginActivity
         Firebase.setAndroidContext(this);                   //set Firebase context
 
@@ -188,7 +196,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onConnectionFailed(ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
         // be available.
-        Toast.makeText(this, "Connectivity problems!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -622,7 +629,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
 
                     }
-                });
+                }).addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+            }
+        });
     }
 
     //on activity result function

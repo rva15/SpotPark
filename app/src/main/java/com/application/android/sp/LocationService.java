@@ -158,7 +158,7 @@ public class LocationService extends android.app.Service{
     private Notification getInformNotification() {
 
         //open the app on tapping the notification
-        Intent openapp = new Intent(getContext(), HomeScreenActivity.class);
+        Intent openapp = new Intent(getContext(), LoginActivity.class);
         openapp.putExtra("startedfrom","notification");
         openapp.putExtra("userid",UID);
         openapp.addCategory("servicealert");
