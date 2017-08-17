@@ -29,6 +29,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.vision.text.Text;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -123,7 +124,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        requestActivityUpdates(60000); //activity updates every 1min
+        requestActivityUpdates(180000); //activity updates every 1min
         handler = new Handler();
         handler.post(runnableCode); //job of handler to switch service off at night
     }
@@ -157,7 +158,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
-            Log.d("Handlers", "Called on main thread");
+            //Log.d("Handlers", "Called on main thread");
             int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
             if((hour>0) && (hour<7)){ //past 12am and before 7am go to sleep
                 if(!sleepMode) {
@@ -186,7 +187,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             }
             else{  //wake up if service is sleeping
                 if(sleepMode){
-                    requestActivityUpdates(60000);
+                    requestActivityUpdates(180000);
                     trackactHP = false;
                     sleepMode = false;
                 }
@@ -229,7 +230,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
         stillc=0;
         tiltingc=0;
         walkingc=0;
-        Log.d(TAG,"activity detection " +trackactHP);
+        //Log.d(TAG,"activity detection " +trackactHP);
         for( DetectedActivity activity : probableActivities ) { //loop over all activities in result
             switch( activity.getType() ) {
                 case DetectedActivity.IN_VEHICLE: {
@@ -242,12 +243,12 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                         triggerOn(); //give a trigger
                         l1taken = false; //reset location taken
                         drivingc = activity.getConfidence();
-                        Log.d("ActivityRecogition", "In Vehicle: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "In Vehicle: " + activity.getConfidence());
                     }
                     if(stactive) { //single touch is enabled
                         if (activity.getConfidence() < 30) { //user is slowing down
                             if (trackAct) { //and is in the car
-                                Log.d(TAG,"initial st condition");
+                                //Log.d(TAG,"initial st condition");
                                 forPlaces = true;
                                 initializeLocationManager(2000, 0); //check for places around
                             }
@@ -257,7 +258,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                 }
                 case DetectedActivity.ON_BICYCLE: {
                     if(activity.getConfidence()>50) {
-                        Log.d("ActivityRecogition", "On Bicycle: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "On Bicycle: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -265,13 +266,13 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     if(activity.getConfidence()>50) { //user is really walking
                         if(activeSpot && (curdist<0.1)){ //less than 100m away from an active spot
                             if(!tracklocHP){
-                                Log.d(TAG,"switching to locHP"); //track location on HP
+                                //Log.d(TAG,"switching to locHP"); //track location on HP
                                 initializeLocationManager(2000,0);
                                 tracklocHP = true;
                             }
                         }
                         footc = activity.getConfidence();
-                        Log.d("ActivityRecogition", "On Foot: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "On Foot: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -279,13 +280,13 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     if(activity.getConfidence()>50) {  //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
-                                Log.d(TAG,"switching to locHP");
+                                //Log.d(TAG,"switching to locHP");
                                 initializeLocationManager(2000,0);
                                 tracklocHP = true;
                             }
                         }
                         runningc = activity.getConfidence();
-                        Log.d("ActivityRecogition", "Running: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "Running: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -298,13 +299,13 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                         }
                     }
                     stillc = activity.getConfidence();
-                    Log.d("ActivityRecogition", "Still: " + activity.getConfidence());
+                    //Log.d("ActivityRecogition", "Still: " + activity.getConfidence());
                     break;
                 }
                 case DetectedActivity.TILTING: {
                     if(activity.getConfidence()>50) {
                         tiltingc = activity.getConfidence();
-                        Log.d("ActivityRecogition", "Tilting: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "Tilting: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -312,13 +313,13 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     if(activity.getConfidence()>50) { //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
-                                Log.d(TAG,"switching to locHP");
+                                //Log.d(TAG,"switching to locHP");
                                 initializeLocationManager(2000,0);
                                 tracklocHP = true;
                             }
                         }
                         walkingc = activity.getConfidence();
-                        Log.d("ActivityRecogition", "Walking: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "Walking: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -326,12 +327,12 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     if(activity.getConfidence()>50) { //same as above
                         if(activeSpot && (curdist<0.1)){
                             if(!tracklocHP){
-                                Log.d(TAG,"switching to locHP");
+                                //Log.d(TAG,"switching to locHP");
                                 initializeLocationManager(2000,0);
                                 tracklocHP = true;
                             }
                         }
-                        Log.d("ActivityRecogition", "Unknown: " + activity.getConfidence());
+                        //Log.d("ActivityRecogition", "Unknown: " + activity.getConfidence());
                     }
                     break;
                 }
@@ -358,7 +359,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     }
                     if(trackactHP) { //track activity on LP
                         removeActivityUpdates();
-                        requestActivityUpdates(60000);
+                        requestActivityUpdates(180000);
                         trackactHP = false;
                     }
                 }
@@ -383,7 +384,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             else{ //if it has been more than 30 secs, restart triggers
                 if(trackactHP) {
                     removeActivityUpdates();
-                    requestActivityUpdates(60000);
+                    requestActivityUpdates(180000);
                     trackactHP = false;
                 }
                 T1 = false;
@@ -421,7 +422,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
             else{
                 if(trackactHP) {
                     removeActivityUpdates();
-                    requestActivityUpdates(60000);
+                    requestActivityUpdates(180000);
                     trackactHP = false;
                 }
                 T1 = false;
@@ -501,8 +502,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     private void updateType(){
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
         double curmillis = System.currentTimeMillis();
-        database.child("ARSpots").child(latlngcode).child(key).child("millis").setValue(curmillis);
-        database.child("ARSpots").child(latlngcode).child(key).child("type").setValue(1);
+        if((!TextUtils.isEmpty(latlngcode)) && (!TextUtils.isEmpty(key))) {
+            database.child("ARSpots").child(latlngcode).child(key).child("millis").setValue(curmillis);
+            database.child("ARSpots").child(latlngcode).child(key).child("type").setValue(1);
+        }
     }
 
     //function to generate the LatLngCode
@@ -624,10 +627,10 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     curlon = location.getLongitude();
                     curdist = distance(curlat, curlon, candlat, candlon);
                     if (!activeSpot) { //there is no active spot
-                        if (curdist > 0.05) { //distance to candidate is more than 50m
+                        if (curdist > 0.03) { //distance to candidate is more than 30m
                             if (trackactHP) { // track activity on LP
                                 removeActivityUpdates();
-                                requestActivityUpdates(60000);
+                                requestActivityUpdates(180000);
                                 trackactHP = false;
                             }
                             activeSpot = true;
@@ -664,7 +667,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                         } else {
                             if (trackactHP) {
                                 removeActivityUpdates();
-                                requestActivityUpdates(60000);
+                                requestActivityUpdates(180000);
                                 trackactHP = false;
                             }
                         }
@@ -763,20 +766,22 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
     //Add active spot
     private void addSpot(){
         database = FirebaseDatabase.getInstance().getReference();   //get Firebase reference
-        key = database.child("ARSpots").child(latlngcode).push().getKey();
+        if(!TextUtils.isEmpty(latlngcode)) {
+            key = database.child("ARSpots").child(latlngcode).push().getKey();
 
-        ARUsers arUsers = new ARUsers(latlngcode,key);
-        Map<String, Object> arUsersMap = arUsers.toMap(); //call its toMap method
-        ARSpots arSpots = new ARSpots(candlat,candlon,activemillis,0);
-        Map<String, Object> arSpotsMap = arSpots.toMap(); //call its toMap method
+            ARUsers arUsers = new ARUsers(latlngcode, key);
+            Map<String, Object> arUsersMap = arUsers.toMap(); //call its toMap method
+            ARSpots arSpots = new ARSpots(candlat, candlon, activemillis, 0);
+            Map<String, Object> arSpotsMap = arSpots.toMap(); //call its toMap method
 
-        // Make the entries
-        if((!TextUtils.isEmpty(latlngcode)) && (!TextUtils.isEmpty(key)) && (!TextUtils.isEmpty(UID))) {
-            Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
-            childUpdates.put("/ARSpots/" + latlngcode + "/" + key, arSpotsMap);
-            childUpdates.put("/ARUsers/" + UID, arUsersMap);
+            // Make the entries
+            if ((!TextUtils.isEmpty(latlngcode)) && (!TextUtils.isEmpty(key)) && (!TextUtils.isEmpty(UID))) {
+                Map<String, Object> childUpdates = new HashMap<>();            //put the database entries into a map
+                childUpdates.put("/ARSpots/" + latlngcode + "/" + key, arSpotsMap);
+                childUpdates.put("/ARUsers/" + UID, arUsersMap);
 
-            database.updateChildren(childUpdates);
+                database.updateChildren(childUpdates);
+            }
         }
     }
 
@@ -992,7 +997,7 @@ public class ARLocService extends android.app.Service implements GoogleApiClient
                     notesentlat = closestPlace.getplacelat();
                     notesentlon = closestPlace.getplacelon();
                     notesent = true;
-                    scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
+                    //scheduleNotification(getCheckinNotification(), 1000, 13);  // if not notify user immediately
                 }
             }
         }

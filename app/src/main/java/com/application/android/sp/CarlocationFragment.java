@@ -402,11 +402,11 @@ public class CarlocationFragment extends Fragment implements OnMapReadyCallback,
     //Dialog for confirmation of making new checkin
     private void newdialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage("Make a new Check-In and push the current one to History?");
+        builder.setMessage("Push the current check-in to history?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 if(homeScreenActivity!=null) {
-                    Toast.makeText(getActivity(), "Storing previous checkin to History", Toast.LENGTH_SHORT).show(); //Show a message to user
+                    Toast.makeText(getActivity(), "Storing previous checkin as History", Toast.LENGTH_SHORT).show(); //Show a message to user
                     addImagetoHistory();
                 }
                 else{

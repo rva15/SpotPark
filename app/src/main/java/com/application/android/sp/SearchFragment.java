@@ -15,12 +15,15 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -69,8 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static android.R.attr.data;
 import static android.R.string.yes;
 
 /**
@@ -107,14 +108,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
     private ImageView ssatview,sgridview;
     private Calendar startcalendar, endcalendar;
     private TextView displaystart,displayend;
-    private LinearLayout fromuntil1,fromuntil2;
-    private boolean showCheckIns=true;
+    private boolean showCheckIns=true,nospotsshown=false;
     private RelativeLayout feedback,book;
     private static boolean searchStarted;
     private String curLatLng;
     private String label;
     private ArrayList<String> array = new ArrayList<String>();
     public HomeScreenActivity homeScreenActivity;
+    private CardView fromuntilcard;
+    private LinearLayout searchcontrols;
 
 
 
@@ -292,11 +294,10 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         sgridview.setOnClickListener(this);
         displaystart = (TextView) view.findViewById(R.id.displaystart);
         displayend = (TextView) view.findViewById(R.id.displayend);
-        fromuntil1 = (LinearLayout) view.findViewById(R.id.fromuntil1);
-        fromuntil2 = (LinearLayout) view.findViewById(R.id.fromuntil2);
-        fromuntil1.setVisibility(View.GONE);
-        fromuntil2.setVisibility(View.GONE);
-        fromuntil2.setOnClickListener(this);
+        fromuntilcard = (CardView) view.findViewById(R.id.fromuntilcard);
+        searchcontrols = (LinearLayout) view.findViewById(R.id.searchcontrols);
+        searchcontrols.setVisibility(View.GONE);
+        fromuntilcard.setOnClickListener(this);
         feedback= (RelativeLayout) view.findViewById(R.id.feedback);
         feedback.setOnClickListener(this);
         refreshspots = (ImageView) view.findViewById(R.id.refreshspots);
@@ -446,7 +447,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             }
         }
 
-        if(v.getId()==R.id.fromuntil2){
+        if(v.getId()== R.id.fromuntilcard){
             showSearchDialog();
         }
 
@@ -584,9 +585,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
             else{
                 Boolean aryes = bundle.getBoolean("aryes");
                 Boolean arno  = bundle.getBoolean("arno");
-                Log.d("debugger","reached the right place "+aryes);
                 if(arno){
-                    Log.d("debugger",getLatLngCode(currentmarker.latitude,currentmarker.longitude)+" "+arkey);
                     database = FirebaseDatabase.getInstance().getReference();
                     database.child("ARSpots").child(getLatLngCode(currentmarker.latitude,currentmarker.longitude)).child(arkey).child("millis").setValue(0);
                 }
@@ -631,6 +630,18 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
 
         finder = new SpotFinder(curlatitude,curlongitude, searchmap, UID,getContext(),startcalendar,endcalendar,showCheckIns); //declare the SpotFinder and pass it user's location and searchmap
         finder.addListener();   //call its addListener method
+        final Handler handler = new Handler(getContext().getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if((finder.getCats().isEmpty()) && (finder.getKeys().isEmpty()) && (finder.getARTypes().isEmpty()) && (parkWhizSpots.getPWSpotnames().isEmpty())){
+                    if(!nospotsshown){
+                        showNoSpotsDialog();
+                        nospotsshown = true;
+                    }
+                }
+            }
+        }, 3000);
     }
 
     private void showSearchDialog(){
@@ -640,10 +651,15 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
     }
 
+    private void showNoSpotsDialog(){
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new NoSpotsDialog();
+        dialog.show(this.getActivity().getSupportFragmentManager(),"Search fragment");
+    }
+
     private void startSearch(){
         startsearch.setVisibility(View.GONE);
-        fromuntil1.setVisibility(View.VISIBLE);
-        fromuntil2.setVisibility(View.VISIBLE);
+        searchcontrols.setVisibility(View.VISIBLE);
         refreshspots.setVisibility(View.VISIBLE);
         Toast.makeText(getContext(),"Tap on the parking spot markers",Toast.LENGTH_SHORT).show();
         startcalendar = Calendar.getInstance();
@@ -697,7 +713,7 @@ public class SearchFragment extends Fragment implements OnMapReadyCallback, Goog
         // display the recenter button
         if(reason==REASON_GESTURE) {
             if(!zoomalertgiven){
-                Toast.makeText(getContext(),"Use search bar or refresh button",Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(),"Use search bar or refresh button",Toast.LENGTH_SHORT).show();
                 zoomalertgiven = true;
             }
             recenter.setVisibility(View.VISIBLE);

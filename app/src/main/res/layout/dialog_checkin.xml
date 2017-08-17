@@ -40,7 +40,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:text="Can other users park here after you leave?"/>
+                        android:text="Are other users legally allowed to park here after you leave?"/>
 
 
                 </LinearLayout>
@@ -99,7 +99,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/black"
-                        android:text="Please enter the per hour cost for this spot"/>
+                        android:text="Please enter the per hour cost of this spot"/>
 
 
                 </LinearLayout>
@@ -289,7 +289,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"
-                    android:text="You may want to add some notes below"/>
+                    android:text="You may want to add some helpful notes below"/>
 
             </LinearLayout>
 

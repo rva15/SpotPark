@@ -31,209 +31,223 @@
                 android:orientation="vertical"
                 android:layout_weight="3">
 
-                <com.google.android.gms.maps.MapView
-                    android:id="@+id/smap"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_centerInParent="true"
-                    />
+                    <com.google.android.gms.maps.MapView
+                        android:id="@+id/smap"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_centerInParent="true"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <android.support.v7.widget.CardView
+                            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                            android:id="@+id/card_view"
+                            android:layout_gravity="top"
+                            android:layout_margin="8dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            card_view:cardCornerRadius="4dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/searchplacefragmentholder"
+                                android:orientation="vertical">
+
+                            </LinearLayout>
+
+                        </android.support.v7.widget.CardView>
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_centerHorizontal="true"
+                                android:clickable="true"
+                                android:id="@+id/recenter"
+                                android:background="@color/white">
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:src="@drawable/ic_recenter"/>
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="32dp"
+                                    android:paddingLeft="8dp"
+                                    android:paddingRight="8dp"
+                                    android:text="RECENTER"
+                                    android:gravity="center"
+                                    android:textSize="12dp"
+                                    android:textColor="@color/black"/>
+
+                            </LinearLayout>
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/key"
+                                android:id="@+id/keyimage"
+                                android:layout_alignParentRight="true"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/curkeys"
+                                android:layout_toLeftOf="@+id/keyimage"
+                                android:textSize="18dp"
+                                android:textColor="@color/black"/>
+
+                        </RelativeLayout>
+
+                    </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:layout_gravity="bottom"
+                    android:orientation="vertical"
+                    android:id="@+id/searchcontrols"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:id="@+id/refreshspots"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:src="@drawable/refreshspot"/>
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/mapviews"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="16dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/gridview"
+                            android:id="@+id/sgridview"
+                            android:visibility="gone"/>
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/satview"
+                            android:id="@+id/ssatview"/>
+
+
+                    </FrameLayout>
 
                     <android.support.v7.widget.CardView
                         xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                        android:id="@+id/card_view"
-                        android:layout_gravity="top"
-                        android:layout_margin="8dp"
+                        android:id="@+id/fromuntilcard"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginBottom="8dp"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        card_view:cardCornerRadius="4dp">
+                        android:layout_height="wrap_content"
+                        card_view:cardCornerRadius="4dp"
+                        card_view:cardElevation="4dp">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:id="@+id/searchplacefragmentholder"
-                            android:orientation="vertical">
+                            android:orientation="horizontal"
+                            android:id="@+id/fromuntil1"
+                            android:background="@color/white">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:padding="4dp"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:gravity="center_horizontal"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"
+                                    android:textColor="@color/black"
+                                    android:text="FROM"/>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center_horizontal"
+                                    android:id="@+id/displaystart"
+                                    android:text="Now"
+                                    android:textColor="@color/black" />
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="match_parent"
+                                android:background="@color/black"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="4dp"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:padding="4dp"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/fromuntil2"
+                                android:orientation="vertical"
+                                android:background="@color/white">
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"
+                                    android:gravity="center_horizontal"
+                                    android:text="UNTIL"
+                                    android:textColor="@color/black"/>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1"
+                                    android:id="@+id/displayend"
+                                    android:gravity="center_horizontal"
+                                    android:text="Next 3 hours"
+                                    android:textColor="@color/black"
+                                    />
+
+                            </LinearLayout>
+
 
                         </LinearLayout>
 
                     </android.support.v7.widget.CardView>
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_centerHorizontal="true"
-                            android:clickable="true"
-                            android:id="@+id/recenter"
-                            android:background="@color/white">
-
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_recenter"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="32dp"
-                                android:paddingLeft="8dp"
-                                android:paddingRight="8dp"
-                                android:text="RECENTER"
-                                android:gravity="center"
-                                android:textSize="12dp"
-                                android:textColor="@color/black"/>
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/key"
-                            android:id="@+id/keyimage"
-                            android:layout_alignParentRight="true"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/curkeys"
-                            android:layout_toLeftOf="@+id/keyimage"
-                            android:textSize="18dp"
-                            android:textColor="@color/black"/>
-
-
-                    </RelativeLayout>
-
                 </LinearLayout>
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:id="@+id/refreshspots"
-                    android:layout_marginBottom="72dp"
-                    android:layout_marginLeft="16dp"
-                    android:layout_gravity="bottom|left"
-                    android:visibility="gone"
-                    android:src="@drawable/refreshspot"/>
-
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|left"
-                    android:layout_marginBottom="32dp"
-                    android:layout_marginLeft="16dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/gridview"
-                        android:id="@+id/sgridview"
-                        android:visibility="gone"/>
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/satview"
-                        android:id="@+id/ssatview"/>
-
-
-                </FrameLayout>
-
-
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|center">
-
-                    <ImageView
-                        android:layout_width="128dp"
-                        android:layout_margin="16dp"
-                        android:layout_height="128dp"
-                        android:src="@drawable/startsearch"
-                        android:id="@+id/startsearch"/>
-
-                </FrameLayout>
+                    android:layout_width="128dp"
+                    android:layout_margin="40dp"
+                    android:layout_height="128dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:src="@drawable/startsearch"
+                    android:id="@+id/startsearch"/>
 
             </FrameLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="16dp"
-                android:orientation="horizontal"
-                android:id="@+id/fromuntil1"
-                android:background="@color/darkgrey">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/white"
-                    android:text="FROM"/>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="@color/white"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:textColor="@color/white"
-                    android:layout_height="match_parent"
-                    android:text="UNTIL"/>
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="24dp"
-                android:id="@+id/fromuntil2"
-                android:orientation="horizontal"
-                android:background="@color/darkgrey">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center_horizontal"
-                    android:layout_weight="1"
-                    android:id="@+id/displaystart"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:text="Now"
-                    android:textColor="@color/white" />
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="@color/white"/>
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/displayend"
-                    android:paddingTop="1dp"
-                    android:paddingStart="8dp"
-                    android:gravity="center_horizontal"
-                    android:text="Next 3 hours"
-                    android:layout_gravity="center_vertical"
-                    android:textColor="@color/white"
-                    android:layout_weight="1" />
-
-
-            </LinearLayout>
-
 
 
         </LinearLayout>
@@ -412,8 +426,6 @@
                         android:src="@drawable/feedback"
                         android:layout_centerVertical="true"
                         android:layout_toLeftOf="@+id/feedbutton"/>
-
-
 
 
                 </RelativeLayout>

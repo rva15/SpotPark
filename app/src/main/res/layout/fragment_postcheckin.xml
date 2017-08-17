@@ -26,7 +26,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/black"
-                    android:text="CHECKIN SAVED  -  2"
+                    android:text="CHECK-IN SAVED  :  2"
                     android:gravity="center" />
 
                 <ImageView
@@ -103,7 +103,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="You can edit or delete this CheckIn from the top right corner of the homescreen"/>
+                    android:text="You can edit or delete this check-in from the top right corner of the homescreen"/>
 
             </LinearLayout>
 
