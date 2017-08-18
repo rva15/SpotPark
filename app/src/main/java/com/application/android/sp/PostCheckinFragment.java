@@ -4,16 +4,24 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.NativeExpressAdView;
+import com.google.android.gms.vision.text.Line;
+
+import static com.application.android.sp.R.id.earnmore;
 
 /**
  * Created by ruturaj on 1/5/17.
@@ -28,6 +36,8 @@ public class PostCheckinFragment extends Fragment {
     private int width,sub;
     private double hours,mins;
     private String time;
+    private LinearLayout reminderlayout,editlayout,earnmorelayout;
+    private View linetop,linebot;
 
     //---------------Fragment Lifecycle Methods-------------------//
 
@@ -61,9 +71,18 @@ public class PostCheckinFragment extends Fragment {
         }
         cinmap.setImageBitmap(cropped);
 
-        // Set the text for the two text views
+        // Get all the views
+        reminderlayout = (LinearLayout) view.findViewById(R.id.reminderlayout);
+        editlayout = (LinearLayout) view.findViewById(R.id.editlayout);
+        editlayout.setVisibility(View.GONE);
+        earnmorelayout = (LinearLayout) view.findViewById(R.id.earnmorelayout);
+        earnmorelayout.setVisibility(View.GONE);
+        linetop = (View) view.findViewById(R.id.linetop);
+        linebot = (View) view.findViewById(R.id.linebot);
         TextView reminder = (TextView) view.findViewById(R.id.remindertv);
         TextView couttime = (TextView) view.findViewById(R.id.expirytime);
+
+        //set the content of the views
         if(time.equals("---")){
             reminder.setText("As per your requirement, there is no reminder set");
         }
@@ -71,8 +90,34 @@ public class PostCheckinFragment extends Fragment {
             couttime.setText(time);
         }
         TextView earnmore = (TextView) view.findViewById(R.id.earnmore);
+        earnmore.setTextColor(ContextCompat.getColor(getContext(),R.color.black));
         String s = "Earn 2 more keys just by letting us know <b> when you start walking back </b> to get your car out";
         earnmore.setText(fromHtml(s));
+
+        //Animate the views
+        Animation anim1 = AnimationUtils.loadAnimation(getContext(), R.anim.slide_right);
+        linetop.startAnimation(anim1);
+        Animation anim2 = AnimationUtils.loadAnimation(getContext(), R.anim.slide_left);
+        linebot.startAnimation(anim2);
+        Animation anim3 = AnimationUtils.loadAnimation(getContext(), R.anim.push_up_in);
+        anim3.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                animatemsg2();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        reminderlayout.startAnimation(anim3);
+
 
         // Initialize the Ad unit
         NativeExpressAdView adView = (NativeExpressAdView)view.findViewById(R.id.carlocadView);
@@ -84,6 +129,49 @@ public class PostCheckinFragment extends Fragment {
     }
 
     //------------------------Helper Functions----------------------//
+
+    private void animatemsg2(){
+        Animation anim4 = AnimationUtils.loadAnimation(getContext(), R.anim.push_up_in);
+        anim4.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                editlayout.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                animatemsg3();
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        editlayout.setAnimation(anim4);
+
+    }
+
+    private void animatemsg3(){
+        Animation anim5 = AnimationUtils.loadAnimation(getContext(), R.anim.push_up_in);
+        anim5.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                earnmorelayout.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        earnmorelayout.setAnimation(anim5);
+    }
 
     // This method required due to 'from html' syntax deprecation
     @SuppressWarnings("deprecation")
