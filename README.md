@@ -7,7 +7,7 @@ a parking spot nearby.
 Standalone repository that can be forked and run using AndroidStudio. Currently this version of SpotPark is compatible with android phone devices running Android 7.0 (Nougat) and earlier os. 
 
 ## Main Features
-SpotPark has several utilities that makes the life of the average car user a lot easier. It has features to search for parking, reserve parking, remember where the car was parked, receive notifications before the parking expires. It also keeps track of where users had parked in the past, so they could navigate back to it at a later time. Users can voluntarily report free, legal parking spots they know of so that it benefits the community. <br/>
+SpotPark has several utilities that makes the life of the average car user a lot easier. It has features to search for parking, reserve parking, remember where the car was parked, receive notifications before the parking expires. It also keeps track of where users had parked in the past, so they could navigate back to it at a later time. Users can voluntarily report free, legal parking spots they know of so that it benefits the community. <br/> <br/>
 <img src="https://github.com/rva14/SpotPark/blob/master/logo.png" width="300">
 
 ### Search and reserve parking
