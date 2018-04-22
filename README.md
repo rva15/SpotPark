@@ -12,7 +12,7 @@ SpotPark has several utilities that makes the life of the average car user a lot
 
 ### Search and reserve parking
 SpotPark uses the ParkWhiz api to display paid parking lots in the United States and redirects users to the ParkWhiz website for booking them. In addition, it shows the free parking spots reported by SpotPark community. There is an in-app user feedback system to verify the authenticity of the reported spots. Most interestingly, it displays in how many minutes a SpotPark user nearby is going to vacate his parking spot. (This was done using Google's Activity Recognition API but Google placed several restrictions on location access starting with Android Oreo, leading to the withdrawal of this feature from the app). <br/>
-<img src="https://github.com/rva14/SpotPark/blob/master/find.jpg" width="500">
+<img src="https://github.com/rva14/SpotPark/blob/master/findp.jpg" width="500">
 
 ### Check-in at your parking spot
 Users can check-in once they park the car in order for them to navigate back to it later. They can set an alarm to remind them of parking expiration, and add notes that would help them remember where they had parked. <br/>
