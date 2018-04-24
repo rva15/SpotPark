@@ -16,7 +16,7 @@ SpotPark uses the ParkWhiz api to display paid parking lots in the United States
 
 ### Check-in at your parking spot
 Users can check-in once they park the car in order for them to navigate back to it later. They can set an alarm to remind them of parking expiration, and add notes that would help them remember where they had parked. <br/>
-<img src="https://github.com/rva14/SpotPark/blob/master/remember.png" width="500">
+<img src="https://github.com/rva14/SpotPark/blob/master/remember.png" width="700">
 
 SpotPark Logo and UI design credits : Namrata Babu [https://www.behance.net/namratababu]
 
