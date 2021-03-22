@@ -3,7 +3,7 @@ An android app that helps users locate paid parking lots and street parking spot
 the car was parked, setting alarms for parking expiration etc. SpotPark uses crowdsourcing and a machine learning based algo to notify a user when a parking spot is opening up.
 
 ## Installation
-Standalone repository that can be forked and run using AndroidStudio. Currently this version of SpotPark is compatible with android phone devices running Android 7.0 (Nougat) and earlier os. 
+Standalone repository that can be cloned and run using AndroidStudio. Currently this version of SpotPark is compatible with android phone devices running Android 7.0 (Nougat) and earlier os. 
 
 ## Main Features
 SpotPark has several utilities that makes the life of the average car user a lot easier. It has features to search for parking, reserve parking, remember where the car was parked, receive notifications before the parking expires. It also keeps track of where users had parked in the past, so they could navigate back to it at a later time. Users can voluntarily report free, legal parking spots they know of so that it benefits the community. <br/> <br/>
